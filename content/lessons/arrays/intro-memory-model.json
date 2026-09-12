@@ -1,0 +1,73 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Before we can talk about arrays, we need a working picture of where a program keeps its data. Not a precise hardware diagram — a simplified model that is accurate enough to predict what your code will cost. Almost every claim in this course, including why reading `arr[i]` takes the same time no matter how large the array is, follows from this one model."
+    },
+    {
+      "type": "heading",
+      "text": "Memory"
+    },
+    {
+      "type": "paragraph",
+      "text": "Start with the smallest interesting thing a computer does: adding two numbers. The CPU holds a handful of tiny slots called registers, and an arithmetic unit that can add the values sitting in them. Feed it 10 and 6 and it produces 16."
+    },
+    {
+      "type": "figure",
+      "src": "/lesson-assets/cpu-add.svg",
+      "alt": "Two numbers, 10 and 6, entering a CPU containing an ALU and registers, and the value 16 coming out",
+      "caption": "The CPU can add two numbers and produce the result",
+      "width": 900,
+      "height": 300
+    },
+    {
+      "type": "paragraph",
+      "text": "But registers number in the dozens, not the millions. The moment the CPU needs that 16 again later — or needs to hold a thousand values at once — it has to put the result somewhere else. That somewhere is main memory, or RAM."
+    },
+    {
+      "type": "paragraph",
+      "text": "Picture RAM as one enormously long row of numbered slots. Each slot holds a fixed, tiny amount of data — one byte — and each has a permanent number called its **address**. The addresses run in order, with no gaps, from one end of memory to the other."
+    },
+    {
+      "type": "figure",
+      "src": "/lesson-assets/memory-cells.svg",
+      "alt": "A row of memory slots numbered 1000 through 1007, with the value 16 stored in the slot at address 1003",
+      "caption": "Every byte of memory has its own address",
+      "width": 900,
+      "height": 260
+    },
+    {
+      "type": "heading",
+      "text": "What the CPU can do with an address"
+    },
+    {
+      "type": "paragraph",
+      "text": "The CPU's conversation with memory is narrower than you might expect. There are only two operations, and both take an address:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Read** — hand memory an address, get back the byte stored there.",
+        "**Write** — hand memory an address and a value, and the value replaces whatever was there."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "The critical property is that both operations cost the same regardless of **which** address you name. Reading address 1003 is no faster than reading address 4,000,000,003. Memory does not scan from the beginning to find a slot — the address is wired directly to the hardware that holds it, which is exactly why it is called random access memory."
+    },
+    {
+      "type": "heading",
+      "text": "Why this matters for arrays"
+    },
+    {
+      "type": "paragraph",
+      "text": "Hold on to two facts: addresses are consecutive integers, and reading any address costs the same. An array is what you get when you take those two facts and lay out a group of same-sized values one after another. Because the values are evenly spaced and the first address is known, the machine can compute the address of any element with a single multiplication and addition, then do one constant-cost read."
+    },
+    {
+      "type": "paragraph",
+      "text": "That computation — `address = start + index × size` — is the whole reason `arr[i]` is an **O(1)** operation, and the next lesson builds it up step by step."
+    }
+  ],
+  "updatedAt": "2026-09-11T00:00:00.000Z"
+}

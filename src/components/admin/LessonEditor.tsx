@@ -1,0 +1,400 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
+import type { LessonBlock, LessonBlockType } from "@/lib/dsa/types";
+import DrawingBlockEditor from "./DrawingBlockEditor";
+
+const BLOCK_LABELS: Record<LessonBlockType, string> = {
+  heading: "Heading",
+  paragraph: "Paragraph",
+  list: "List",
+  code: "Code",
+  drawing: "Drawing",
+  figure: "Image",
+};
+
+function emptyBlock(type: LessonBlockType): LessonBlock {
+  switch (type) {
+    case "heading":
+      return { type: "heading", text: "" };
+    case "paragraph":
+      return { type: "paragraph", text: "" };
+    case "list":
+      return { type: "list", ordered: false, items: [""] };
+    case "code":
+      return { type: "code", language: "javascript", code: "" };
+    case "figure":
+      return { type: "figure", src: "", alt: "", width: 0, height: 0 };
+    case "drawing":
+      return {
+        type: "drawing",
+        src: "",
+        alt: "",
+        width: 0,
+        height: 0,
+        scene: { elements: [], files: {} },
+      };
+  }
+}
+
+const inputClass =
+  "font-body-md text-body-md w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-space-md py-space-sm text-on-surface outline-none focus:border-primary";
+
+export default function LessonEditor({
+  sectionSlug,
+  topicSlug,
+  initialBlocks,
+  updatedAt,
+}: {
+  sectionSlug: string;
+  topicSlug: string;
+  initialBlocks: LessonBlock[];
+  updatedAt: string | null;
+}) {
+  const [blocks, setBlocks] = useState<LessonBlock[]>(initialBlocks);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  function replaceBlock(index: number, block: LessonBlock) {
+    setBlocks((current) => current.map((b, i) => (i === index ? block : b)));
+  }
+
+  function moveBlock(index: number, delta: number) {
+    setBlocks((current) => {
+      const target = index + delta;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  async function uploadImage(index: number, block: LessonBlock, file: File) {
+    if (block.type !== "figure") return;
+    setError(null);
+
+    let width = 0;
+    let height = 0;
+    try {
+      const bitmap = await createImageBitmap(file);
+      width = bitmap.width;
+      height = bitmap.height;
+      bitmap.close();
+    } catch {
+      setError("That file could not be read as an image.");
+      return;
+    }
+
+    const form = new FormData();
+    form.append("file", file);
+    const response = await fetch("/api/admin/upload", {
+      method: "POST",
+      body: form,
+    });
+    const body = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setError(body?.error ?? "Upload failed.");
+      return;
+    }
+    replaceBlock(index, { ...block, src: body.src, width, height });
+  }
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    setStatus(null);
+
+    const response = await fetch(
+      `/api/admin/content/${sectionSlug}/${topicSlug}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blocks }),
+      }
+    );
+    const body = await response.json().catch(() => null);
+    setSaving(false);
+
+    if (!response.ok) {
+      setError(body?.error ?? "Could not save.");
+      return;
+    }
+    setStatus(`Saved ${new Date(body.updatedAt).toLocaleTimeString()}`);
+  }
+
+  const incompleteFigure = blocks.some(
+    (block) =>
+      (block.type === "figure" || block.type === "drawing") &&
+      block.src.length === 0
+  );
+
+  return (
+    <div className="mt-space-lg">
+      <p className="font-body-sm text-body-sm text-on-surface-variant">
+        Text fields accept <code className="font-code-sm text-code-sm">**bold**</code>{" "}
+        and <code className="font-code-sm text-code-sm">`inline code`</code>.
+      </p>
+
+      <div className="mt-space-base space-y-space-md">
+        {blocks.map((block, index) => (
+          <section
+            key={index}
+            className="rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-base"
+          >
+            <header className="mb-space-sm flex items-center justify-between">
+              <span className="font-label-md text-label-md font-semibold text-on-surface">
+                {BLOCK_LABELS[block.type]}
+              </span>
+              <span className="flex items-center gap-space-2xs">
+                <button
+                  type="button"
+                  aria-label="Move up"
+                  onClick={() => moveBlock(index, -1)}
+                  disabled={index === 0}
+                  className="rounded p-space-xs text-on-surface-variant hover:bg-surface-container disabled:opacity-30"
+                >
+                  <ArrowUp size={15} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Move down"
+                  onClick={() => moveBlock(index, 1)}
+                  disabled={index === blocks.length - 1}
+                  className="rounded p-space-xs text-on-surface-variant hover:bg-surface-container disabled:opacity-30"
+                >
+                  <ArrowDown size={15} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete block"
+                  onClick={() =>
+                    setBlocks((current) =>
+                      current.filter((_, i) => i !== index)
+                    )
+                  }
+                  className="rounded p-space-xs text-on-surface-variant hover:bg-error-container hover:text-on-error-container"
+                >
+                  <X size={15} />
+                </button>
+              </span>
+            </header>
+
+            {block.type === "heading" && (
+              <input
+                value={block.text}
+                placeholder="Section heading"
+                onChange={(e) =>
+                  replaceBlock(index, { ...block, text: e.target.value })
+                }
+                className={inputClass}
+              />
+            )}
+
+            {block.type === "paragraph" && (
+              <textarea
+                value={block.text}
+                rows={5}
+                placeholder="Write the paragraph…"
+                onChange={(e) =>
+                  replaceBlock(index, { ...block, text: e.target.value })
+                }
+                className={inputClass}
+              />
+            )}
+
+            {block.type === "list" && (
+              <div className="space-y-space-sm">
+                <label className="font-label-md text-label-md flex items-center gap-space-sm text-on-surface-variant">
+                  <input
+                    type="checkbox"
+                    checked={block.ordered === true}
+                    onChange={(e) =>
+                      replaceBlock(index, {
+                        ...block,
+                        ordered: e.target.checked,
+                      })
+                    }
+                  />
+                  Numbered list
+                </label>
+                {block.items.map((item, itemIndex) => (
+                  <div key={itemIndex} className="flex gap-space-sm">
+                    <input
+                      value={item}
+                      placeholder={`Item ${itemIndex + 1}`}
+                      onChange={(e) =>
+                        replaceBlock(index, {
+                          ...block,
+                          items: block.items.map((v, i) =>
+                            i === itemIndex ? e.target.value : v
+                          ),
+                        })
+                      }
+                      className={inputClass}
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove item"
+                      onClick={() =>
+                        replaceBlock(index, {
+                          ...block,
+                          items: block.items.filter((_, i) => i !== itemIndex),
+                        })
+                      }
+                      className="rounded p-space-xs text-on-surface-variant hover:bg-surface-container"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    replaceBlock(index, {
+                      ...block,
+                      items: [...block.items, ""],
+                    })
+                  }
+                  className="font-label-md text-label-md text-primary hover:underline"
+                >
+                  + Add item
+                </button>
+              </div>
+            )}
+
+            {block.type === "code" && (
+              <div className="space-y-space-sm">
+                <input
+                  value={block.language}
+                  placeholder="Language"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, language: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <textarea
+                  value={block.code}
+                  rows={8}
+                  spellCheck={false}
+                  placeholder="Paste the code…"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, code: e.target.value })
+                  }
+                  className={`${inputClass} font-code-md text-code-md`}
+                />
+              </div>
+            )}
+
+            {block.type === "drawing" && (
+              <DrawingBlockEditor
+                block={block}
+                onChange={(next) => replaceBlock(index, next)}
+                onError={setError}
+                inputClass={inputClass}
+              />
+            )}
+
+            {block.type === "figure" && (
+              <div className="space-y-space-sm">
+                {block.src ? (
+                  <div className="rounded-lg border border-outline-variant/60 p-space-md">
+                    <Image
+                      src={block.src}
+                      alt={block.alt || "Uploaded image"}
+                      width={block.width}
+                      height={block.height}
+                      className="mx-auto h-auto w-full max-w-md"
+                    />
+                  </div>
+                ) : (
+                  <p className="font-body-sm text-body-sm text-on-surface-variant">
+                    Choose a PNG, JPEG, GIF, or WebP image (max 5MB).
+                  </p>
+                )}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void uploadImage(index, block, file);
+                  }}
+                  className="font-body-sm text-body-sm text-on-surface-variant"
+                />
+                <input
+                  value={block.alt}
+                  placeholder="Alt text (describes the image for screen readers)"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, alt: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <input
+                  value={block.caption ?? ""}
+                  placeholder="Caption (optional)"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, caption: e.target.value })
+                  }
+                  className={inputClass}
+                />
+              </div>
+            )}
+          </section>
+        ))}
+      </div>
+
+      <div className="mt-space-base flex flex-wrap gap-space-sm">
+        {(Object.keys(BLOCK_LABELS) as LessonBlockType[]).map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() =>
+              setBlocks((current) => [...current, emptyBlock(type)])
+            }
+            className="font-label-md text-label-md flex items-center gap-space-xs rounded-lg border border-outline-variant px-space-md py-space-xs text-on-surface-variant hover:border-primary hover:text-primary"
+          >
+            <Plus size={14} />
+            {BLOCK_LABELS[type]}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-space-lg flex flex-wrap items-center gap-space-base border-t border-outline-variant/50 pt-space-base">
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving || incompleteFigure}
+          className="font-label-md text-label-md rounded-lg bg-primary-container px-space-lg py-space-sm text-on-primary disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save lesson"}
+        </button>
+
+        {incompleteFigure && (
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            Every image needs a file and every drawing needs a saved canvas.
+          </p>
+        )}
+        {error && (
+          <p className="font-body-sm text-body-sm text-error" role="alert">
+            {error}
+          </p>
+        )}
+        {status && !error && (
+          <p className="font-body-sm text-body-sm text-secondary">{status}</p>
+        )}
+        {!status && !error && updatedAt && (
+          // The server and the reader's browser format dates differently.
+          <p
+            suppressHydrationWarning
+            className="font-body-sm text-body-sm text-on-surface-variant"
+          >
+            Last saved {new Date(updatedAt).toLocaleString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
