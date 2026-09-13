@@ -1,0 +1,60 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given a 2D grid, visit every cell in row-major order — left to right along row 0, then left to right along row 1, and so on — collecting the values into a flat list."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [[1, 2, 3],\n          [4, 5, 6]]\n\noutput:  [1, 2, 3, 4, 5, 6]"
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the traversal that matches the memory layout, so it is both the simplest to write and the fastest to run. Outer loop over rows, inner loop over columns."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function rowMajorTraversal(grid) {\n  const result = [];\n  for (let r = 0; r < grid.length; r++) {\n    for (let c = 0; c < grid[r].length; c++) {\n      result.push(grid[r][c]);\n    }\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Details worth noticing"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "`grid.length` is the number of **rows**, because the outer array holds rows.",
+        "`grid[r].length` is the number of **columns** in that row. Using it per-row rather than once is safer — it still works if rows have different lengths.",
+        "The inner loop varies `c`, which is what makes this row-major. Swapping the loops would produce column-major output."
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(R x C)** — every cell is visited exactly once, and there is no way to do better when the answer depends on every cell."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(R x C)** for the output list. If you only needed to *process* each value rather than collect it, the extra space would be O(1)."
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the traversal you should reach for by default. Only deviate when a problem specifically demands a different order."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.699Z"
+}

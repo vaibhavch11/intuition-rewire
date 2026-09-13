@@ -1,0 +1,84 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given an array of integers and a target, return the indices of the two numbers that add up to the target. Exactly one solution exists, and you may not use the same element twice."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   nums = [2, 7, 11, 15],  target = 9\noutput:  [0, 1]    because nums[0] + nums[1] = 9"
+    },
+    {
+      "type": "heading",
+      "text": "The brute force"
+    },
+    {
+      "type": "paragraph",
+      "text": "Test every pair. Correct, and O(N²):"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "for (let i = 0; i < nums.length; i++) {\n  for (let j = i + 1; j < nums.length; j++) {\n    if (nums[i] + nums[j] === target) return [i, j];\n  }\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "The inner loop is doing a **search** — looking for a specific value, `target - nums[i]`. That is exactly the signal to reach for a hash map."
+    },
+    {
+      "type": "heading",
+      "text": "The one-pass solution"
+    },
+    {
+      "type": "paragraph",
+      "text": "Sweep once. At each number, compute the partner it needs and ask whether we have already passed it."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function twoSum(nums, target) {\n  const seen = new Map();\n\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (seen.has(complement)) {\n      return [seen.get(complement), i];\n    }\n    seen.set(nums[i], i);\n  }\n  return [];\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why one pass is enough"
+    },
+    {
+      "type": "paragraph",
+      "text": "It seems like you might need to look forward as well as back. You do not — and the reason is neat."
+    },
+    {
+      "type": "paragraph",
+      "text": "Every pair has a later element. When the sweep reaches that later element, the earlier one is already recorded. So checking only backwards still finds every pair, just at the moment its second member arrives."
+    },
+    {
+      "type": "heading",
+      "text": "Why the check precedes the insert"
+    },
+    {
+      "type": "paragraph",
+      "text": "If we recorded `nums[i]` before checking, then a target of 8 with a single 4 in the array would match that 4 against itself — violating the rule about reusing an element. Checking first makes that impossible."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — one pass, O(1) per element."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(N)** for the map."
+    },
+    {
+      "type": "paragraph",
+      "text": "Use the dry run below to watch the map fill and the match fire."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:09:27.360Z"
+}

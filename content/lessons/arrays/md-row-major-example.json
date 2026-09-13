@@ -1,0 +1,66 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Let us trace the formula on a concrete grid until the arithmetic stops feeling abstract."
+    },
+    {
+      "type": "heading",
+      "text": "The grid"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const grid = [\n  [10, 20, 30, 40],   // row 0\n  [50, 60, 70, 80],   // row 1\n];\n// shape: 2 rows x 4 columns, so COLUMNS = 4"
+    },
+    {
+      "type": "paragraph",
+      "text": "Laid out in row-major order, memory holds the eight values in this sequence:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "slot:   0   1   2   3   4   5   6   7\nvalue: 10  20  30  40  50  60  70  80\n       |---- row 0 ----|---- row 1 ----|"
+    },
+    {
+      "type": "heading",
+      "text": "Working out some cells"
+    },
+    {
+      "type": "paragraph",
+      "text": "The formula is `offset = r x 4 + c`."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "`grid[0][0]` → 0 x 4 + 0 = **slot 0** → 10. The very first cell.",
+        "`grid[0][3]` → 0 x 4 + 3 = **slot 3** → 40. Last cell of row 0.",
+        "`grid[1][0]` → 1 x 4 + 0 = **slot 4** → 50. First cell of row 1, right after row 0 ends.",
+        "`grid[1][2]` → 1 x 4 + 2 = **slot 6** → 70."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Look at the third one. Moving from `grid[0][3]` to `grid[1][0]` — the end of one row to the start of the next — moves exactly one slot forward in memory. The rows are not separated by anything. The grid is a fiction we impose on an unbroken line."
+    },
+    {
+      "type": "heading",
+      "text": "Reading it backwards"
+    },
+    {
+      "type": "paragraph",
+      "text": "The formula also runs in reverse. Given a slot number, integer division and remainder recover the coordinates:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const row = Math.floor(slot / COLUMNS);\nconst col = slot % COLUMNS;\n\n// slot 6:  row = floor(6/4) = 1,  col = 6 % 4 = 2   -> grid[1][2]"
+    },
+    {
+      "type": "paragraph",
+      "text": "This reverse direction is genuinely useful. It lets you loop once from 0 to R x C − 1 and derive the coordinates, instead of nesting two loops — a trick that appears in plenty of matrix problems."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.636Z"
+}

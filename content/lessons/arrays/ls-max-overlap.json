@@ -1,0 +1,72 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given the start and end times of meetings, find the minimum number of rooms needed so that no two overlapping meetings share a room."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [[0,30], [5,10], [15,20]]\noutput:  2\n\n[0,30] overlaps both others, but [5,10] and [15,20] do not\noverlap each other — so two rooms suffice."
+    },
+    {
+      "type": "heading",
+      "text": "Reframing the question"
+    },
+    {
+      "type": "paragraph",
+      "text": "\"Minimum rooms\" sounds like an assignment problem, but it is not. The answer is simply the **maximum number of meetings running at the same time** — the peak of the running count."
+    },
+    {
+      "type": "paragraph",
+      "text": "If three meetings ever overlap, you need three rooms; if that never happens, you never need a third. So the question becomes: what is the highest the active count ever reaches?"
+    },
+    {
+      "type": "heading",
+      "text": "The event sweep"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function minMeetingRooms(intervals) {\n  const events = [];\n  for (const [start, end] of intervals) {\n    events.push([start, 1]);\n    events.push([end, -1]);\n  }\n  events.sort((a, b) => a[0] - b[0] || a[1] - b[1]);\n\n  let active = 0;\n  let peak = 0;\n  for (const [, delta] of events) {\n    active += delta;\n    peak = Math.max(peak, active);\n  }\n  return peak;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The tie-break, again"
+    },
+    {
+      "type": "paragraph",
+      "text": "`a[1] - b[1]` puts the `-1` first when times are equal. So a meeting ending at 10 frees its room before a meeting starting at 10 claims one — they share a room rather than needing two."
+    },
+    {
+      "type": "paragraph",
+      "text": "That matches how rooms actually work. If your problem says back-to-back bookings need separate rooms, reverse the tie-break."
+    },
+    {
+      "type": "heading",
+      "text": "Tracing it"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "events sorted:  (0,+1) (5,+1) (10,-1) (15,+1) (20,-1) (30,-1)\n\nactive:            1      2       1       2       1       0\npeak:              1      2       2       2       2       2"
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N log N)** for sorting 2N events. **Space: O(N)** for the event list."
+    },
+    {
+      "type": "paragraph",
+      "text": "This same sweep answers a whole family: peak server load, maximum simultaneous downloads, busiest hour. Once you see intervals as +1/−1 events, they all reduce to the same running total."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:26:24.090Z"
+}

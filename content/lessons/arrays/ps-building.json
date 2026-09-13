@@ -1,0 +1,72 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Building the array is three lines, but the indexing repays a careful read."
+    },
+    {
+      "type": "heading",
+      "text": "The code"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function buildPrefix(arr) {\n  const prefix = new Array(arr.length + 1).fill(0);\n  for (let i = 0; i < arr.length; i++) {\n    prefix[i + 1] = prefix[i] + arr[i];\n  }\n  return prefix;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "Each entry is the previous total plus one new element — so the whole array is built in a single pass, not by re-summing."
+    },
+    {
+      "type": "heading",
+      "text": "A worked example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "arr    =  [3, 1, 4, 1, 5, 9]\n\nprefix[0] = 0                     (nothing)\nprefix[1] = 0 + 3  = 3            (first 1 element)\nprefix[2] = 3 + 1  = 4            (first 2 elements)\nprefix[3] = 4 + 4  = 8\nprefix[4] = 8 + 1  = 9\nprefix[5] = 9 + 5  = 14\nprefix[6] = 14 + 9 = 23\n\nprefix =  [0, 3, 4, 8, 9, 14, 23]"
+    },
+    {
+      "type": "heading",
+      "text": "Reading an entry"
+    },
+    {
+      "type": "paragraph",
+      "text": "The invariant to hold in your head: **`prefix[i]` is the sum of the first `i` elements** — that is, everything strictly before index `i` in the original array."
+    },
+    {
+      "type": "paragraph",
+      "text": "So `prefix[3] = 8` means the first three elements (3, 1, 4) total 8. It does **not** mean anything about `arr[3]`. Keeping this straight is the whole battle."
+    },
+    {
+      "type": "heading",
+      "text": "Querying"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function rangeSum(prefix, i, j) {\n  return prefix[j + 1] - prefix[i];\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "Check it on the example. Indices 1 to 3 are 1, 4, 1, which total 6. The formula gives `prefix[4] - prefix[1] = 9 - 3 = 6`."
+    },
+    {
+      "type": "heading",
+      "text": "The off-by-one, stated plainly"
+    },
+    {
+      "type": "paragraph",
+      "text": "`j + 1` appears because the range is **inclusive** of `j`, and `prefix[j]` would stop just short of it. If your language or problem uses exclusive ranges, the formula becomes `prefix[j] - prefix[i]`. Decide which convention you are using before you write the code, not after it produces wrong answers."
+    },
+    {
+      "type": "heading",
+      "text": "Building in place"
+    },
+    {
+      "type": "paragraph",
+      "text": "You can skip the extra array by converting the input to running totals directly, saving O(N) space — at the cost of destroying the original and reintroducing the index-0 special case. Usually not worth it."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:09:26.929Z"
+}

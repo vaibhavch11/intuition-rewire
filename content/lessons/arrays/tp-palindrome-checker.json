@@ -1,0 +1,67 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Decide whether a string reads the same forwards and backwards, considering only letters and digits, and ignoring case."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "\"A man, a plan, a canal: Panama\"   ->  true\n\"race a car\"                       ->  false"
+    },
+    {
+      "type": "heading",
+      "text": "Think about it first"
+    },
+    {
+      "type": "paragraph",
+      "text": "The tempting solution is to clean the string, reverse the copy, and compare. Correct, but it builds two extra strings — O(N) space to answer a yes/no question."
+    },
+    {
+      "type": "paragraph",
+      "text": "Better to observe what a palindrome *means*: the first useful character matches the last, the second matches the second-to-last, and so on. That is a pairing across the centre — the direct two pointer shape."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Walk from both ends. When a pointer lands on punctuation or a space, skip it. When both are on real characters, compare them — any mismatch means we are done."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function isPalindrome(s) {\n  const isAlnum = (ch) => /[a-z0-9]/i.test(ch);\n  let left = 0;\n  let right = s.length - 1;\n\n  while (left < right) {\n    while (left < right && !isAlnum(s[left])) left++;\n    while (left < right && !isAlnum(s[right])) right--;\n\n    if (s[left].toLowerCase() !== s[right].toLowerCase()) return false;\n    left++;\n    right--;\n  }\n  return true;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The detail that catches people"
+    },
+    {
+      "type": "paragraph",
+      "text": "The inner skip loops repeat `left < right` in their own conditions. Without it, a string of nothing but punctuation would run a pointer straight past the end of the string."
+    },
+    {
+      "type": "paragraph",
+      "text": "Note also that we return `false` the instant a mismatch appears. A palindrome must match everywhere, so one failure settles it — there is no reason to keep looking."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — each pointer only ever moves inward, so between them they cover the string once. The nested loops look suspicious but never rescan."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)** — no cleaned copy, no reversed string."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:12.754Z"
+}

@@ -1,0 +1,80 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given a string of words separated by spaces, reverse the order of the words. Trim leading and trailing spaces, and collapse runs of multiple spaces into one."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "\"  the sky   is blue  \"   ->  \"blue is sky the\"\n\"hello world\"            ->  \"world hello\""
+    },
+    {
+      "type": "heading",
+      "text": "Think about it first"
+    },
+    {
+      "type": "paragraph",
+      "text": "Note carefully what is reversed. The **words** change order; the letters inside each word do not. `\"the\"` stays `\"the\"`, it does not become `\"eht\"`."
+    },
+    {
+      "type": "heading",
+      "text": "The direct approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "If you are allowed extra space, this is short — split on whitespace, discard empty pieces, reverse, rejoin:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function reverseWords(s) {\n  return s.trim().split(/\\s+/).reverse().join(' ');\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "The regex `\\s+` matches one or more whitespace characters, which handles the collapsing requirement for free."
+    },
+    {
+      "type": "heading",
+      "text": "The two pointer approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "The classic follow-up asks for O(1) space, and the trick is worth knowing because it appears in other rotation problems."
+    },
+    {
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "**Reverse the entire string.** `\"the sky is blue\"` becomes `\"eulb si yks eht\"`. The words are now in the right order — but each is backwards.",
+        "**Reverse each word individually.** `\"eulb\"` becomes `\"blue\"`, and so on."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Two reversals cancel out *within* each word while leaving the *between*-word ordering flipped. Both steps are the same direct two pointer loop from the earlier lessons, applied to different ranges."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function reverseRange(chars, left, right) {\n  while (left < right) {\n    [chars[left], chars[right]] = [chars[right], chars[left]];\n    left++;\n    right--;\n  }\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — each character is touched a constant number of times, even with two passes."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(N)** for the split version, **O(1)** for the reverse-twice version on a mutable string."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:12.838Z"
+}

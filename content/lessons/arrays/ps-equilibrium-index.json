@@ -1,0 +1,72 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Find an index where the sum of everything to its left equals the sum of everything to its right. The element itself belongs to neither side."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [1, 7, 3, 6, 5, 6]\noutput:  3\n\nleft  of index 3:  1 + 7 + 3  = 11\nright of index 3:  5 + 6      = 11"
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "You do not need a stored prefix array for this one — a running total and the grand total are enough."
+    },
+    {
+      "type": "paragraph",
+      "text": "As you sweep, `leftSum` holds everything before the current index. The right side is then whatever is left over after removing the left side and the current element."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function equilibriumIndex(arr) {\n  const total = arr.reduce((a, b) => a + b, 0);\n  let leftSum = 0;\n\n  for (let i = 0; i < arr.length; i++) {\n    const rightSum = total - leftSum - arr[i];\n    if (leftSum === rightSum) return i;\n    leftSum += arr[i];\n  }\n  return -1;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The line that decides correctness"
+    },
+    {
+      "type": "paragraph",
+      "text": "`leftSum += arr[i]` comes **after** the comparison. The definition excludes the current element from the left side, so adding it before comparing would include it and break every test."
+    },
+    {
+      "type": "paragraph",
+      "text": "Order-of-operations mistakes like this are the most common bug in prefix problems. When in doubt, trace index 0 by hand: `leftSum` must be 0 there, since nothing is to the left of the first element."
+    },
+    {
+      "type": "heading",
+      "text": "Edge cases worth checking"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**First index** — left is 0. Valid if the rest sums to zero.",
+        "**Last index** — right is 0. Valid if everything before sums to zero.",
+        "**Single element** — index 0 always works; both sides are empty."
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — one pass for the total, one to scan."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)** — no prefix array needed, just two numbers. A nice illustration that the prefix *idea* often matters more than the prefix *array*."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:09:27.005Z"
+}

@@ -1,0 +1,80 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Applying this pattern is mostly about two decisions made before you write any code: what the search range is, and what the yes/no question is."
+    },
+    {
+      "type": "heading",
+      "text": "Step one: define the range"
+    },
+    {
+      "type": "paragraph",
+      "text": "The bounds must be provably wide enough to contain the answer, and tight enough to stay meaningful."
+    },
+    {
+      "type": "paragraph",
+      "text": "For \"minimum capacity to ship packages\", the lower bound is the **largest single package** — anything less cannot carry it at all. The upper bound is the **sum of all packages** — that ships everything in one trip, so it definitely works."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "let low = Math.max(...weights);\nlet high = weights.reduce((a, b) => a + b, 0);"
+    },
+    {
+      "type": "paragraph",
+      "text": "Bounds that are too narrow exclude the answer. Bounds that are too wide merely cost a few extra iterations — so when unsure, err wide."
+    },
+    {
+      "type": "heading",
+      "text": "Step two: write the check"
+    },
+    {
+      "type": "paragraph",
+      "text": "A function taking a candidate and returning a boolean. It should be a straightforward simulation, not another optimisation:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function canShip(weights, capacity, days) {\n  let daysNeeded = 1;\n  let load = 0;\n\n  for (const w of weights) {\n    if (load + w > capacity) {\n      daysNeeded++;\n      load = 0;\n    }\n    load += w;\n  }\n  return daysNeeded <= days;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Step three: verify monotonicity"
+    },
+    {
+      "type": "paragraph",
+      "text": "Do not skip this. State the claim explicitly and convince yourself:"
+    },
+    {
+      "type": "paragraph",
+      "text": "*If capacity C can ship in D days, can C+1?* Yes — a bigger ship never forces more trips. So the yes-region extends upward without gaps, and the boundary is unique."
+    },
+    {
+      "type": "paragraph",
+      "text": "If you cannot make that argument, binary search does not apply, however much the problem looks like it should."
+    },
+    {
+      "type": "heading",
+      "text": "Recognising these problems"
+    },
+    {
+      "type": "paragraph",
+      "text": "The giveaway phrasing:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "\"**Minimum** X such that ...\" or \"**maximum** X such that ...\"",
+        "Checking a specific X is easy; finding the best X is not.",
+        "The answer is a number in a range, not an element of the array."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Common examples: minimum ship capacity, minimum eating speed, smallest largest-subarray-sum, minimum days to complete. All the same skeleton with a different `canDo`."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:21.938Z"
+}

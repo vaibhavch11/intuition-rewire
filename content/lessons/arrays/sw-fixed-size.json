@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "The simpler variant. The problem hands you the width `k`, and the window never changes size — it just walks along the array."
+    },
+    {
+      "type": "heading",
+      "text": "The skeleton"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "let windowSum = 0;\n\n// build the first window\nfor (let i = 0; i < k; i++) {\n  windowSum += arr[i];\n}\nlet best = windowSum;\n\n// slide it\nfor (let right = k; right < arr.length; right++) {\n  windowSum += arr[right];        // the new element enters\n  windowSum -= arr[right - k];    // the old element leaves\n  best = Math.max(best, windowSum);\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Reading the index arithmetic"
+    },
+    {
+      "type": "paragraph",
+      "text": "The one line people get wrong is `arr[right - k]`. Convince yourself with a concrete case: with `k = 3` and `right = 3`, the entering element is index 3 and the leaving one is index 0. The window was {0,1,2} and becomes {1,2,3}. `right - k = 0`. Correct."
+    },
+    {
+      "type": "paragraph",
+      "text": "The general rule: when `right` is the newest index, the window covers `right - k + 1` through `right`, so the element that just fell out is at `right - k`."
+    },
+    {
+      "type": "heading",
+      "text": "Why the loop starts at k"
+    },
+    {
+      "type": "paragraph",
+      "text": "The first window — indices 0 through k−1 — is built by the initial loop. The sliding loop handles everything after, so it starts at `k`, the first index not already included. Starting at 0 would double-count."
+    },
+    {
+      "type": "heading",
+      "text": "The general shape"
+    },
+    {
+      "type": "paragraph",
+      "text": "A running sum is only the simplest case. The same skeleton works for anything you can update incrementally:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Sum or average** — add and subtract.",
+        "**Count of something** — increment when it enters, decrement when it leaves.",
+        "**Character frequencies** — a map updated by two keys per step."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "The thing that must stay constant-time is the update. If maintaining your window state costs O(k) per step, the whole thing degrades back to O(N x k)."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — one pass to build, one pass to slide, constant work per step."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)** for a sum, or O(k) if you track the window's contents in a map."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:06:55.269Z"
+}

@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTopic, sections } from "@/lib/dsa/data";
 import { getLessonContent } from "@/lib/dsa/content";
-import { groupByChapter } from "@/lib/dsa/types";
 import DryRunPlayer from "@/components/DryRunPlayer";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
-import LessonIndex from "@/components/dsa/LessonIndex";
 import LessonReactions from "@/components/dsa/LessonReactions";
 
 export function generateStaticParams() {
@@ -24,27 +22,13 @@ export default async function TopicPage(
   const { section, topic } = result;
 
   const content = await getLessonContent(sectionSlug, topicSlug);
-  const chapters = groupByChapter(section.topics).map((chapter) => ({
-    title: chapter.title,
-    items: chapter.topics.map((t) => ({ slug: t.slug, title: t.title })),
-  }));
 
   const topicIndex = section.topics.findIndex((t) => t.slug === topic.slug);
   const prevTopic = section.topics[topicIndex - 1];
   const nextTopic = section.topics[topicIndex + 1];
 
   return (
-    <div className="flex flex-1">
-      <LessonIndex
-        sectionSlug={section.slug}
-        sectionTitle={section.title}
-        chapters={chapters}
-        currentSlug={topic.slug}
-        totalTopics={section.topics.length}
-      />
-
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto max-w-6xl px-gutter-mobile py-space-2xl lg:px-space-2xl">
+    <div className="mx-auto max-w-6xl px-gutter-mobile py-space-2xl lg:px-space-2xl">
           <div className="lg:hidden">
             <Link
               href={`/dsa/${section.slug}`}
@@ -113,8 +97,6 @@ export default async function TopicPage(
                 : null
             }
           />
-        </div>
-      </main>
     </div>
   );
 }

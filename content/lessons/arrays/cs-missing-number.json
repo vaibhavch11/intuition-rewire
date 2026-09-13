@@ -1,0 +1,77 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** An array contains N distinct numbers taken from the range 0 to N. Exactly one is missing — find it."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [3, 0, 1]         ->  2\ninput:   [9,6,4,2,3,5,7,0,1]  ->  8"
+    },
+    {
+      "type": "heading",
+      "text": "Approach one: cyclic sort"
+    },
+    {
+      "type": "paragraph",
+      "text": "Put every value at its matching index, then scan for the index that does not match."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function missingNumber(nums) {\n  let i = 0;\n  while (i < nums.length) {\n    const target = nums[i];\n    if (target < nums.length && nums[i] !== nums[target]) {\n      [nums[i], nums[target]] = [nums[target], nums[i]];\n    } else {\n      i++;\n    }\n  }\n\n  for (let j = 0; j < nums.length; j++) {\n    if (nums[j] !== j) return j;\n  }\n  return nums.length;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "The guard `target < nums.length` matters. The range is 0 to N **inclusive**, so the value N is legal but has no index N to sit at — it stays wherever it lands and the mismatch scan finds the gap."
+    },
+    {
+      "type": "paragraph",
+      "text": "The final `return nums.length` covers the case where nothing is out of place, meaning N itself is what is missing."
+    },
+    {
+      "type": "heading",
+      "text": "Approach two: the sum formula"
+    },
+    {
+      "type": "paragraph",
+      "text": "Shorter and arguably better here. The numbers 0 to N sum to a known value, so the missing one is the shortfall:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function missingNumber(nums) {\n  const n = nums.length;\n  const expected = (n * (n + 1)) / 2;\n  const actual = nums.reduce((a, b) => a + b, 0);\n  return expected - actual;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "O(N) time, O(1) space, no mutation. The one caveat is overflow for very large N in fixed-width integer languages — JavaScript is safe well past any realistic array size."
+    },
+    {
+      "type": "heading",
+      "text": "Approach three: XOR"
+    },
+    {
+      "type": "paragraph",
+      "text": "Avoids overflow entirely. XOR every index and every value together; identical pairs cancel and the missing number survives alone:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function missingNumber(nums) {\n  let result = nums.length;\n  for (let i = 0; i < nums.length; i++) {\n    result ^= i ^ nums[i];\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Which to use"
+    },
+    {
+      "type": "paragraph",
+      "text": "The sum formula is clearest. XOR is the safest under overflow. Cyclic sort is the one that generalises — when a problem asks for *all* missing numbers, or mixes missing with duplicated, the sum trick collapses and cyclic sort keeps working."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:26:24.263Z"
+}

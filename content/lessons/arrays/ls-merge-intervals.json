@@ -1,0 +1,63 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given a list of intervals, merge all overlapping ones and return the non-overlapping intervals that cover the same total span."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [[1,3], [2,6], [8,10], [15,18]]\noutput:  [[1,6], [8,10], [15,18]]\n\n[1,3] and [2,6] overlap, so they become [1,6]."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Sort by start. Then walk the list holding one \"current\" interval: either the next one extends it, or it does not and the current one is finished."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function merge(intervals) {\n  if (intervals.length === 0) return [];\n  intervals.sort((a, b) => a[0] - b[0]);\n\n  const result = [intervals[0]];\n\n  for (let i = 1; i < intervals.length; i++) {\n    const [start, end] = intervals[i];\n    const last = result[result.length - 1];\n\n    if (start <= last[1]) {\n      last[1] = Math.max(last[1], end);   // extend\n    } else {\n      result.push([start, end]);          // start a new one\n    }\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why Math.max is essential"
+    },
+    {
+      "type": "paragraph",
+      "text": "The obvious-looking `last[1] = end` is wrong, and it fails on fully nested intervals."
+    },
+    {
+      "type": "paragraph",
+      "text": "Take `[[1, 10], [2, 3]]`. Sorted, the current interval is `[1,10]` and the next is `[2,3]`. They overlap, but `[2,3]` sits entirely **inside** — so the merged end must stay 10, not shrink to 3. `Math.max` handles it; plain assignment silently loses coverage."
+    },
+    {
+      "type": "heading",
+      "text": "Why sorting by start is enough"
+    },
+    {
+      "type": "paragraph",
+      "text": "After sorting, any interval that could overlap the current one must start at or before the current end. Anything starting later cannot overlap — and neither can anything after it, since starts only increase. So one comparison per interval settles it, and nothing needs re-examining."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N log N)** — the sort dominates; the merge pass is O(N)."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(N)** for the output, or O(log N) to O(N) for the sort's own working memory."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:26:23.980Z"
+}

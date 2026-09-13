@@ -1,0 +1,68 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Find the length of the longest substring that contains no repeated characters."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "\"abcabcbb\"  ->  3    (\"abc\")\n\"bbbbb\"     ->  1    (\"b\")\n\"pwwkew\"    ->  3    (\"wke\")"
+    },
+    {
+      "type": "paragraph",
+      "text": "Note that `\"pwke\"` is not a valid answer for the third — it is a *subsequence*, not a contiguous substring."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Longest-valid variable window. The rule: no character may appear twice inside the window. A `Set` holds the current contents."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function lengthOfLongestSubstring(s) {\n  const seen = new Set();\n  let left = 0;\n  let best = 0;\n\n  for (let right = 0; right < s.length; right++) {\n    while (seen.has(s[right])) {\n      seen.delete(s[left]);\n      left++;\n    }\n    seen.add(s[right]);\n    best = Math.max(best, right - left + 1);\n  }\n  return best;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The shrink is not by one"
+    },
+    {
+      "type": "paragraph",
+      "text": "The instinct is to move `left` forward a single step when a duplicate appears. That is wrong."
+    },
+    {
+      "type": "paragraph",
+      "text": "Consider `\"abba\"`. At the final `a`, the window is `\"ba\"`... and the duplicate `a` is at the far left of where the window used to be. We must shrink until the *specific* offending character is gone — which is why the `while` loop tests `seen.has(s[right])` rather than just stepping once."
+    },
+    {
+      "type": "heading",
+      "text": "Tracing pwwkew"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "right=0 'p'   window \"p\"      best 1\nright=1 'w'   window \"pw\"     best 2\nright=2 'w'   duplicate! drop 'p', drop 'w', left=2\n              window \"w\"      best 2\nright=3 'k'   window \"wk\"     best 2\nright=4 'e'   window \"wke\"    best 3\nright=5 'w'   duplicate! drop 'w', left=3\n              window \"kew\"    best 3"
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — each character is added once and removed at most once."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(min(N, alphabet))** — the set never holds more distinct characters than the alphabet allows."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:06:55.394Z"
+}

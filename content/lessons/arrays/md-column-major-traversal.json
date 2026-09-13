@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given a 2D grid, visit every cell in column-major order — top to bottom down column 0, then down column 1, and so on — collecting the values into a flat list."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [[1, 2, 3],\n          [4, 5, 6]]\n\noutput:  [1, 4, 2, 5, 3, 6]"
+    },
+    {
+      "type": "paragraph",
+      "text": "Trace it: down column 0 gives 1 then 4; down column 1 gives 2 then 5; down column 2 gives 3 then 6."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Swap the loops. Columns on the outside, rows on the inside. The indexing expression `grid[r][c]` does not change at all — only the order in which the pairs are generated."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function columnMajorTraversal(grid) {\n  const result = [];\n  const rows = grid.length;\n  const columns = grid[0].length;\n\n  for (let c = 0; c < columns; c++) {\n    for (let r = 0; r < rows; r++) {\n      result.push(grid[r][c]);\n    }\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The trap"
+    },
+    {
+      "type": "paragraph",
+      "text": "Notice we now read the column count **once**, from `grid[0].length`, instead of per row. We have to — the outer loop is over columns, so there is no current row to ask."
+    },
+    {
+      "type": "paragraph",
+      "text": "This quietly assumes every row is the same length. For a genuine rectangular grid that is fine. For a ragged array it will read past the end of a shorter row, so check the shape first if that is possible in your input."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(R x C)** — the same count of cells, visited once each. Identical big-O to the row-major version."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(R x C)** for the output."
+    },
+    {
+      "type": "heading",
+      "text": "Why it is slower anyway"
+    },
+    {
+      "type": "paragraph",
+      "text": "In a row-major language — which is almost certainly yours — this traversal jumps `COLUMNS` elements forward on every step of the inner loop. Each jump likely lands in a different cache line, so the CPU waits for memory far more often."
+    },
+    {
+      "type": "paragraph",
+      "text": "Same complexity, measurably slower. Write column-major traversal when the **problem** requires that order, never as a stylistic choice."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.841Z"
+}

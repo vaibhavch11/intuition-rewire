@@ -1,0 +1,68 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Given an array and a number `k`, find the maximum sum of any contiguous subarray of exactly `k` elements."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [2, 1, 5, 1, 3, 2],  k = 3\noutput:  9    (the subarray [5, 1, 3])"
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Textbook fixed window. Build the first `k` elements, then slide, tracking the best sum seen."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function maxSumSubarray(arr, k) {\n  if (arr.length < k) return null;\n\n  let windowSum = 0;\n  for (let i = 0; i < k; i++) {\n    windowSum += arr[i];\n  }\n\n  let best = windowSum;\n  for (let right = k; right < arr.length; right++) {\n    windowSum += arr[right] - arr[right - k];\n    best = Math.max(best, windowSum);\n  }\n  return best;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Tracing it"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "[2, 1, 5, 1, 3, 2]   k = 3\n\nbuild [2,1,5]         sum = 8    best = 8\n+1 -2  -> [1,5,1]     sum = 7    best = 8\n+3 -1  -> [5,1,3]     sum = 9    best = 9\n+2 -5  -> [1,3,2]     sum = 6    best = 9\n\nanswer: 9"
+    },
+    {
+      "type": "paragraph",
+      "text": "Four windows, and after the first each took one addition and one subtraction. The brute force would have summed three elements four times — twelve additions instead of six."
+    },
+    {
+      "type": "heading",
+      "text": "The guard clause"
+    },
+    {
+      "type": "paragraph",
+      "text": "`if (arr.length < k) return null;` matters. Without it, the build loop reads past the end of the array and quietly produces a wrong answer from `undefined` values rather than failing loudly."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — every element enters the window once and leaves at most once."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)** — one running sum and one best."
+    },
+    {
+      "type": "paragraph",
+      "text": "Brute force would be O(N x k). For a million elements and k of a thousand, that is a billion operations versus a million."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:06:55.296Z"
+}

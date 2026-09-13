@@ -1,0 +1,82 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Grid problems are rarely conceptually hard. They are **fiddly** — the difficulty is in boundaries and index arithmetic, not insight. A few habits remove most of the pain."
+    },
+    {
+      "type": "heading",
+      "text": "Always name the shape first"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const rows = grid.length;\nconst cols = grid[0].length;"
+    },
+    {
+      "type": "paragraph",
+      "text": "Write these two lines before anything else, every time. Most grid bugs are `rows` and `cols` swapped somewhere in the middle of a loop, and naming them up front makes the mistake visible."
+    },
+    {
+      "type": "heading",
+      "text": "Boundaries as four variables"
+    },
+    {
+      "type": "paragraph",
+      "text": "For traversals that work inward, track the live region explicitly rather than computing it:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "let top = 0;\nlet bottom = rows - 1;\nlet left = 0;\nlet right = cols - 1;"
+    },
+    {
+      "type": "paragraph",
+      "text": "Shrinking a boundary after finishing an edge is far easier to reason about than deriving offsets from a ring number."
+    },
+    {
+      "type": "heading",
+      "text": "Direction vectors"
+    },
+    {
+      "type": "paragraph",
+      "text": "For anything that steps between neighbours, encode the moves as data instead of writing four near-identical blocks:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const DIRECTIONS = [[-1, 0], [0, 1], [1, 0], [0, -1]];   // up, right, down, left\n\nfor (const [dr, dc] of DIRECTIONS) {\n  const nr = r + dr;\n  const nc = c + dc;\n  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {\n    // visit grid[nr][nc]\n  }\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "One bounds check instead of four copies. Rotating through directions in order also becomes a modulo away, which is exactly what spiral traversal needs."
+    },
+    {
+      "type": "heading",
+      "text": "Check bounds before reading"
+    },
+    {
+      "type": "paragraph",
+      "text": "The single most common grid crash is reading `grid[nr][nc]` before confirming `nr` and `nc` are valid. In JavaScript a bad row gives `undefined`, and indexing that throws — often far from the real mistake."
+    },
+    {
+      "type": "heading",
+      "text": "What this chapter covers"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Spiral order** — shrinking boundaries.",
+        "**Rotation in place** — composing two simple transforms.",
+        "**Diagonal traversal** — noticing an invariant.",
+        "**Set zeroes in place** — using the grid as its own storage."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Each is a technique that reappears constantly, not a one-off puzzle."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.137Z"
+}

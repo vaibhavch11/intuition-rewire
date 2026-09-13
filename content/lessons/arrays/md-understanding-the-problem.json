@@ -1,0 +1,50 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "A plain array is a line. That works beautifully for a list of ages or scores, but plenty of data is not shaped like a line."
+    },
+    {
+      "type": "paragraph",
+      "text": "A chessboard has ranks and files. A spreadsheet has rows and columns. A photograph is a field of pixels with a width and a height. Each of these has **two** directions, and forcing them into one line loses something important."
+    },
+    {
+      "type": "heading",
+      "text": "Trying it with what we have"
+    },
+    {
+      "type": "paragraph",
+      "text": "Suppose you want to store the marks of 3 students across 4 subjects. With plain arrays you could keep one array per student:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const student0 = [88, 72, 91, 65];\nconst student1 = [79, 95, 60, 84];\nconst student2 = [92, 68, 77, 90];"
+    },
+    {
+      "type": "paragraph",
+      "text": "We are back to the problem from the first chapter, just one level up. The student number lives in the **name** again, so no loop can walk across students. Asking \"what is the average in subject 2?\" means naming every student by hand."
+    },
+    {
+      "type": "heading",
+      "text": "What we actually need"
+    },
+    {
+      "type": "paragraph",
+      "text": "The fix that worked before will work again: replace the invented name with a computed number. Except now one number is not enough — a cell is identified by *two* coordinates."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Which row** — which student",
+        "**Which column** — which subject"
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "So we want to write something like `marks[1][2]` and have both 1 and 2 be ordinary integers the program can compute. That is a **multidimensional array**, and the rest of this chapter builds it."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.341Z"
+}

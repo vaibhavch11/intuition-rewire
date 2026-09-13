@@ -1,0 +1,88 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** An array of heights forms an elevation map, each bar 1 unit wide. Compute how much rainwater is trapped between the bars after it rains."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [0,1,0,2,1,0,1,3,2,1,2,1]\noutput:  6"
+    },
+    {
+      "type": "heading",
+      "text": "The insight everything depends on"
+    },
+    {
+      "type": "paragraph",
+      "text": "Do not think about pools. Think about **one column at a time**."
+    },
+    {
+      "type": "paragraph",
+      "text": "How much water sits above position `i`? It is held in by the tallest bar somewhere to its left and the tallest somewhere to its right. Water rises to the lower of those two, minus the bar already there:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "water at i  =  min(maxLeft, maxRight)  -  height[i]"
+    },
+    {
+      "type": "paragraph",
+      "text": "Apply that to every position and sum. The only question left is how to know both maxima cheaply."
+    },
+    {
+      "type": "heading",
+      "text": "The straightforward version"
+    },
+    {
+      "type": "paragraph",
+      "text": "Precompute two arrays — running maximum from the left, running maximum from the right — then sweep once. That is O(N) time but **O(N) space**."
+    },
+    {
+      "type": "heading",
+      "text": "The two pointer version"
+    },
+    {
+      "type": "paragraph",
+      "text": "We can drop the arrays entirely. Walk from both ends, tracking the best height seen so far on each side."
+    },
+    {
+      "type": "paragraph",
+      "text": "Here is the crucial observation: if `maxLeft < maxRight`, then the water at the left position is decided by `maxLeft` **regardless of what lies between**. Some bar on the right is already known to be at least `maxRight`, which is taller — so the left side is the binding constraint, and we can commit to it safely."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function trap(height) {\n  let left = 0;\n  let right = height.length - 1;\n  let maxLeft = 0;\n  let maxRight = 0;\n  let total = 0;\n\n  while (left < right) {\n    if (height[left] < height[right]) {\n      maxLeft = Math.max(maxLeft, height[left]);\n      total += maxLeft - height[left];\n      left++;\n    } else {\n      maxRight = Math.max(maxRight, height[right]);\n      total += maxRight - height[right];\n      right--;\n    }\n  }\n  return total;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why the comparison is safe"
+    },
+    {
+      "type": "paragraph",
+      "text": "We always process the **shorter** side. That guarantees the taller side acts as a wall we have already confirmed exists, so the running maximum on the short side is the true limit for that column. No lookahead required."
+    },
+    {
+      "type": "paragraph",
+      "text": "It is the same reasoning as the container problem: process the binding constraint, trust the other side."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — one pass. **Space: O(1)** — four numbers, no arrays."
+    },
+    {
+      "type": "paragraph",
+      "text": "This problem is a classic interview question precisely because the O(N)/O(1) solution requires the per-column reframing. If you find it hard, that is expected — it rewards rereading."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:13.118Z"
+}

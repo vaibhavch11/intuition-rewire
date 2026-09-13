@@ -1,0 +1,75 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Packages must ship in order within `days` days. Each day the ship carries packages in sequence without exceeding its capacity. Find the smallest capacity that completes the job in time."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "weights = [1,2,3,4,5,6,7,8,9,10],  days = 5\noutput:   15"
+    },
+    {
+      "type": "heading",
+      "text": "Setting up"
+    },
+    {
+      "type": "paragraph",
+      "text": "The answer is a capacity, so we binary search over capacities rather than over the array."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Lower bound:** `max(weights)` = 10. Less than this and the heaviest package never ships.",
+        "**Upper bound:** `sum(weights)` = 55. Everything in one day, guaranteed to work."
+      ]
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function shipWithinDays(weights, days) {\n  let low = Math.max(...weights);\n  let high = weights.reduce((a, b) => a + b, 0);\n\n  const canShip = (capacity) => {\n    let daysNeeded = 1;\n    let load = 0;\n    for (const w of weights) {\n      if (load + w > capacity) {\n        daysNeeded++;\n        load = 0;\n      }\n      load += w;\n    }\n    return daysNeeded <= days;\n  };\n\n  while (low < high) {\n    const mid = Math.floor((low + high) / 2);\n    if (canShip(mid)) high = mid;\n    else low = mid + 1;\n  }\n  return low;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why the greedy check is correct"
+    },
+    {
+      "type": "paragraph",
+      "text": "`canShip` loads packages until the next one would overflow, then starts a new day. It never looks ahead — and that is optimal here."
+    },
+    {
+      "type": "paragraph",
+      "text": "The reason: packages must ship **in order**, so there is no choice about which to load, only about when to stop. Stopping early can never help, because it leaves capacity unused and the same packages still to go. Greedy is forced."
+    },
+    {
+      "type": "heading",
+      "text": "Why the loop returns the minimum"
+    },
+    {
+      "type": "paragraph",
+      "text": "When `canShip(mid)` succeeds we set `high = mid`, keeping `mid` as a candidate rather than discarding it. The range shrinks toward the smallest working value, and when `low === high` that value is the answer."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N log S)** where S is the sum of weights — each of the ~log S iterations runs an O(N) check."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)**."
+    },
+    {
+      "type": "paragraph",
+      "text": "Compare with trying every capacity from low to high: O(N x S). The log factor turns billions into dozens."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.036Z"
+}

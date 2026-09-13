@@ -1,0 +1,75 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "The simplest shape. One pointer starts at the beginning, one at the end, and they walk toward each other until they cross."
+    },
+    {
+      "type": "heading",
+      "text": "The skeleton"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "let left = 0;\nlet right = arr.length - 1;\n\nwhile (left < right) {\n  // look at arr[left] and arr[right]\n  // do something with the pair\n  left++;\n  right--;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "Almost every direct two pointer solution is this loop with different work in the middle."
+    },
+    {
+      "type": "heading",
+      "text": "Reading the loop condition"
+    },
+    {
+      "type": "paragraph",
+      "text": "`left < right` and not `left <= right` — and the distinction matters."
+    },
+    {
+      "type": "paragraph",
+      "text": "When `left === right` both pointers sit on the same element, the exact middle of an odd-length array. Pairing an element with itself is meaningless for swapping or comparing, so we stop just before. For even lengths the pointers cross without ever being equal, and the condition handles that too."
+    },
+    {
+      "type": "heading",
+      "text": "When to use it"
+    },
+    {
+      "type": "paragraph",
+      "text": "Reach for the direct shape when the problem is about **the relationship between the ends** — the first and last, working inward:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Reversing an array or string in place",
+        "Checking whether something reads the same forwards and backwards",
+        "Swapping or comparing symmetric positions"
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Why it is O(N), not O(N/2)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Each iteration moves both pointers inward by one, so the loop runs about N/2 times. Big-O discards constants, so this is **O(N)**."
+    },
+    {
+      "type": "paragraph",
+      "text": "The more useful observation is that every element is touched exactly **once**. No element is ever revisited, which is precisely why there is no hidden quadratic cost."
+    },
+    {
+      "type": "heading",
+      "text": "Space"
+    },
+    {
+      "type": "paragraph",
+      "text": "**O(1)**. Two integers, regardless of array size. Solutions that build a reversed copy cost O(N) space; the two pointer version modifies in place and costs nothing extra — which is usually the point of the exercise."
+    },
+    {
+      "type": "paragraph",
+      "text": "The next four lessons are problems in this shape. Try each before reading the approach."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:12.689Z"
+}

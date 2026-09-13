@@ -1,0 +1,76 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** An array of heights represents vertical lines on a flat surface. Pick two lines so that the container they form with the surface holds the most water. Return that maximum area."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [1, 8, 6, 2, 5, 4, 8, 3, 7]\noutput:  49    (lines at index 1 and 8: height 7, width 7)"
+    },
+    {
+      "type": "heading",
+      "text": "The key insight"
+    },
+    {
+      "type": "paragraph",
+      "text": "Water is limited by the **shorter** of the two lines — it spills over the lower one. So:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "area = min(height[left], height[right]) x (right - left)"
+    },
+    {
+      "type": "paragraph",
+      "text": "The brute force tries all pairs at O(N²). Two pointers does it in one pass, but the reasoning is subtler than the sorted case — the array is **not** sorted here."
+    },
+    {
+      "type": "heading",
+      "text": "Why moving the shorter line is correct"
+    },
+    {
+      "type": "paragraph",
+      "text": "Start wide, at both ends: that is the maximum possible width. Any move inward loses width, so it can only pay off by gaining height."
+    },
+    {
+      "type": "paragraph",
+      "text": "Now suppose the left line is shorter. What if we moved the **taller** right line inward instead? Width shrinks by one, and the height is still capped by that same short left line — it cannot improve. Every such pair is worse than what we already have."
+    },
+    {
+      "type": "paragraph",
+      "text": "So the taller line can be dismissed as a mover. The only move with any chance is the **shorter** one — it is the binding constraint, and replacing it is the only way height can grow."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function maxArea(height) {\n  let left = 0;\n  let right = height.length - 1;\n  let best = 0;\n\n  while (left < right) {\n    const area = Math.min(height[left], height[right]) * (right - left);\n    best = Math.max(best, area);\n\n    if (height[left] < height[right]) left++;\n    else right--;\n  }\n  return best;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why this is worth studying"
+    },
+    {
+      "type": "paragraph",
+      "text": "Most two pointer problems lean on sortedness. This one does not — the movement rule comes from an argument about which candidates can be safely discarded."
+    },
+    {
+      "type": "paragraph",
+      "text": "That is the general form of the pattern. Sortedness is just the most common reason such an argument exists, not the only one."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)**, **Space: O(1)**."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:12.976Z"
+}

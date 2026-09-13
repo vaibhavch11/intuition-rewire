@@ -1,0 +1,93 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Rotate an N x N matrix 90 degrees clockwise, modifying it in place with O(1) extra space."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "[[1,2,3],          [[7,4,1],\n [4,5,6],    ->     [8,5,2],\n [7,8,9]]           [9,6,3]]"
+    },
+    {
+      "type": "heading",
+      "text": "Where each element goes"
+    },
+    {
+      "type": "paragraph",
+      "text": "Study the result and the rule emerges: the first **row** becomes the last **column**, the second row becomes the second-to-last column."
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "element at (r, c)   ->   (c, N - 1 - r)"
+    },
+    {
+      "type": "paragraph",
+      "text": "You could allocate a new matrix and place each element directly. That is O(N²) space, and the problem forbids it. Doing it in place with direct swaps means chasing four-element cycles — correct but painful to get right."
+    },
+    {
+      "type": "heading",
+      "text": "The trick: compose two easy operations"
+    },
+    {
+      "type": "paragraph",
+      "text": "A 90° clockwise rotation equals a **transpose** followed by a **horizontal reflection of each row**. Both are simple and both are in place."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function rotate(matrix) {\n  const n = matrix.length;\n\n  // 1. transpose: mirror across the main diagonal\n  for (let r = 0; r < n; r++) {\n    for (let c = r + 1; c < n; c++) {\n      [matrix[r][c], matrix[c][r]] = [matrix[c][r], matrix[r][c]];\n    }\n  }\n\n  // 2. reverse each row\n  for (const row of matrix) {\n    row.reverse();\n  }\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why the inner loop starts at r + 1"
+    },
+    {
+      "type": "paragraph",
+      "text": "Transposing swaps `(r,c)` with `(c,r)`. Starting the inner loop at 0 would visit each pair **twice** — once as `(r,c)` and once as `(c,r)` — swapping them back and leaving the matrix unchanged."
+    },
+    {
+      "type": "paragraph",
+      "text": "Starting at `r + 1` visits only the upper triangle, so each pair is swapped exactly once. The diagonal itself is skipped because `(r,r)` swaps with itself."
+    },
+    {
+      "type": "heading",
+      "text": "Seeing it work"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "start        transpose      reverse rows\n1 2 3        1 4 7          7 4 1\n4 5 6   ->   2 5 8     ->   8 5 2\n7 8 9        3 6 9          9 6 3"
+    },
+    {
+      "type": "heading",
+      "text": "Counter-clockwise"
+    },
+    {
+      "type": "paragraph",
+      "text": "Reverse the order of the two steps: reverse each row **first**, then transpose. Same two operations, opposite direction."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N²)** — every element is touched a constant number of times."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)**."
+    },
+    {
+      "type": "paragraph",
+      "text": "The lesson generalises: a transformation that is awkward directly is often the composition of two that are not."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.312Z"
+}

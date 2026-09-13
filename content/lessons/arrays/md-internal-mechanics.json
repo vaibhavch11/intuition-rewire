@@ -1,0 +1,62 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Memory is one long line of addresses. A grid is two-dimensional. Something has to flatten one into the other, and the choice of *how* is called the **memory layout**."
+    },
+    {
+      "type": "heading",
+      "text": "The flattening question"
+    },
+    {
+      "type": "paragraph",
+      "text": "Take a 2 x 3 grid holding 1 to 6. Memory can only store them in some order. Which order?"
+    },
+    {
+      "type": "paragraph",
+      "text": "There are two sensible answers. Walk along each row in turn, or walk down each column in turn. Both are used in real systems, and they are called **row-major** and **column-major** order."
+    },
+    {
+      "type": "heading",
+      "text": "The address formula, again"
+    },
+    {
+      "type": "paragraph",
+      "text": "Whichever is chosen, the point is that the position of a cell can be **computed**, exactly as with a 1D array. For row-major:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "offset of grid[r][c]  =  r x COLUMNS + c\naddress               =  base + offset x elementSize"
+    },
+    {
+      "type": "paragraph",
+      "text": "Still one multiplication and one addition. Still **O(1)**. Grids are not slower to index than lines — they just need slightly more arithmetic."
+    },
+    {
+      "type": "heading",
+      "text": "Why the layout is worth knowing"
+    },
+    {
+      "type": "paragraph",
+      "text": "If indexing any cell is O(1), why should the layout matter at all? Because of how memory hardware actually behaves."
+    },
+    {
+      "type": "paragraph",
+      "text": "When the CPU fetches an address, it does not pull back a single byte. It pulls a **cache line** — a contiguous chunk, typically 64 bytes — on the bet that you will want the neighbours soon. That bet is what makes code fast."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Walk **along** the memory layout and every fetched chunk contains the next several values you need. Most reads are already in cache.",
+        "Walk **across** it and each read lands in a different chunk. Most reads go all the way to main memory."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Both traversals are O(R x C) — big-O cannot tell them apart. On real hardware the difference is often several times over. This is the clearest everyday example of why big-O is necessary but not sufficient, and it is why the next four lessons are worth your attention."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.510Z"
+}

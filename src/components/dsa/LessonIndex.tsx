@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useStoredString } from "@/lib/browserStore";
 import { completedFrom, PROGRESS_KEY } from "@/lib/progress";
@@ -20,17 +21,28 @@ export default function LessonIndex({
   sectionSlug,
   sectionTitle,
   chapters,
-  currentSlug,
   totalTopics,
 }: {
   sectionSlug: string;
   sectionTitle: string;
   chapters: IndexChapter[];
-  currentSlug: string;
   totalTopics: number;
 }) {
   const [hidden, setHidden] = useState(false);
   const raw = useStoredString(PROGRESS_KEY);
+  const navRef = useRef<HTMLElement>(null);
+
+  // Read from the URL rather than a prop, so switching lessons updates the
+  // highlight without re-creating this component (and losing its scroll).
+  const currentSlug = usePathname().split("/").pop() ?? "";
+
+  // Only on first mount: bring the active lesson into view when someone lands
+  // directly on a deep link. Later navigations keep whatever scroll they had.
+  useEffect(() => {
+    navRef.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ block: "center" });
+  }, []);
 
   const done = useMemo(
     () => new Set(completedFrom(raw, sectionSlug)),
@@ -95,7 +107,10 @@ export default function LessonIndex({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-space-base py-space-md">
+        <nav
+          ref={navRef}
+          className="flex-1 overflow-y-auto px-space-base py-space-md"
+        >
           {chapters.map((chapter) => (
             <div key={chapter.title} className="mb-space-xl last:mb-0">
               <h2 className="font-body-lg text-body-lg mb-space-md font-bold text-on-surface">

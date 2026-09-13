@@ -1,0 +1,84 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** If any cell of an M x N matrix is 0, set its entire row and column to 0. Do it in place."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "[[1,1,1],          [[1,0,1],\n [1,0,1],    ->     [0,0,0],\n [1,1,1]]           [1,0,1]]"
+    },
+    {
+      "type": "heading",
+      "text": "The trap"
+    },
+    {
+      "type": "paragraph",
+      "text": "The naive approach zeroes a row the moment it finds a 0 — and that is wrong. Those freshly written zeroes are indistinguishable from original ones, so the next pass treats them as triggers and cascades until the whole matrix is zero."
+    },
+    {
+      "type": "paragraph",
+      "text": "So the work must happen in two phases: **record** first, **apply** second."
+    },
+    {
+      "type": "heading",
+      "text": "The straightforward fix"
+    },
+    {
+      "type": "paragraph",
+      "text": "Collect the affected rows and columns in two sets, then apply. O(M + N) space:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const zeroRows = new Set();\nconst zeroCols = new Set();\n\nfor (let r = 0; r < rows; r++) {\n  for (let c = 0; c < cols; c++) {\n    if (matrix[r][c] === 0) { zeroRows.add(r); zeroCols.add(c); }\n  }\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The O(1) space version"
+    },
+    {
+      "type": "paragraph",
+      "text": "The follow-up asks for constant space, and the trick echoes the cyclic sort chapter: **store the markers inside the matrix itself.**"
+    },
+    {
+      "type": "paragraph",
+      "text": "Use the first row and first column as the notepad. If `matrix[r][c]` is 0, mark `matrix[r][0]` and `matrix[0][c]`."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function setZeroes(matrix) {\n  const rows = matrix.length;\n  const cols = matrix[0].length;\n  let firstColHasZero = false;\n\n  for (let r = 0; r < rows; r++) {\n    if (matrix[r][0] === 0) firstColHasZero = true;\n    for (let c = 1; c < cols; c++) {\n      if (matrix[r][c] === 0) {\n        matrix[r][0] = 0;\n        matrix[0][c] = 0;\n      }\n    }\n  }\n\n  // apply, working backwards so markers survive until read\n  for (let r = rows - 1; r >= 0; r--) {\n    for (let c = cols - 1; c >= 1; c--) {\n      if (matrix[r][0] === 0 || matrix[0][c] === 0) matrix[r][c] = 0;\n    }\n    if (firstColHasZero) matrix[r][0] = 0;\n  }\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why the separate flag"
+    },
+    {
+      "type": "paragraph",
+      "text": "`matrix[0][0]` would have to mean two things at once — \"row 0 has a zero\" and \"column 0 has a zero\". One cell cannot hold both, so column 0 gets its own boolean and the inner loops start at `c = 1`."
+    },
+    {
+      "type": "heading",
+      "text": "Why the second pass runs backwards"
+    },
+    {
+      "type": "paragraph",
+      "text": "The markers live in row 0 and column 0. Applying forwards would overwrite a marker before the later cells that depend on it are read. Working from the bottom-right inward means every marker is consumed before it is destroyed."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(M x N)**, **Space: O(1)**."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.484Z"
+}

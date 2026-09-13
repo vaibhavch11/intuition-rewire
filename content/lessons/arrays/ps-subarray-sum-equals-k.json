@@ -1,0 +1,88 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Count how many contiguous subarrays sum to exactly `k`. The array may contain negative numbers."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [1, 1, 1],  k = 2\noutput:  2      ([1,1] at indices 0-1, and at 1-2)"
+    },
+    {
+      "type": "heading",
+      "text": "Why sliding window fails here"
+    },
+    {
+      "type": "paragraph",
+      "text": "Worth pausing on, because the instinct is wrong. Sliding window needs the sum to move predictably as the window grows and shrinks — which requires all-positive values."
+    },
+    {
+      "type": "paragraph",
+      "text": "With negatives, a window that overshoots `k` might come back to `k` by absorbing a negative number. You can never safely decide to shrink. The pattern simply does not apply."
+    },
+    {
+      "type": "heading",
+      "text": "The prefix insight"
+    },
+    {
+      "type": "paragraph",
+      "text": "Rewrite the goal in terms of prefixes. A subarray from `i` to `j` sums to `k` exactly when:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "prefix[j + 1] - prefix[i]  =  k\n\nwhich rearranges to\n\nprefix[i]  =  prefix[j + 1] - k"
+    },
+    {
+      "type": "paragraph",
+      "text": "So while sweeping, at each position we have a current running sum, and we want to know **how many earlier prefixes equal `currentSum - k`**. That is a counting question, and a hash map answers it in O(1)."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function subarraySum(nums, k) {\n  const counts = new Map([[0, 1]]);\n  let sum = 0;\n  let result = 0;\n\n  for (const num of nums) {\n    sum += num;\n    result += counts.get(sum - k) ?? 0;\n    counts.set(sum, (counts.get(sum) ?? 0) + 1);\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The seeded zero"
+    },
+    {
+      "type": "paragraph",
+      "text": "`new Map([[0, 1]])` says: one prefix of value 0 has been seen before we start. That represents the empty prefix."
+    },
+    {
+      "type": "paragraph",
+      "text": "Without it, any subarray starting at index 0 would be missed — there would be no earlier prefix of 0 to pair with. Exactly the same role as `prefix[0] = 0` in the array version."
+    },
+    {
+      "type": "heading",
+      "text": "Why lookup comes before insert"
+    },
+    {
+      "type": "paragraph",
+      "text": "We query `counts` and *then* record the current sum. Reversing those lines would let a prefix pair with itself, counting an empty subarray whenever `k` is 0."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — one pass, O(1) map work per element."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(N)** for the map."
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the archetype for a whole family: prefix sums plus a hash map, for counting problems where windows cannot go."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:09:27.053Z"
+}

@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Reverse only the vowels of a string, leaving every other character exactly where it is."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "\"hello\"      ->  \"holle\"      (e and o swap)\n\"leetcode\"   ->  \"leotcede\"   (e,e,o,e reversed)"
+    },
+    {
+      "type": "heading",
+      "text": "Think about it first"
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the reversal problem with a filter on top. The vowels, read in order, must come out reversed — but the consonants must not move at all."
+    },
+    {
+      "type": "paragraph",
+      "text": "You could collect the vowels, reverse that list, and write them back. That works and costs O(N) space. Two pointers does it in one pass with none."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Walk from both ends, but only stop when a pointer is sitting on a vowel. When both are, swap them and step inward. Consonants are simply skipped over."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function reverseVowels(s) {\n  const chars = [...s];\n  const vowels = new Set('aeiouAEIOU');\n  let left = 0;\n  let right = chars.length - 1;\n\n  while (left < right) {\n    while (left < right && !vowels.has(chars[left])) left++;\n    while (left < right && !vowels.has(chars[right])) right--;\n\n    if (left < right) {\n      [chars[left], chars[right]] = [chars[right], chars[left]];\n      left++;\n      right--;\n    }\n  }\n  return chars.join('');\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why a Set for the vowels"
+    },
+    {
+      "type": "paragraph",
+      "text": "`vowels.has(ch)` is O(1). A string search like `'aeiou'.includes(ch)` scans up to five characters each time — still constant, but a Set states the intent more clearly and does not grow if you later add more characters."
+    },
+    {
+      "type": "heading",
+      "text": "Structure worth noticing"
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the palindrome solution with two edits: the skip condition tests for vowels instead of punctuation, and the body swaps instead of compares. Recognising that shared skeleton is what makes the pattern valuable — you are not learning problems, you are learning one loop."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N)** — pointers only move inward."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(N)** for the character array, only because JavaScript strings are immutable. In a language with mutable strings this is O(1)."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:12.802Z"
+}

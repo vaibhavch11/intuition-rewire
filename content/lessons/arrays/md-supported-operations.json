@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "The operations on a 2D array mirror the 1D list, with one addition that dominates real code: you often need to visit every cell, and there is more than one order in which to do it."
+    },
+    {
+      "type": "heading",
+      "text": "Reading and writing a cell"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "const mark = marks[1][2];   // read\nmarks[1][2] = 65;           // write"
+    },
+    {
+      "type": "paragraph",
+      "text": "Both are **O(1)**. Two index computations instead of one, but neither depends on the size of the grid."
+    },
+    {
+      "type": "heading",
+      "text": "Visiting every cell"
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the workhorse. Two nested loops, outer over rows, inner over columns:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "for (let r = 0; r < rows; r++) {\n  for (let c = 0; c < columns; c++) {\n    process(grid[r][c]);\n  }\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "A grid of R rows and C columns holds R x C cells, so a full sweep costs **O(R x C)**. If the grid is square with side N, that is O(N²) — which is why nested loops over a grid are the classic example of quadratic time."
+    },
+    {
+      "type": "paragraph",
+      "text": "The cost is unavoidable when you genuinely need every cell. What you *can* control is the order, and that turns out to matter more than most people expect."
+    },
+    {
+      "type": "heading",
+      "text": "Whole-row and whole-column work"
+    },
+    {
+      "type": "paragraph",
+      "text": "These two look symmetrical and are not:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Read one row** — O(C). The cells sit next to each other in memory.",
+        "**Read one column** — O(R). The cells are scattered, one row-length apart."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Both touch the same number of cells for a square grid, yet reading a column is reliably slower on real hardware. The reason is the subject of the next lesson, and it is the most practically useful idea in this chapter."
+    },
+    {
+      "type": "heading",
+      "text": "Inserting and deleting"
+    },
+    {
+      "type": "paragraph",
+      "text": "Adding a row or column is expensive — **O(R x C)** in the worst case — because the no-gaps rule still applies. Inserting a column means every single row has to shift its contents. For that reason, grids are usually built once at a fixed size rather than grown."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:02:48.469Z"
+}

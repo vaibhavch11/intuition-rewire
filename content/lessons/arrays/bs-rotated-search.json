@@ -1,0 +1,70 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** A sorted array has been rotated at an unknown pivot — `[0,1,2,4,5,6,7]` might have become `[4,5,6,7,0,1,2]`. Find a target value in O(log N), or return −1."
+    },
+    {
+      "type": "heading",
+      "text": "The complication"
+    },
+    {
+      "type": "paragraph",
+      "text": "Plain binary search needs a fully sorted array. After rotation, comparing the target to the midpoint no longer tells you which half to search — the array has a discontinuity."
+    },
+    {
+      "type": "heading",
+      "text": "The saving observation"
+    },
+    {
+      "type": "paragraph",
+      "text": "Split a rotated array at any midpoint and **at least one half is still properly sorted**. The discontinuity can only live in one of them."
+    },
+    {
+      "type": "paragraph",
+      "text": "So: identify the sorted half, check whether the target falls inside its range, and search accordingly."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function search(nums, target) {\n  let low = 0;\n  let high = nums.length - 1;\n\n  while (low <= high) {\n    const mid = Math.floor((low + high) / 2);\n    if (nums[mid] === target) return mid;\n\n    if (nums[low] <= nums[mid]) {\n      // left half is sorted\n      if (nums[low] <= target && target < nums[mid]) {\n        high = mid - 1;\n      } else {\n        low = mid + 1;\n      }\n    } else {\n      // right half is sorted\n      if (nums[mid] < target && target <= nums[high]) {\n        low = mid + 1;\n      } else {\n        high = mid - 1;\n      }\n    }\n  }\n  return -1;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Reading the branches"
+    },
+    {
+      "type": "paragraph",
+      "text": "`nums[low] <= nums[mid]` decides which half is clean. If the left end is not greater than the middle, the left half has no wrap in it."
+    },
+    {
+      "type": "paragraph",
+      "text": "Inside a sorted half, the target's membership is a simple range check. If it belongs there, search it; if not, the answer must be in the messy half — which will get split again next iteration."
+    },
+    {
+      "type": "heading",
+      "text": "Why `<=` and not `<`"
+    },
+    {
+      "type": "paragraph",
+      "text": "When `low === mid`, a single-element half is trivially sorted, so the comparison must accept equality. Using `<` sends the search down the wrong branch on two-element ranges — a bug that only appears at the very end of a search."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(log N)** — the range still halves each step, we just work harder to choose the half."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)**."
+    },
+    {
+      "type": "paragraph",
+      "text": "This is the classic demonstration that binary search needs only a **decidable** halving rule, not literal sortedness."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.000Z"
+}

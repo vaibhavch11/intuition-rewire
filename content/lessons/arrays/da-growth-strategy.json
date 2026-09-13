@@ -1,0 +1,83 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "The fix is to stop growing by a fixed amount and start growing by a **proportion**. Doubling is the standard choice, and the difference it makes is dramatic."
+    },
+    {
+      "type": "heading",
+      "text": "Capacity versus length"
+    },
+    {
+      "type": "paragraph",
+      "text": "A dynamic array tracks two numbers that are easy to confuse:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Length** — how many elements you have actually stored.",
+        "**Capacity** — how many the current block could hold."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "`push` only triggers a resize when length is about to exceed capacity. The gap between them is deliberate slack, bought in advance."
+    },
+    {
+      "type": "heading",
+      "text": "Doubling"
+    },
+    {
+      "type": "paragraph",
+      "text": "When full, allocate a block twice the size. Starting from capacity 1, the resizes happen at sizes 1, 2, 4, 8, 16 — and the total copying to reach N elements is:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "1 + 2 + 4 + 8 + ... + N   <   2N"
+    },
+    {
+      "type": "paragraph",
+      "text": "That is the key inequality. A doubling series sums to **less than twice its final term**, so all the copying across the entire lifetime is O(N), not O(N²). Spread over N appends, that is O(1) each."
+    },
+    {
+      "type": "heading",
+      "text": "Comparing the two policies"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "                grow by 1        double\nreaching 1,000     ~500,000 copies      ~2,000 copies\nreaching 1,000,000  ~5 x 10^11 copies   ~2,000,000 copies"
+    },
+    {
+      "type": "heading",
+      "text": "Why not triple, or grow by 50%"
+    },
+    {
+      "type": "paragraph",
+      "text": "Any constant factor above 1 gives the same asymptotic result — the trade is between memory and copy frequency:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Larger factor** — fewer resizes, more wasted space. Doubling can leave up to half the block unused.",
+        "**Smaller factor (e.g. 1.5)** — less waste, more frequent copies. Some implementations prefer this because freed blocks can be reused more effectively."
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Real systems differ: many C++ standard libraries double, while Python's list grows by roughly 12.5% above the current size, and Java's ArrayList grows by 50%."
+    },
+    {
+      "type": "heading",
+      "text": "Shrinking"
+    },
+    {
+      "type": "paragraph",
+      "text": "If the array empties, should the block shrink? Yes, but not at half capacity — an array hovering near that point would resize on every operation, a problem called **thrashing**. The usual rule is to halve only when length drops below a **quarter** of capacity, leaving a comfortable gap between the grow and shrink thresholds."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.629Z"
+}

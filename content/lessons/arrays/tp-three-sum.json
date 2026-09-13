@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Find all **unique** triples in an array that sum to zero. The same triple must not appear twice in the output, in any order."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "input:   [-1, 0, 1, 2, -1, -4]\noutput:  [[-1, -1, 2], [-1, 0, 1]]"
+    },
+    {
+      "type": "paragraph",
+      "text": "Note that `-1` appears twice in the input, and both are used in the first triple. But the triple itself must not be listed twice — that is the part that makes this harder than it looks."
+    },
+    {
+      "type": "heading",
+      "text": "The approach"
+    },
+    {
+      "type": "paragraph",
+      "text": "Sort, fix the first element, two pointers on the rest. The real work is suppressing duplicates."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function threeSum(nums) {\n  nums.sort((a, b) => a - b);\n  const result = [];\n\n  for (let i = 0; i < nums.length - 2; i++) {\n    if (i > 0 && nums[i] === nums[i - 1]) continue;      // skip duplicate anchors\n    if (nums[i] > 0) break;                              // sorted: no zero sum past here\n\n    let left = i + 1;\n    let right = nums.length - 1;\n\n    while (left < right) {\n      const sum = nums[i] + nums[left] + nums[right];\n\n      if (sum === 0) {\n        result.push([nums[i], nums[left], nums[right]]);\n        while (left < right && nums[left] === nums[left + 1]) left++;\n        while (left < right && nums[right] === nums[right - 1]) right--;\n        left++;\n        right--;\n      } else if (sum < 0) {\n        left++;\n      } else {\n        right--;\n      }\n    }\n  }\n  return result;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "The three lines that matter"
+    },
+    {
+      "type": "paragraph",
+      "text": "**`if (i > 0 && nums[i] === nums[i-1]) continue;`** — if this anchor value was already used, every triple starting with it has been found. Skip it."
+    },
+    {
+      "type": "paragraph",
+      "text": "**`if (nums[i] > 0) break;`** — the array is sorted, so once the smallest of the three is positive, all three are, and they cannot sum to zero. Everything after is hopeless."
+    },
+    {
+      "type": "paragraph",
+      "text": "**The two inner skip loops** — after recording a match, walk past repeats of both values so the same triple is not recorded again."
+    },
+    {
+      "type": "heading",
+      "text": "Why sorting is doing double duty"
+    },
+    {
+      "type": "paragraph",
+      "text": "Sorting enables the pointer movement rule *and* makes duplicate suppression a cheap neighbour check. Without it, avoiding duplicates would need a hash set of triples — more memory and more code."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N²)** — an O(N) scan inside an O(N) loop. Sorting's O(N log N) is dominated."
+    },
+    {
+      "type": "paragraph",
+      "text": "**Space: O(1)** beyond the output, or O(N) if your language's sort allocates."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:05:13.070Z"
+}

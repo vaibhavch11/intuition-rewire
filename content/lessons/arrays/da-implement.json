@@ -1,0 +1,90 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** Implement a dynamic array from scratch on top of a fixed-size block, supporting `get`, `set`, `push`, `pop` and `insert`, with amortised O(1) append."
+    },
+    {
+      "type": "heading",
+      "text": "The state"
+    },
+    {
+      "type": "paragraph",
+      "text": "Three fields: the storage block, how much of it is used, and how much exists."
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "class DynamicArray {\n  constructor(capacity = 4) {\n    this.data = new Array(capacity);   // the fixed block\n    this.length = 0;                   // elements in use\n    this.capacity = capacity;          // slots available\n  }\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Reading and writing"
+    },
+    {
+      "type": "paragraph",
+      "text": "Both are direct index operations, guarded so that out-of-range access fails loudly rather than returning `undefined`:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "get(index) {\n  if (index < 0 || index >= this.length) throw new RangeError('out of bounds');\n  return this.data[index];\n}\n\nset(index, value) {\n  if (index < 0 || index >= this.length) throw new RangeError('out of bounds');\n  this.data[index] = value;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "Note both check against `length`, not `capacity`. Slots beyond the length exist physically but hold nothing meaningful."
+    },
+    {
+      "type": "heading",
+      "text": "Resizing and push"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "resize(newCapacity) {\n  const bigger = new Array(newCapacity);\n  for (let i = 0; i < this.length; i++) {\n    bigger[i] = this.data[i];\n  }\n  this.data = bigger;\n  this.capacity = newCapacity;\n}\n\npush(value) {\n  if (this.length === this.capacity) {\n    this.resize(this.capacity * 2);\n  }\n  this.data[this.length] = value;\n  this.length++;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "`resize` copies only `length` elements, not `capacity` — the slack is uninitialised and copying it would be wasted work."
+    },
+    {
+      "type": "heading",
+      "text": "Pop and insert"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "pop() {\n  if (this.length === 0) throw new RangeError('empty');\n  const value = this.data[this.length - 1];\n  this.length--;\n\n  if (this.length > 0 && this.length <= this.capacity / 4) {\n    this.resize(Math.floor(this.capacity / 2));\n  }\n  return value;\n}\n\ninsert(index, value) {\n  if (index < 0 || index > this.length) throw new RangeError('out of bounds');\n  if (this.length === this.capacity) this.resize(this.capacity * 2);\n\n  for (let i = this.length; i > index; i--) {\n    this.data[i] = this.data[i - 1];\n  }\n  this.data[index] = value;\n  this.length++;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "The shrink threshold is a quarter, not a half — the anti-thrashing rule from the previous lesson. And `insert` copies **backwards**, from the end toward the gap; going forwards would overwrite each element before it was moved."
+    },
+    {
+      "type": "heading",
+      "text": "The costs"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**get / set** — O(1) always.",
+        "**push / pop** — O(1) amortised, O(N) on a resize.",
+        "**insert / remove at index** — O(N), because of the shift."
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "You have now built the thing"
+    },
+    {
+      "type": "paragraph",
+      "text": "This class is, in outline, what `Array` in JavaScript, `list` in Python, `vector` in C++ and `ArrayList` in Java all are. Real implementations add growth tuning, memory reuse and type specialisation — but the structure is exactly this."
+    },
+    {
+      "type": "paragraph",
+      "text": "Every cost in that table traces back to the first lesson of the course: memory is a contiguous, addressable line, and everything follows from that."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:23.210Z"
+}

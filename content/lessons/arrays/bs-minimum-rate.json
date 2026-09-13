@@ -1,0 +1,71 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "**The task.** There are piles of bananas and `h` hours available. At a chosen speed of K bananas per hour, each hour is spent on a single pile — finishing it, or eating K from it. Find the smallest K that clears every pile within `h` hours."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "piles = [3, 6, 7, 11],  h = 8\noutput: 4"
+    },
+    {
+      "type": "heading",
+      "text": "The same skeleton"
+    },
+    {
+      "type": "paragraph",
+      "text": "Another \"minimum X such that it fits\" problem, so the structure is identical — only the bounds and the check change."
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**Lower bound:** 1. Speed 0 never finishes.",
+        "**Upper bound:** `max(piles)`. At that speed every pile takes exactly one hour, which is the fastest the rules allow."
+      ]
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function minEatingSpeed(piles, h) {\n  let low = 1;\n  let high = Math.max(...piles);\n\n  const hoursNeeded = (speed) =>\n    piles.reduce((sum, pile) => sum + Math.ceil(pile / speed), 0);\n\n  while (low < high) {\n    const mid = Math.floor((low + high) / 2);\n    if (hoursNeeded(mid) <= h) high = mid;\n    else low = mid + 1;\n  }\n  return low;\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Why the ceiling is the whole problem"
+    },
+    {
+      "type": "paragraph",
+      "text": "`Math.ceil(pile / speed)` encodes the rule that an hour cannot be shared between piles."
+    },
+    {
+      "type": "paragraph",
+      "text": "A pile of 7 at speed 3 takes ⌈7/3⌉ = 3 hours: two full hours and one hour eating just 1 banana. That leftover hour is wasted, and plain division would hide it. Miss the ceiling and the check silently reports fewer hours than reality."
+    },
+    {
+      "type": "heading",
+      "text": "Why the upper bound is not the sum"
+    },
+    {
+      "type": "paragraph",
+      "text": "For the shipping problem the ceiling was the sum of all weights. Here it is the maximum pile, because speed beyond that changes nothing — you still spend one full hour per pile. Going higher only adds useless iterations."
+    },
+    {
+      "type": "paragraph",
+      "text": "Choosing tight, justified bounds is the part of this pattern that requires actual thought; the loop is boilerplate."
+    },
+    {
+      "type": "heading",
+      "text": "Complexity"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time: O(N log M)** where M is the largest pile. **Space: O(1)**."
+    }
+  ],
+  "updatedAt": "2026-09-13T09:29:22.098Z"
+}
