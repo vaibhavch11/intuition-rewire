@@ -1,43 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IntuitionRewire
+
+Learn DSA by watching it run. A data-structures-and-algorithms learning platform that rewires intuition for algorithms and memory physics through step-by-step visual dry-runs.
+
+**Live:** https://intuition-rewire.intuition-rewire.workers.dev
+
+## Stack
+
+- [Next.js](https://nextjs.org) 16 (App Router) + React 19 + TypeScript
+- [Tailwind CSS](https://tailwindcss.com) 4
+- [Excalidraw](https://excalidraw.com) for in-lesson diagrams
+- [react-three-fiber](https://r3f.docs.pmnd.rs) / three.js for visualizations
+- Hosted on [Cloudflare Workers](https://developers.cloudflare.com/workers/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Content authoring
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lessons live under `/dsa/<section>/<topic>` and are authored through the `/admin` editor (`/admin/login`), gated by a single `ADMIN_PASSWORD` set in `.env.local`.
 
-## Learn More
+The editor writes lesson bodies to `content/lessons/<section>/<topic>.json`, uploaded images to `public/uploads/`, and Excalidraw drawings to `public/drawings/`. This is filesystem-based and **only works with `npm run dev`** — the deployed Worker has no writable filesystem, so saves are a no-op there. Author locally, then commit the resulting JSON/image files; the deployed site reads them at build time.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Cloudflare
-
-This app deploys to Cloudflare Workers via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare).
+## Deploy (Cloudflare)
 
 ```bash
 npm run preview   # build + run locally against the Worker runtime
 npm run deploy    # build + deploy to Cloudflare
 ```
 
-`ADMIN_PASSWORD` must be set as a Worker secret (`wrangler secret put ADMIN_PASSWORD`) — it is not read from `.env.local` in production. See `.dev.vars` for the local Worker-runtime equivalent.
+`ADMIN_PASSWORD` must be set as a Worker secret for production, separately from `.env.local`:
 
-Note: the `/admin` editor writes lesson content and uploads to the local filesystem, which only works with `next dev` — it is read-only in the deployed Worker, same as it already was on Vercel. Author locally and commit the resulting files under `content/`, `public/uploads/`, and `public/drawings/`.
+```bash
+wrangler secret put ADMIN_PASSWORD
+```
+
+`.dev.vars` (gitignored) holds the same value for local `npm run preview` runs against the Worker runtime.
