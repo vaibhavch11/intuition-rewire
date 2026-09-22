@@ -29,8 +29,15 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Cloudflare
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This app deploys to Cloudflare Workers via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run preview   # build + run locally against the Worker runtime
+npm run deploy    # build + deploy to Cloudflare
+```
+
+`ADMIN_PASSWORD` must be set as a Worker secret (`wrangler secret put ADMIN_PASSWORD`) — it is not read from `.env.local` in production. See `.dev.vars` for the local Worker-runtime equivalent.
+
+Note: the `/admin` editor writes lesson content and uploads to the local filesystem, which only works with `next dev` — it is read-only in the deployed Worker, same as it already was on Vercel. Author locally and commit the resulting files under `content/`, `public/uploads/`, and `public/drawings/`.
