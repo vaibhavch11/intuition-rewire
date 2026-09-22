@@ -8,6 +8,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "r2_buckets": [
+    {
+      "bucket_name": "intuition-rewire-storage",
+      "binding": "CONTENT_BUCKET"
+    }
+  ],
   "observability": {
     "enabled": true
   }

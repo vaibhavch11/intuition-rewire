@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type { NextRequest } from "next/server";
 import { isAdminRequest } from "@/lib/admin/auth";
+import { getContentBucket } from "@/lib/admin/storage";
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const DRAWING_DIR = path.join(process.cwd(), "public", "drawings");
@@ -38,8 +39,25 @@ export async function POST(request: NextRequest) {
   }
 
   const filename = `${randomUUID()}.svg`;
-  await fs.mkdir(DRAWING_DIR, { recursive: true });
-  await fs.writeFile(path.join(DRAWING_DIR, filename), svg, "utf8");
+
+  const bucket = await getContentBucket();
+  if (bucket) {
+    await bucket.put(`drawings/${filename}`, svg, {
+      httpMetadata: { contentType: "image/svg+xml" },
+    });
+  }
+
+  try {
+    await fs.mkdir(DRAWING_DIR, { recursive: true });
+    await fs.writeFile(path.join(DRAWING_DIR, filename), svg, "utf8");
+  } catch {
+    if (!bucket) {
+      return Response.json(
+        { error: "No storage backend is available to save this drawing." },
+        { status: 500 }
+      );
+    }
+  }
 
   return Response.json({ src: `/drawings/${filename}` });
 }

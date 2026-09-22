@@ -3,9 +3,17 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type { NextRequest } from "next/server";
 import { isAdminRequest } from "@/lib/admin/auth";
+import { getContentBucket } from "@/lib/admin/storage";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+
+const CONTENT_TYPES: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+};
 
 /**
  * The extension comes from the bytes, never from the client's filename or
@@ -54,8 +62,25 @@ export async function POST(request: NextRequest) {
   }
 
   const filename = `${randomUUID()}.${extension}`;
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  await fs.writeFile(path.join(UPLOAD_DIR, filename), bytes);
+
+  const bucket = await getContentBucket();
+  if (bucket) {
+    await bucket.put(`uploads/${filename}`, bytes, {
+      httpMetadata: { contentType: CONTENT_TYPES[extension] },
+    });
+  }
+
+  try {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    await fs.writeFile(path.join(UPLOAD_DIR, filename), bytes);
+  } catch {
+    if (!bucket) {
+      return Response.json(
+        { error: "No storage backend is available to save this image." },
+        { status: 500 }
+      );
+    }
+  }
 
   return Response.json({ src: `/uploads/${filename}` });
 }

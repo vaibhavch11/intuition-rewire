@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getContentBucket } from "@/lib/admin/storage";
 import { getTopic } from "./data";
 import type { LessonBlock, LessonContent } from "./types";
 
@@ -12,6 +13,10 @@ const CONTENT_ROOT = path.join(process.cwd(), "content", "lessons");
 function contentPath(sectionSlug: string, topicSlug: string): string | null {
   if (!getTopic(sectionSlug, topicSlug)) return null;
   return path.join(CONTENT_ROOT, sectionSlug, `${topicSlug}.json`);
+}
+
+function lessonKey(sectionSlug: string, topicSlug: string): string {
+  return `lessons/${sectionSlug}/${topicSlug}.json`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -113,21 +118,7 @@ export function parseBlocks(input: unknown): LessonBlock[] {
   return input.map(parseBlock);
 }
 
-export async function getLessonContent(
-  sectionSlug: string,
-  topicSlug: string
-): Promise<LessonContent | null> {
-  const file = contentPath(sectionSlug, topicSlug);
-  if (!file) return null;
-
-  let raw: string;
-  try {
-    raw = await fs.readFile(file, "utf8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-    throw error;
-  }
-
+function parseLessonDocument(file: string, raw: string): LessonContent {
   const parsed: unknown = JSON.parse(raw);
   if (!isRecord(parsed)) throw new Error(`${file} is not a lesson document`);
 
@@ -140,6 +131,50 @@ export async function getLessonContent(
   };
 }
 
+/**
+ * Workers has no filesystem, so a read failure there (rather than a genuine
+ * ENOENT for an unauthored lesson) is indistinguishable from "not on disk" —
+ * either way the caller falls through to R2 next.
+ */
+async function readLessonFromDisk(file: string): Promise<LessonContent | null> {
+  try {
+    return parseLessonDocument(file, await fs.readFile(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function readLessonFromBucket(
+  sectionSlug: string,
+  topicSlug: string
+): Promise<LessonContent | null> {
+  const bucket = await getContentBucket();
+  if (!bucket) return null;
+
+  const key = lessonKey(sectionSlug, topicSlug);
+  const object = await bucket.get(key);
+  if (!object) return null;
+
+  return parseLessonDocument(key, await object.text());
+}
+
+export async function getLessonContent(
+  sectionSlug: string,
+  topicSlug: string
+): Promise<LessonContent | null> {
+  const file = contentPath(sectionSlug, topicSlug);
+  if (!file) return null;
+
+  return (await readLessonFromDisk(file)) ?? readLessonFromBucket(sectionSlug, topicSlug);
+}
+
+/**
+ * Writes to R2 when a bucket is bound (the durable store once deployed) and,
+ * best-effort, to disk (the `next dev` authoring workflow, unchanged). In the
+ * deployed Worker the disk write silently fails — that's fine, R2 already has
+ * it. If neither succeeded, the save genuinely didn't happen and callers need
+ * to know that rather than think it was saved.
+ */
 export async function saveLessonContent(
   sectionSlug: string,
   topicSlug: string,
@@ -149,28 +184,59 @@ export async function saveLessonContent(
   if (!file) throw new Error(`Unknown lesson ${sectionSlug}/${topicSlug}`);
 
   const content: LessonContent = { blocks, updatedAt: new Date().toISOString() };
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(file, `${JSON.stringify(content, null, 2)}\n`, "utf8");
+  const json = `${JSON.stringify(content, null, 2)}\n`;
+
+  const bucket = await getContentBucket();
+  if (bucket) {
+    await bucket.put(lessonKey(sectionSlug, topicSlug), json, {
+      httpMetadata: { contentType: "application/json" },
+    });
+  }
+
+  try {
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(file, json, "utf8");
+  } catch (error) {
+    if (!bucket) throw error;
+  }
+
   return content;
+}
+
+async function listAuthoredOnDisk(authored: Set<string>): Promise<void> {
+  try {
+    const sectionDirs = await fs.readdir(CONTENT_ROOT);
+    for (const sectionSlug of sectionDirs) {
+      const files = await fs.readdir(path.join(CONTENT_ROOT, sectionSlug));
+      for (const file of files) {
+        if (file.endsWith(".json")) {
+          authored.add(`${sectionSlug}/${file.slice(0, -".json".length)}`);
+        }
+      }
+    }
+  } catch {
+    // No real filesystem (deployed Worker) or nothing authored yet — R2 covers the rest.
+  }
+}
+
+async function listAuthoredInBucket(authored: Set<string>): Promise<void> {
+  const bucket = await getContentBucket();
+  if (!bucket) return;
+
+  let cursor: string | undefined;
+  do {
+    const listed = await bucket.list({ prefix: "lessons/", cursor });
+    for (const object of listed.objects) {
+      const slug = object.key.slice("lessons/".length).replace(/\.json$/, "");
+      if (slug) authored.add(slug);
+    }
+    cursor = listed.truncated ? listed.cursor : undefined;
+  } while (cursor);
 }
 
 export async function listAuthoredLessons(): Promise<Set<string>> {
   const authored = new Set<string>();
-  let sectionDirs: string[];
-  try {
-    sectionDirs = await fs.readdir(CONTENT_ROOT);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return authored;
-    throw error;
-  }
-
-  for (const sectionSlug of sectionDirs) {
-    const files = await fs.readdir(path.join(CONTENT_ROOT, sectionSlug));
-    for (const file of files) {
-      if (file.endsWith(".json")) {
-        authored.add(`${sectionSlug}/${file.slice(0, -".json".length)}`);
-      }
-    }
-  }
+  await listAuthoredOnDisk(authored);
+  await listAuthoredInBucket(authored);
   return authored;
 }

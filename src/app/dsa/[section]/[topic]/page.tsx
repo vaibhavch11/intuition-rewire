@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTopic, sections } from "@/lib/dsa/data";
+import { getTopic } from "@/lib/dsa/data";
 import { getLessonContent } from "@/lib/dsa/content";
 import DryRunPlayer from "@/components/DryRunPlayer";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
 import LessonReactions from "@/components/dsa/LessonReactions";
 
-export function generateStaticParams() {
-  return sections.flatMap((s) =>
-    s.topics.map((t) => ({ section: s.slug, topic: t.slug }))
-  );
-}
+/**
+ * Lesson content now lives in R2 once deployed, editable live via /admin —
+ * this can't be statically prerendered or it would freeze at whatever was
+ * committed at build/deploy time and never show a post-deploy save.
+ */
+export const dynamic = "force-dynamic";
 
 export default async function TopicPage(
   props: PageProps<"/dsa/[section]/[topic]">
