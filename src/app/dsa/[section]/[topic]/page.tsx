@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTopic } from "@/lib/dsa/data";
 import { getLessonContent } from "@/lib/dsa/content";
+import { requireSignedIn } from "@/lib/auth/session";
 import DryRunPlayer from "@/components/DryRunPlayer";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
@@ -21,6 +22,9 @@ export default async function TopicPage(
   const result = getTopic(sectionSlug, topicSlug);
   if (!result) notFound();
   const { section, topic } = result;
+
+  // Lessons need an account; see requiresSignIn() for what stays public.
+  await requireSignedIn(`/dsa/${section.slug}/${topic.slug}`);
 
   const content = await getLessonContent(sectionSlug, topicSlug);
 

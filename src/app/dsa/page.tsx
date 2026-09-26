@@ -10,7 +10,7 @@ function CourseCard({ section }: { section: Section }) {
   return (
     <Link
       href={`/dsa/${section.slug}`}
-      className="group relative flex flex-col rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+      className="reveal group relative flex flex-col rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
     >
       <h3 className="font-headline-md text-headline-md text-on-surface group-hover:text-primary">
         {section.title}
