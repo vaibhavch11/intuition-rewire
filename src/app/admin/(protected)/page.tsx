@@ -1,30 +1,46 @@
-import Link from "next/link";
-import { sections } from "@/lib/dsa/data";
+import { getOutlines } from "@/lib/dsa/curriculum";
 import { listAuthoredLessons } from "@/lib/dsa/content";
-import { groupByChapter } from "@/lib/dsa/types";
+import CourseOutlineEditor from "@/components/admin/CourseOutlineEditor";
 
 export const metadata = { title: "Content admin" };
 
-export default async function AdminHomePage() {
-  const authored = await listAuthoredLessons();
+export default async function AdminHomePage(props: PageProps<"/admin">) {
+  const [outlines, authored, { discarded }] = await Promise.all([
+    getOutlines(),
+    listAuthoredLessons(),
+    props.searchParams,
+  ]);
+
+  // Set by "Discard lesson" in the editor: reopen the course it came from.
+  const discardedFrom = outlines.find(({ section }) => section.slug === discarded)?.section;
 
   return (
     <main>
+      {discardedFrom && (
+        <p
+          role="status"
+          className="font-body-md text-body-md mb-space-md rounded-lg bg-secondary-container/60 px-space-md py-space-sm text-on-secondary-container motion-safe:animate-fade-in"
+        >
+          Lesson discarded from {discardedFrom.title}.
+        </p>
+      )}
+
       <p className="font-body-md text-body-md text-on-surface-variant">
-        Pick a lesson to write its body. Lessons marked{" "}
+        Open a course to write its lessons, add new chapters and lessons, or
+        remove the ones you don&apos;t need. Lessons marked{" "}
         <span className="font-semibold text-secondary">written</span> already
         have content saved.
       </p>
 
       <div className="mt-space-lg space-y-space-lg">
-        {sections.map((section) => {
-          const written = section.topics.filter((t) =>
-            authored.has(`${section.slug}/${t.slug}`)
-          ).length;
+        {outlines.map(({ section, chapters }) => {
+          const isWritten = (slug: string) => authored.has(`${section.slug}/${slug}`);
+          const written = section.topics.filter((t) => isWritten(t.slug)).length;
 
           return (
             <details
               key={section.slug}
+              open={section.slug === discardedFrom?.slug || undefined}
               className="rounded-xl border border-outline-variant/70 bg-surface-container-lowest"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-space-md px-space-lg py-space-md">
@@ -37,32 +53,19 @@ export default async function AdminHomePage() {
               </summary>
 
               <div className="border-t border-outline-variant/40 px-space-lg py-space-md">
-                {groupByChapter(section.topics).map((chapter) => (
-                  <div key={chapter.title} className="mb-space-md last:mb-0">
-                    <h3 className="font-label-md text-label-md font-bold text-on-surface">
-                      {chapter.title}
-                    </h3>
-                    <ul className="mt-space-xs">
-                      {chapter.topics.map((topic) => (
-                        <li key={topic.slug}>
-                          <Link
-                            href={`/admin/${section.slug}/${topic.slug}`}
-                            className="flex items-center justify-between gap-space-md rounded px-space-sm py-space-xs hover:bg-surface-container"
-                          >
-                            <span className="font-body-md text-body-md text-primary">
-                              {topic.title}
-                            </span>
-                            {authored.has(`${section.slug}/${topic.slug}`) && (
-                              <span className="font-label-tag text-label-tag rounded bg-secondary-container px-space-sm py-space-2xs text-on-secondary-container">
-                                written
-                              </span>
-                            )}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                <CourseOutlineEditor
+                  sectionSlug={section.slug}
+                  sectionTitle={section.title}
+                  chapters={chapters.map((chapter) => ({
+                    title: chapter.title,
+                    lessons: chapter.topics.map((topic) => ({
+                      slug: topic.slug,
+                      title: topic.title,
+                      difficulty: topic.difficulty,
+                      written: isWritten(topic.slug),
+                    })),
+                  }))}
+                />
               </div>
             </details>
           );

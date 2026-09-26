@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-// Uploads content/lessons/**/*.json into the R2 bucket, skipping any key that
-// already exists there. Run this after authoring new lessons locally and
-// committing them, so the deployed site (which reads lesson content from R2,
-// not the filesystem) picks them up. Never overwrites an existing key — a
-// lesson edited live via /admin on the deployed site takes priority over
-// whatever is committed to git.
+// Uploads content/lessons/**/*.json — and content/curriculum.json, the
+// chapters and lessons added or removed in /admin — into the R2 bucket,
+// skipping any key that already exists there. Run this after authoring new
+// lessons locally and committing them, so the deployed site (which reads
+// lesson content from R2, not the filesystem) picks them up. Never overwrites
+// an existing key — a lesson or course edited live via /admin on the deployed
+// site takes priority over whatever is committed to git.
 import { execFileSync } from "node:child_process";
-import { readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const BUCKET = "intuition-rewire-storage";
@@ -67,6 +68,17 @@ for (const section of readdirSync(ROOT)) {
     upload(key, path.join(sectionDir, file));
     uploaded++;
     console.log(`seeded ${key}`);
+  }
+}
+
+const CURRICULUM = path.join(process.cwd(), "content", "curriculum.json");
+if (existsSync(CURRICULUM)) {
+  if (existsInBucket("curriculum.json")) {
+    skipped++;
+  } else {
+    upload("curriculum.json", CURRICULUM);
+    uploaded++;
+    console.log("seeded curriculum.json");
   }
 }
 

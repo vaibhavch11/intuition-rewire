@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { sections, sectionsByCategory } from "@/lib/dsa/data";
+import { getSections } from "@/lib/dsa/curriculum";
 import { courseStats } from "@/lib/dsa/types";
 import type { Section } from "@/lib/dsa/types";
 import MemoryLattice from "@/components/dsa/MemoryLattice";
@@ -22,14 +22,14 @@ function CourseCard({ section }: { section: Section }) {
       <div className="font-body-sm text-body-sm mt-space-base flex flex-wrap items-center gap-space-md text-on-surface-variant">
         <span>
           <span className="font-semibold text-on-surface">{stats.lessons}</span>{" "}
-          lessons
+          {stats.lessons === 1 ? "lesson" : "lessons"}
         </span>
         {stats.problems > 0 && (
           <span>
             <span className="font-semibold text-on-surface">
               {stats.problems}
             </span>{" "}
-            problems
+            {stats.problems === 1 ? "problem" : "problems"}
           </span>
         )}
         {stats.patterns > 0 && (
@@ -37,7 +37,7 @@ function CourseCard({ section }: { section: Section }) {
             <span className="font-semibold text-on-surface">
               {stats.patterns}
             </span>{" "}
-            patterns
+            {stats.patterns === 1 ? "pattern" : "patterns"}
           </span>
         )}
       </div>
@@ -60,7 +60,8 @@ function CourseGrid({ title, items }: { title: string; items: Section[] }) {
   );
 }
 
-export default function DsaIndexPage() {
+export default async function DsaIndexPage() {
+  const sections = await getSections();
   const totals = sections.reduce(
     (acc, section) => {
       const stats = courseStats(section);
@@ -121,9 +122,12 @@ export default function DsaIndexPage() {
       <div className="mx-auto max-w-6xl space-y-space-2xl px-gutter-mobile py-space-2xl lg:px-gutter-desktop">
         <CourseGrid
           title="Data Structures"
-          items={sectionsByCategory("data-structure")}
+          items={sections.filter((s) => s.category === "data-structure")}
         />
-        <CourseGrid title="Algorithms" items={sectionsByCategory("algorithm")} />
+        <CourseGrid
+          title="Algorithms"
+          items={sections.filter((s) => s.category === "algorithm")}
+        />
       </div>
     </main>
   );

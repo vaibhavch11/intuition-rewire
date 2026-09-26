@@ -1,17 +1,19 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getContentBucket } from "@/lib/admin/storage";
-import { getTopic } from "./data";
 import type { LessonBlock, LessonContent } from "./types";
 
 const CONTENT_ROOT = path.join(process.cwd(), "content", "lessons");
 
+/** Every section and lesson slug, built-in or added in /admin, has this shape. */
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 /**
- * Only slugs that exist in the curriculum are addressable, which is also what
- * keeps `../` out of the resolved path.
+ * Callers check that the lesson is in the curriculum; the slug pattern is
+ * what keeps `../` out of the resolved path regardless.
  */
 function contentPath(sectionSlug: string, topicSlug: string): string | null {
-  if (!getTopic(sectionSlug, topicSlug)) return null;
+  if (!SLUG_PATTERN.test(sectionSlug) || !SLUG_PATTERN.test(topicSlug)) return null;
   return path.join(CONTENT_ROOT, sectionSlug, `${topicSlug}.json`);
 }
 
@@ -201,6 +203,26 @@ export async function saveLessonContent(
   }
 
   return content;
+}
+
+/** Deletes from both stores; a lesson that was never written is simply skipped. */
+export async function deleteLessonContent(
+  sectionSlug: string,
+  topicSlugs: string[]
+): Promise<void> {
+  const targets = topicSlugs.flatMap((slug) => {
+    const file = contentPath(sectionSlug, slug);
+    return file ? [{ key: lessonKey(sectionSlug, slug), file }] : [];
+  });
+  if (targets.length === 0) return;
+
+  const bucket = await getContentBucket();
+  if (bucket) await bucket.delete(targets.map((t) => t.key));
+
+  // No filesystem in the deployed Worker; R2 above was the real store there.
+  await Promise.all(
+    targets.map(({ file }) => fs.rm(file, { force: true }).catch(() => {}))
+  );
 }
 
 async function listAuthoredOnDisk(authored: Set<string>): Promise<void> {

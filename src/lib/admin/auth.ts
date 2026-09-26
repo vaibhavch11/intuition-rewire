@@ -61,6 +61,21 @@ export async function isAdminRequest(): Promise<boolean> {
   return verifySessionToken(store.get(ADMIN_COOKIE)?.value);
 }
 
+/**
+ * Browsers always send Origin with a fetch that changes something. Requiring
+ * it to name this host backs up the SameSite cookie against cross-site posts.
+ */
+export function isSameOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax",

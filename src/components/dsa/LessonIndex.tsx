@@ -48,8 +48,15 @@ export default function LessonIndex({
     () => new Set(completedFrom(raw, sectionSlug)),
     [raw, sectionSlug]
   );
+  // Saved progress can still list lessons since removed in /admin, so only
+  // lessons that are in the course now count.
+  const finished = chapters.reduce(
+    (count, chapter) =>
+      count + chapter.items.filter((item) => done.has(item.slug)).length,
+    0
+  );
   const percent =
-    totalTopics === 0 ? 0 : Math.round((done.size / totalTopics) * 100);
+    totalTopics === 0 ? 0 : Math.round((finished / totalTopics) * 100);
 
   if (hidden) {
     return (

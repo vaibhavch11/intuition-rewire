@@ -6,8 +6,17 @@ import AlgorithmRace from "@/components/home/AlgorithmRace";
 import ComparisonSection from "@/components/home/ComparisonSection";
 import HardwareTeaserSection from "@/components/home/HardwareTeaserSection";
 import FinalCTA from "@/components/home/FinalCTA";
+import { getSections } from "@/lib/dsa/curriculum";
 
-export default function Home() {
+export default async function Home() {
+  // Counts only, so the full curriculum never reaches the browser bundle.
+  const courses = (await getSections()).map((s) => ({
+    slug: s.slug,
+    title: s.title,
+    category: s.category,
+    lessons: s.topics.length,
+  }));
+
   return (
     <main className="w-full bg-surface min-h-[calc(100vh-56px)]">
       <div className="flex flex-col w-full">
@@ -102,7 +111,7 @@ export default function Home() {
 
         {/* Each section fades up as it scrolls into view (see .reveal). */}
         <div className="reveal">
-          <LearningPathSection />
+          <LearningPathSection courses={courses} />
         </div>
         <div className="reveal">
           <AlgorithmRace />

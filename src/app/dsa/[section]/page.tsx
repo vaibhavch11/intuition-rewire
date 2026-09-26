@@ -8,7 +8,7 @@ import {
   Puzzle,
   SquareTerminal,
 } from "lucide-react";
-import { getSection, sections } from "@/lib/dsa/data";
+import { getSection } from "@/lib/dsa/curriculum";
 import { courseStats, groupByChapter } from "@/lib/dsa/types";
 import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
@@ -16,10 +16,6 @@ import ExpandableIntro from "@/components/dsa/ExpandableIntro";
 import RichText from "@/components/dsa/RichText";
 import DryRunEngine from "@/components/dsa/simulator/DryRunEngine";
 import { getSimulation } from "@/components/dsa/simulator/simulations";
-
-export function generateStaticParams() {
-  return sections.map((s) => ({ section: s.slug }));
-}
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Fundamental: "bg-indigo-50 text-indigo-700 ring-indigo-200",
@@ -110,7 +106,7 @@ function SyllabusRow({
 
 export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
   const { section: sectionSlug } = await props.params;
-  const section = getSection(sectionSlug);
+  const section = await getSection(sectionSlug);
   if (!section) notFound();
 
   const chapters = groupByChapter(section.topics);
@@ -258,6 +254,12 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
           <h2 className="font-headline-md text-headline-md text-on-surface">
             Course Contents
           </h2>
+
+          {chapters.length === 0 && (
+            <p className="font-body-md text-body-md mt-space-base text-on-surface-variant">
+              Lessons for this course are on their way.
+            </p>
+          )}
 
           <div className="mt-space-base space-y-space-md">
             {chapters.map((chapter, i) => (

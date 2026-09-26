@@ -114,6 +114,14 @@ export interface Chapter {
   topics: Topic[];
 }
 
+/** What a course card needs, small enough to hand to a client component. */
+export interface CourseSummary {
+  slug: string;
+  title: string;
+  category: SectionCategory;
+  lessons: number;
+}
+
 export interface CourseStats {
   lessons: number;
   problems: number;

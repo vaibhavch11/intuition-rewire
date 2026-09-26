@@ -26,7 +26,11 @@ function placeholderSection(
   };
 }
 
-export const sections: Section[] = [
+/**
+ * The course structure as shipped in code. Readers see this plus whatever was
+ * added or removed in /admin, so read it through `@/lib/dsa/curriculum`.
+ */
+export const builtInSections: Section[] = [
   arraysSection,
   stringsSection,
   placeholderSection(
@@ -114,17 +118,3 @@ export const sections: Section[] = [
     "algorithm"
   ),
 ];
-
-export function sectionsByCategory(category: SectionCategory): Section[] {
-  return sections.filter((s) => s.category === category);
-}
-
-export function getSection(slug: string): Section | undefined {
-  return sections.find((s) => s.slug === slug);
-}
-
-export function getTopic(sectionSlug: string, topicSlug: string) {
-  const section = getSection(sectionSlug);
-  const topic = section?.topics.find((t) => t.slug === topicSlug);
-  return section && topic ? { section, topic } : undefined;
-}

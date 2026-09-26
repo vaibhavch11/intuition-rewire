@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTopic } from "@/lib/dsa/data";
+import { getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
 import { requireSignedIn } from "@/lib/auth/session";
 import DryRunPlayer from "@/components/DryRunPlayer";
@@ -19,7 +19,7 @@ export default async function TopicPage(
   props: PageProps<"/dsa/[section]/[topic]">
 ) {
   const { section: sectionSlug, topic: topicSlug } = await props.params;
-  const result = getTopic(sectionSlug, topicSlug);
+  const result = await getTopic(sectionSlug, topicSlug);
   if (!result) notFound();
   const { section, topic } = result;
 

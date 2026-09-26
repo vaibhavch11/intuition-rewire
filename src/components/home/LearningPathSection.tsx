@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Gauge, Layers, Cpu, Sigma, type LucideIcon } from "lucide-react";
-import { sectionsByCategory } from "@/lib/dsa/data";
+import type { CourseSummary } from "@/lib/dsa/types";
 
 type Category = "ds" | "algo" | "sys";
 
@@ -165,10 +165,14 @@ function DsCard({
   );
 }
 
-export default function LearningPathSection() {
+export default function LearningPathSection({
+  courses,
+}: {
+  courses: CourseSummary[];
+}) {
   const [tab, setTab] = useState<Category>("ds");
-  const dsSections = sectionsByCategory("data-structure");
-  const algoSections = sectionsByCategory("algorithm");
+  const dsSections = courses.filter((s) => s.category === "data-structure");
+  const algoSections = courses.filter((s) => s.category === "algorithm");
 
   const orderedDs = DS_ORDER.map((slug) =>
     dsSections.find((s) => s.slug === slug)
@@ -217,7 +221,7 @@ export default function LearningPathSection() {
                   key={s.slug}
                   slug={s.slug}
                   title={s.title}
-                  lessons={s.topics.length}
+                  lessons={s.lessons}
                 />
               ))}
             </div>
@@ -238,7 +242,7 @@ export default function LearningPathSection() {
                     {s.title}
                   </span>
                   <span className="font-code-sm text-code-sm text-on-surface-variant mt-0.5">
-                    {s.topics.length} topic{s.topics.length === 1 ? "" : "s"}
+                    {s.lessons} topic{s.lessons === 1 ? "" : "s"}
                   </span>
                 </Link>
               ))}

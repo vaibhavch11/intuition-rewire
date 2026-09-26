@@ -1,20 +1,25 @@
 import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
-import { isAdminRequest } from "@/lib/admin/auth";
+import { isAdminRequest, isSameOrigin } from "@/lib/admin/auth";
 import { parseBlocks, saveLessonContent } from "@/lib/dsa/content";
-import { getTopic } from "@/lib/dsa/data";
+import { getTopic } from "@/lib/dsa/curriculum";
 
 export async function PUT(
   request: NextRequest,
   ctx: RouteContext<"/api/admin/content/[section]/[topic]">
 ) {
+  if (!isSameOrigin(request)) {
+    return Response.json({ error: "Cross-site request refused." }, { status: 403 });
+  }
   if (!(await isAdminRequest())) {
     return Response.json({ error: "Not signed in." }, { status: 401 });
   }
 
+  // Checked against the live curriculum, so a lesson removed in another tab
+  // can't be saved back into existence.
   const { section, topic } = await ctx.params;
-  if (!getTopic(section, topic)) {
-    return Response.json({ error: "Unknown lesson." }, { status: 404 });
+  if (!(await getTopic(section, topic))) {
+    return Response.json({ error: "This lesson no longer exists." }, { status: 404 });
   }
 
   const body: unknown = await request.json().catch(() => null);
