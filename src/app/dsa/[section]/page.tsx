@@ -14,6 +14,8 @@ import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
 import ExpandableIntro from "@/components/dsa/ExpandableIntro";
 import RichText from "@/components/dsa/RichText";
+import DryRunEngine from "@/components/dsa/simulator/DryRunEngine";
+import { getSimulation } from "@/components/dsa/simulator/simulations";
 
 export function generateStaticParams() {
   return sections.map((s) => ({ section: s.slug }));
@@ -116,157 +118,179 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
   const hasIntro =
     (section.overview?.length ?? 0) > 0 ||
     (section.requirements?.length ?? 0) > 0;
+  const simulation = getSimulation(section.slug);
+
+  const backLink = (
+    <Link
+      href="/dsa"
+      className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
+    >
+      ← All courses
+    </Link>
+  );
 
   return (
-    <main className="mx-auto max-w-4xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
-      <Link
-        href="/dsa"
-        className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
-      >
-        ← All courses
-      </Link>
-
-      <header className="mt-space-md rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">
-          {section.title}
-        </h1>
-        <p className="font-body-md text-body-md mt-space-sm text-on-surface-variant">
-          {section.tagline ?? section.description}
-        </p>
-
-        <ul className="mt-space-base flex flex-wrap gap-space-sm">
-          <StatChip
-            icon={BookOpen}
-            count={stats.lessons}
-            label={stats.lessons === 1 ? "Lesson" : "Lessons"}
-          />
-          {stats.problems > 0 && (
-            <StatChip
-              icon={SquareTerminal}
-              count={stats.problems}
-              label={stats.problems === 1 ? "Problem" : "Problems"}
-            />
-          )}
-          {stats.patterns > 0 && (
-            <StatChip
-              icon={Puzzle}
-              count={stats.patterns}
-              label={stats.patterns === 1 ? "Pattern" : "Patterns"}
-            />
-          )}
-          {stats.illustrations > 0 && (
-            <StatChip
-              icon={ImageIcon}
-              count={stats.illustrations}
-              label="Illustrations"
-            />
-          )}
-          {stats.slides > 0 && (
-            <StatChip
-              icon={Presentation}
-              count={stats.slides}
-              label="Slides"
-            />
-          )}
-        </ul>
-      </header>
-
-      {section.outcomes && section.outcomes.length > 0 && (
-        <section className="mt-space-lg rounded-xl border border-outline-variant/40 bg-surface-container-low p-space-lg">
-          <h2 className="font-headline-md text-headline-md text-on-surface">
-            What you will learn
-          </h2>
-          <ul className="mt-space-base grid gap-x-space-xl gap-y-space-md sm:grid-cols-2">
-            {section.outcomes.map((outcome) => (
-              <li key={outcome} className="flex gap-space-sm">
-                <Check size={16} className="mt-0.5 shrink-0 text-secondary" />
-                <span className="font-body-md text-body-md text-on-surface-variant">
-                  {outcome}
-                </span>
-              </li>
-            ))}
-          </ul>
+    <main>
+      {simulation && (
+        <section
+          id="dry-run-engine"
+          className="border-b border-outline-variant/50"
+        >
+          <div className="mx-auto max-w-6xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
+            {backLink}
+            <div className="mt-space-lg">
+              {/* Keyed so switching courses never carries a step index over. */}
+              <DryRunEngine key={section.slug} simulation={simulation} />
+            </div>
+          </div>
         </section>
       )}
 
-      {hasIntro && (
-        <div className="mt-space-xl">
-          <ExpandableIntro>
-            {section.overview && section.overview.length > 0 && (
-              <>
-                <h2 className="font-headline-md text-headline-md text-on-surface">
-                  Why this course
-                </h2>
-                <div className="mt-space-md space-y-space-md">
-                  {section.overview.map((paragraph) => (
-                    <p
-                      key={paragraph}
-                      className="font-body-lg text-body-lg text-on-surface-variant"
-                    >
-                      <RichText text={paragraph} />
-                    </p>
-                  ))}
-                </div>
-              </>
+      <div className="mx-auto max-w-4xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
+        {!simulation && backLink}
+
+        <header className="mt-space-md rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">
+            {section.title}
+          </h1>
+          <p className="font-body-md text-body-md mt-space-sm text-on-surface-variant">
+            {section.tagline ?? section.description}
+          </p>
+
+          <ul className="mt-space-base flex flex-wrap gap-space-sm">
+            <StatChip
+              icon={BookOpen}
+              count={stats.lessons}
+              label={stats.lessons === 1 ? "Lesson" : "Lessons"}
+            />
+            {stats.problems > 0 && (
+              <StatChip
+                icon={SquareTerminal}
+                count={stats.problems}
+                label={stats.problems === 1 ? "Problem" : "Problems"}
+              />
             )}
-
-            {section.requirements && section.requirements.length > 0 && (
-              <>
-                <h2 className="font-headline-md text-headline-md mt-space-xl text-on-surface">
-                  Requirements
-                </h2>
-                <ul className="mt-space-md list-disc space-y-space-sm pl-space-lg">
-                  {section.requirements.map((requirement) => (
-                    <li
-                      key={requirement}
-                      className="font-body-md text-body-md text-on-surface-variant"
-                    >
-                      {requirement}
-                    </li>
-                  ))}
-                </ul>
-              </>
+            {stats.patterns > 0 && (
+              <StatChip
+                icon={Puzzle}
+                count={stats.patterns}
+                label={stats.patterns === 1 ? "Pattern" : "Patterns"}
+              />
             )}
-          </ExpandableIntro>
-        </div>
-      )}
+            {stats.illustrations > 0 && (
+              <StatChip
+                icon={ImageIcon}
+                count={stats.illustrations}
+                label="Illustrations"
+              />
+            )}
+            {stats.slides > 0 && (
+              <StatChip
+                icon={Presentation}
+                count={stats.slides}
+                label="Slides"
+              />
+            )}
+          </ul>
+        </header>
 
-      <section className="mt-space-xl">
-        <h2 className="font-headline-md text-headline-md text-on-surface">
-          Course Contents
-        </h2>
+        {section.outcomes && section.outcomes.length > 0 && (
+          <section className="mt-space-lg rounded-xl border border-outline-variant/40 bg-surface-container-low p-space-lg">
+            <h2 className="font-headline-md text-headline-md text-on-surface">
+              What you will learn
+            </h2>
+            <ul className="mt-space-base grid gap-x-space-xl gap-y-space-md sm:grid-cols-2">
+              {section.outcomes.map((outcome) => (
+                <li key={outcome} className="flex gap-space-sm">
+                  <Check size={16} className="mt-0.5 shrink-0 text-secondary" />
+                  <span className="font-body-md text-body-md text-on-surface-variant">
+                    {outcome}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        <div className="mt-space-base space-y-space-md">
-          {chapters.map((chapter, i) => (
-            <article
-              key={chapter.title}
-              className="rounded-xl border border-outline-variant/70 bg-surface-container-lowest"
-            >
-              <header className="flex items-center justify-between gap-space-md px-space-lg py-space-md">
-                <h3 className="font-headline-md text-headline-md text-on-surface">
-                  {i + 1}. {chapter.title}
-                </h3>
-                <ChapterProgress
-                  sectionSlug={section.slug}
-                  topicSlugs={chapter.topics.map((t) => t.slug)}
-                />
-              </header>
+        {hasIntro && (
+          <div className="mt-space-xl">
+            <ExpandableIntro>
+              {section.overview && section.overview.length > 0 && (
+                <>
+                  <h2 className="font-headline-md text-headline-md text-on-surface">
+                    Why this course
+                  </h2>
+                  <div className="mt-space-md space-y-space-md">
+                    {section.overview.map((paragraph) => (
+                      <p
+                        key={paragraph}
+                        className="font-body-lg text-body-lg text-on-surface-variant"
+                      >
+                        <RichText text={paragraph} />
+                      </p>
+                    ))}
+                  </div>
+                </>
+              )}
 
-              <ol className="border-t border-outline-variant/40 px-space-lg py-space-md">
-                {chapter.topics.map((topic, j) => (
-                  <SyllabusRow
-                    key={topic.slug}
-                    topic={topic}
+              {section.requirements && section.requirements.length > 0 && (
+                <>
+                  <h2 className="font-headline-md text-headline-md mt-space-xl text-on-surface">
+                    Requirements
+                  </h2>
+                  <ul className="mt-space-md list-disc space-y-space-sm pl-space-lg">
+                    {section.requirements.map((requirement) => (
+                      <li
+                        key={requirement}
+                        className="font-body-md text-body-md text-on-surface-variant"
+                      >
+                        {requirement}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </ExpandableIntro>
+          </div>
+        )}
+
+        <section className="mt-space-xl">
+          <h2 className="font-headline-md text-headline-md text-on-surface">
+            Course Contents
+          </h2>
+
+          <div className="mt-space-base space-y-space-md">
+            {chapters.map((chapter, i) => (
+              <article
+                key={chapter.title}
+                className="reveal rounded-xl border border-outline-variant/70 bg-surface-container-lowest"
+              >
+                <header className="flex items-center justify-between gap-space-md px-space-lg py-space-md">
+                  <h3 className="font-headline-md text-headline-md text-on-surface">
+                    {i + 1}. {chapter.title}
+                  </h3>
+                  <ChapterProgress
                     sectionSlug={section.slug}
-                    isFirst={j === 0}
-                    isLast={j === chapter.topics.length - 1}
+                    topicSlugs={chapter.topics.map((t) => t.slug)}
                   />
-                ))}
-              </ol>
-            </article>
-          ))}
-        </div>
-      </section>
+                </header>
+
+                <ol className="border-t border-outline-variant/40 px-space-lg py-space-md">
+                  {chapter.topics.map((topic, j) => (
+                    <SyllabusRow
+                      key={topic.slug}
+                      topic={topic}
+                      sectionSlug={section.slug}
+                      isFirst={j === 0}
+                      isLast={j === chapter.topics.length - 1}
+                    />
+                  ))}
+                </ol>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

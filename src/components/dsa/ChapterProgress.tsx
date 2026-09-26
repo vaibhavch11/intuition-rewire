@@ -52,7 +52,7 @@ export default function ChapterProgress({
           transform="rotate(-90 15 15)"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - percent / 100)}
-          className="stroke-primary"
+          className="stroke-primary transition-[stroke-dashoffset] duration-700 ease-out motion-reduce:transition-none"
         />
         <text
           x="15"
