@@ -129,5 +129,6 @@ export const hashTableSimulation: Simulation = {
   },
   buffer: `bucket_array[${SIZE}]`,
   badge: "O(1) Avg Lookup",
+  output: { label: "get(4)", value: "found in bucket 5" },
   steps: trace(),
 };

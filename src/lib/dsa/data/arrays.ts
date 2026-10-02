@@ -164,35 +164,44 @@ export const arraysSection: Section = {
   description:
     "Contiguous, indexable memory — the foundation almost every other data structure builds on.",
   tagline:
-    "Start your learning journey by understanding the most fundamental data structure.",
-  illustrationCount: 98,
+    "Start your learning journey with the most fundamental data structure — why it exists, how to use it, and when to reach for it.",
+  illustrationCount: 104,
   slideCount: 45,
   outcomes: [
-    "How arrays map onto contiguous bytes of RAM and what that controls",
-    "How multidimensional arrays serialise via row-major and column-major order",
-    "The two pointer pattern in all three of its forms: direct, reduction, and subproblem",
-    "Fixed-size and variable-size sliding windows, and when each applies",
-    "Line sweep for interval merging and maximum overlap",
-    "How to design a dynamic array with amortised O(1) append",
+    "Why arrays exist, and what their contiguous memory layout makes cheap and expensive",
+    "How to create, read, update and loop over arrays in JavaScript, Python, Java and C++",
+    "When an array is the right tool, and how a problem's constraints point to the approach",
+    "The most asked interview problems on one array, several arrays, and 2D arrays",
+    "Dry-running every solution step by step with an interactive simulator",
+    "Seven problem-solving patterns, from two pointers to binary search on the answer",
   ],
   overview: [
-    "Most engineers can write `arr[i]` without thinking, then freeze when an interviewer asks why that index lookup is **O(1)**. The shortcut works until you hit a problem where the answer depends on knowing how the array sits in memory, how a sliding window updates in amortised constant time, or why sorting first turns an **O(N²)** search into **O(N)**.",
-    "This course rebuilds your understanding of arrays from the byte layout up, then walks you through the eight problem-solving patterns that cover almost every array question you will ever see in a coding interview. You finish by implementing a dynamic array of your own.",
+    "Arrays are the first data structure everyone learns and the one interviews lean on most. This course is written to be read **from top to bottom**: whether you are writing your first loop or brushing up for interviews, every idea is introduced before it is used.",
+    "It starts with **why** arrays exist and how they sit in memory, then **how** to use them in real code, then **when** they are the right tool. From there you solve the most asked array problems — on a single array, on several arrays, and on 2D grids — each with a picture of the idea, the brute force, the optimal solution, code in four languages, and a simulator you can dry-run with your own input.",
+    "The final chapters go deeper into the patterns behind those problems — two pointers, sliding window, prefix sums and more — and finish with you designing a dynamic array of your own.",
   ],
   requirements: [
     "Comfort writing loops, conditionals, and functions in at least one language",
     "No prior data structures experience — every term is introduced before it is used",
-    "No prior big-O knowledge — asymptotic notation is built up from counting operations",
+    "No prior big-O knowledge — complexity is built up from counting operations",
     "A willingness to attempt each problem before revealing its solution",
   ],
   topics: [
     ...chapterTopics("Introduction to arrays", [
+      lesson("intro-why-arrays", "Why do we need arrays?"),
       lesson("intro-memory-model", "Understanding the memory model"),
       lesson("intro-understanding-the-problem", "Understanding the problem"),
       lesson("intro-possible-solution", "Exploring a possible solution"),
       lesson("intro-supported-operations", "Overview of supported operations"),
       lesson("intro-internal-mechanics", "Internal mechanics of arrays"),
       lesson("intro-working-example", "Working example"),
+    ]),
+
+    ...chapterTopics("Using arrays in code", [
+      lesson("code-create-read-update", "Creating, reading and updating an array"),
+      lesson("code-traversal", "Traversing an array"),
+      lesson("code-building-blocks", "Everyday array building blocks"),
+      lesson("code-common-mistakes", "Common mistakes and how to avoid them"),
     ]),
 
     ...chapterTopics("Multidimensional arrays", [
@@ -214,6 +223,47 @@ export const arraysSection: Section = {
         "Column major traversal",
         "Fundamental"
       ),
+    ]),
+
+    ...chapterTopics("Solving problems with arrays", [
+      lesson("when-right-choice", "When is an array the right choice?"),
+      lesson("when-reading-constraints", "Reading constraints to pick an approach"),
+      lesson("when-toolkit", "The array problem-solving toolkit"),
+      lesson("when-dry-run", "How to dry run an array problem"),
+    ]),
+
+    ...chapterTopics("Most asked: problems on a single array", [
+      lesson("sa-roadmap", "Single array problems: a roadmap"),
+      problem("sa-second-largest", "Second largest element", "Easy"),
+      problem("sa-move-zeroes", "Move zeroes", "Easy"),
+      problem("sa-remove-duplicates", "Remove duplicates from a sorted array", "Easy"),
+      problem("sa-buy-sell-stock", "Best time to buy and sell stock", "Easy"),
+      problem("sa-majority-element", "Majority element", "Easy"),
+      problem("sa-maximum-subarray", "Maximum subarray sum (Kadane's algorithm)", "Medium"),
+      problem("sa-rotate-array", "Rotate an array by k steps", "Medium"),
+      problem("sa-sort-colors", "Sort colors (Dutch national flag)", "Medium"),
+      problem("sa-product-except-self", "Product of array except self", "Medium"),
+      problem("sa-peak-element", "Find a peak element", "Medium"),
+    ]),
+
+    ...chapterTopics("Most asked: problems on multiple arrays", [
+      lesson("ma-roadmap", "Working with more than one array"),
+      problem("ma-merge-sorted", "Merge two sorted arrays", "Easy"),
+      problem("ma-merge-in-place", "Merge sorted arrays in place", "Easy"),
+      problem("ma-intersection", "Intersection of two arrays", "Easy"),
+      problem("ma-union", "Union of two sorted arrays", "Easy"),
+      problem("ma-common-three", "Common elements in three sorted arrays", "Medium"),
+    ]),
+
+    ...chapterTopics("Most asked: problems on 2D arrays", [
+      lesson("mt-understanding", "Understanding matrix traversal"),
+      problem("mt-transpose", "Transpose a matrix", "Easy"),
+      problem("mt-pascal-triangle", "Pascal's triangle", "Easy"),
+      problem("mt-rotate-in-place", "Rotate a matrix in place", "Medium"),
+      problem("mt-spiral-order", "Spiral order traversal", "Medium"),
+      problem("mt-set-zeroes", "Set matrix zeroes in place", "Medium"),
+      problem("mt-search-matrix", "Search a sorted 2D matrix", "Medium"),
+      problem("mt-diagonal-traversal", "Diagonal traversal", "Medium"),
     ]),
 
     ...chapterTopics("Pattern: Two pointers", [
@@ -282,14 +332,6 @@ export const arraysSection: Section = {
       problem("bs-rotated-search", "Search in a rotated array", "Medium"),
       problem("bs-ship-capacity", "Minimum capacity to ship in d days", "Medium"),
       problem("bs-minimum-rate", "Minimum rate to finish in time", "Medium"),
-    ]),
-
-    ...chapterTopics("Pattern: Matrix traversal", [
-      lesson("mt-understanding", "Understanding matrix traversal"),
-      problem("mt-spiral-order", "Spiral order traversal", "Medium"),
-      problem("mt-rotate-in-place", "Rotate a matrix in place", "Medium"),
-      problem("mt-diagonal-traversal", "Diagonal traversal", "Medium"),
-      problem("mt-set-zeroes", "Set matrix zeroes in place", "Medium"),
     ]),
 
     ...chapterTopics("Designing a dynamic array", [

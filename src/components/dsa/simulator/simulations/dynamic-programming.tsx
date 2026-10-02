@@ -110,5 +110,6 @@ export const dynamicProgrammingSimulation: Simulation = {
   },
   buffer: `dp_table[${STAIRS + 1}]`,
   badge: "O(n) Time · O(n) Memory",
+  output: { label: "Returns", value: "21 ways" },
   steps: trace(),
 };

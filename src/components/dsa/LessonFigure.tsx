@@ -18,6 +18,8 @@ export default function LessonFigure({
   height: number;
 }) {
   const [zoomed, setZoomed] = useState(false);
+  // Excalidraw drawings get flipped for dark mode; photos and uploads don't.
+  const art = src.includes("/drawings/") ? " drawing-art" : "";
 
   useEffect(() => {
     if (!zoomed) return;
@@ -45,7 +47,7 @@ export default function LessonFigure({
           width={width}
           height={height}
           unoptimized={src.endsWith(".svg")}
-          className="mx-auto h-auto w-full max-w-3xl"
+          className={`mx-auto h-auto w-full max-w-3xl${art}`}
         />
       </div>
 
@@ -78,7 +80,7 @@ export default function LessonFigure({
             width={width}
             height={height}
             unoptimized={src.endsWith(".svg")}
-            className="max-h-full w-auto max-w-full rounded-lg bg-surface-container-lowest p-space-lg"
+            className={`max-h-full w-auto max-w-full rounded-lg bg-surface-container-lowest p-space-lg${art}`}
           />
         </div>
       )}

@@ -1,10 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
+import { PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import type { LessonBlock, LessonBlockType } from "@/lib/dsa/types";
+import ConfirmDialog from "./ConfirmDialog";
 import DrawingBlockEditor from "./DrawingBlockEditor";
+import { fieldClass, inputClass } from "./fieldStyles";
+import { errorMessage, sendCurriculumChange } from "./sendCurriculumChange";
 
 const BLOCK_LABELS: Record<LessonBlockType, string> = {
   heading: "Heading",
@@ -13,6 +18,7 @@ const BLOCK_LABELS: Record<LessonBlockType, string> = {
   code: "Code",
   drawing: "Drawing",
   figure: "Image",
+  simulator: "Simulator",
 };
 
 function emptyBlock(type: LessonBlockType): LessonBlock {
@@ -36,27 +42,42 @@ function emptyBlock(type: LessonBlockType): LessonBlock {
         height: 0,
         scene: { elements: [], files: {} },
       };
+    case "simulator":
+      return { type: "simulator", program: PRACTICE_PROGRAMS[0].id };
   }
 }
 
-const inputClass =
-  "font-body-md text-body-md w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-space-md py-space-sm text-on-surface outline-none focus:border-primary";
-
 export default function LessonEditor({
   sectionSlug,
+  sectionTitle,
   topicSlug,
+  lessonTitle,
+  chapterTitle,
   initialBlocks,
   updatedAt,
 }: {
   sectionSlug: string;
+  sectionTitle: string;
   topicSlug: string;
+  lessonTitle: string;
+  chapterTitle: string;
   initialBlocks: LessonBlock[];
   updatedAt: string | null;
 }) {
+  const router = useRouter();
   const [blocks, setBlocks] = useState<LessonBlock[]>(initialBlocks);
+  // Every edit makes a new array, so "changed since the last save" is just
+  // whether this is still the same array that was last saved.
+  const [savedBlocks, setSavedBlocks] = useState<LessonBlock[]>(initialBlocks);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+  const [discardError, setDiscardError] = useState<string | null>(null);
+
+  const unsaved = blocks !== savedBlocks;
+  const hasSavedContent = updatedAt !== null || savedBlocks !== initialBlocks;
 
   function replaceBlock(index: number, block: LessonBlock) {
     setBlocks((current) => current.map((b, i) => (i === index ? block : b)));
@@ -104,6 +125,8 @@ export default function LessonEditor({
   }
 
   async function save() {
+    // Edits made while this is in flight stay unsaved.
+    const snapshot = blocks;
     setSaving(true);
     setError(null);
     setStatus(null);
@@ -113,7 +136,7 @@ export default function LessonEditor({
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blocks }),
+        body: JSON.stringify({ blocks: snapshot }),
       }
     );
     const body = await response.json().catch(() => null);
@@ -123,7 +146,30 @@ export default function LessonEditor({
       setError(body?.error ?? "Could not save.");
       return;
     }
+    setSavedBlocks(snapshot);
     setStatus(`Saved ${new Date(body.updatedAt).toLocaleTimeString()}`);
+  }
+
+  function revert() {
+    setBlocks(savedBlocks);
+    setError(null);
+  }
+
+  async function discardLesson() {
+    setDiscarding(true);
+    setDiscardError(null);
+    try {
+      await sendCurriculumChange({
+        op: "remove-lesson",
+        section: sectionSlug,
+        topic: topicSlug,
+      });
+      // Stays in its "Discarding…" state until the admin home replaces it.
+      router.push(`/admin?discarded=${sectionSlug}`);
+    } catch (caught) {
+      setDiscardError(errorMessage(caught));
+      setDiscarding(false);
+    }
   }
 
   const incompleteFigure = blocks.some(
@@ -298,6 +344,36 @@ export default function LessonEditor({
               />
             )}
 
+            {block.type === "simulator" && (
+              <div className="space-y-space-sm">
+                <select
+                  value={block.program}
+                  aria-label="Simulator"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, program: e.target.value })
+                  }
+                  className={`${fieldClass} w-full`}
+                >
+                  {PRACTICE_PROGRAMS.map((program) => (
+                    <option key={program.id} value={program.id}>
+                      {program.title}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={block.caption ?? ""}
+                  placeholder="Caption (optional) — defaults to how to use the simulator"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, caption: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Readers can change the input and step through the code line by line.
+                </p>
+              </div>
+            )}
+
             {block.type === "figure" && (
               <div className="space-y-space-sm">
                 {block.src ? (
@@ -371,30 +447,72 @@ export default function LessonEditor({
         >
           {saving ? "Saving…" : "Save lesson"}
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setDiscardError(null);
+            setConfirmingDiscard(true);
+          }}
+          disabled={saving}
+          className="font-label-md text-label-md flex items-center gap-space-xs rounded-lg border border-error/40 px-space-lg py-space-sm text-error transition-colors hover:border-error hover:bg-error-container hover:text-on-error-container disabled:opacity-50"
+        >
+          <Trash2 size={15} />
+          Discard lesson
+        </button>
 
         {incompleteFigure && (
           <p className="font-body-sm text-body-sm text-on-surface-variant">
             Every image needs a file and every drawing needs a saved canvas.
           </p>
         )}
-        {error && (
+        {error ? (
           <p className="font-body-sm text-body-sm text-error" role="alert">
             {error}
           </p>
-        )}
-        {status && !error && (
-          <p className="font-body-sm text-body-sm text-secondary">{status}</p>
-        )}
-        {!status && !error && updatedAt && (
-          // The server and the reader's browser format dates differently.
-          <p
-            suppressHydrationWarning
-            className="font-body-sm text-body-sm text-on-surface-variant"
-          >
-            Last saved {new Date(updatedAt).toLocaleString()}
+        ) : unsaved ? (
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            Unsaved changes ·{" "}
+            <button
+              type="button"
+              onClick={revert}
+              disabled={saving}
+              className="font-semibold text-primary hover:underline disabled:opacity-50"
+            >
+              Revert to last save
+            </button>
           </p>
+        ) : status ? (
+          <p className="font-body-sm text-body-sm text-secondary">{status}</p>
+        ) : (
+          updatedAt && (
+            // The server and the reader's browser format dates differently.
+            <p
+              suppressHydrationWarning
+              className="font-body-sm text-body-sm text-on-surface-variant"
+            >
+              Last saved {new Date(updatedAt).toLocaleString()}
+            </p>
+          )
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmingDiscard}
+        title="Discard this lesson?"
+        confirmLabel="Discard lesson"
+        busyLabel="Discarding…"
+        busy={discarding}
+        error={discardError}
+        onConfirm={discardLesson}
+        onCancel={() => setConfirmingDiscard(false)}
+      >
+        <p>
+          <strong className="text-on-surface">“{lessonTitle}”</strong> will be
+          taken out of {chapterTitle} in {sectionTitle}
+          {hasSavedContent && ", and the content saved for it will be deleted"}.
+          Readers stop seeing it straight away. This can&apos;t be undone.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

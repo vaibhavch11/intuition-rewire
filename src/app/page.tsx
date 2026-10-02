@@ -1,13 +1,29 @@
-import Link from "next/link";
-import { ArrowDown, PlayCircle, Box, Cpu, Brain } from "lucide-react";
+import { ArrowDown, Play, SquareTerminal, Cpu, Brain } from "lucide-react";
 import ParticleNetwork from "@/components/home/ParticleNetwork";
 import LearningPathSection from "@/components/home/LearningPathSection";
-import AlgorithmRace from "@/components/home/AlgorithmRace";
+import WaterContainerSimulator from "@/components/home/WaterContainerSimulator";
 import ComparisonSection from "@/components/home/ComparisonSection";
 import HardwareTeaserSection from "@/components/home/HardwareTeaserSection";
 import FinalCTA from "@/components/home/FinalCTA";
+import ProductTourSection from "@/components/home/ProductTourSection";
+import HashLink from "@/components/HashLink";
+import { getSections } from "@/lib/dsa/curriculum";
 
-export default function Home() {
+const HIGHLIGHTS = [
+  { icon: SquareTerminal, value: "100%", label: "Visual dry-runs" },
+  { icon: Cpu, value: "RAM-level", label: "Hardware intuition" },
+  { icon: Brain, value: "Zero", label: "Templates to memorize" },
+];
+
+export default async function Home() {
+  // Counts only, so the full curriculum never reaches the browser bundle.
+  const courses = (await getSections()).map((s) => ({
+    slug: s.slug,
+    title: s.title,
+    category: s.category,
+    lessons: s.topics.length,
+  }));
+
   return (
     <main className="w-full bg-surface min-h-[calc(100vh-56px)]">
       <div className="flex flex-col w-full">
@@ -20,7 +36,7 @@ export default function Home() {
           </div>
 
           <section className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop pt-space-2xl pb-space-xl flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-space-xs px-space-md py-space-2xs rounded-full bg-primary-fixed/60 shadow-sm mb-space-lg motion-safe:animate-fade-up">
+            <div className="inline-flex items-center gap-space-xs px-space-md py-space-2xs rounded-full border border-primary/15 bg-primary-fixed/50 mb-space-lg motion-safe:animate-fade-up">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="font-label-tag text-label-tag text-primary uppercase tracking-wider">
                 Intuition Over Rote Memorization
@@ -39,73 +55,50 @@ export default function Home() {
               spatial locality, and interactive data structure anatomy.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-space-md mb-space-2xl motion-safe:animate-fade-up [animation-delay:240ms]">
-              <Link
+            <div className="mb-space-2xl flex w-full flex-col items-stretch justify-center gap-space-sm sm:w-auto sm:flex-row sm:items-center sm:gap-space-md motion-safe:animate-fade-up [animation-delay:240ms]">
+              <HashLink
                 href="#learning-path"
-                className="inline-flex items-center gap-space-sm h-11 px-space-lg bg-primary-container text-on-primary font-label-md text-label-md rounded-lg shadow-md hover:bg-primary transition-all duration-200"
+                className="group inline-flex h-12 items-center justify-center gap-space-sm rounded-xl bg-primary-container px-space-lg font-label-md text-[15px] font-semibold text-on-primary shadow-[0_10px_24px_-10px_rgba(79,70,229,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[0_14px_28px_-10px_rgba(53,37,205,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                <span>Explore Visual Roadmap</span>
-                <ArrowDown size={18} />
-              </Link>
-              <Link
-                href="#algorithm-race"
-                className="inline-flex items-center gap-space-sm h-11 px-space-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded-lg shadow-sm hover:bg-surface-container-low transition-all duration-200"
+                Explore Visual Roadmap
+                <ArrowDown size={18} className="transition-transform duration-200 group-hover:translate-y-0.5" />
+              </HashLink>
+              <HashLink
+                href="#water-challenge"
+                className="group inline-flex h-12 items-center justify-center gap-space-sm rounded-xl bg-surface-container-lowest pl-space-md pr-space-lg font-label-md text-[15px] font-semibold text-on-surface shadow-[0_1px_2px_rgba(19,27,46,0.05)] ring-1 ring-inset ring-outline-variant transition-all duration-200 hover:-translate-y-px hover:bg-surface-container-low hover:ring-outline/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                <PlayCircle size={20} className="text-primary" />
-                <span>Watch the Algorithm Race</span>
-              </Link>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-fixed text-primary transition-colors duration-200 group-hover:bg-primary-container group-hover:text-on-primary">
+                  <Play size={12} fill="currentColor" className="translate-x-px" />
+                </span>
+                Try the Water Challenge
+              </HashLink>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-md w-full max-w-4xl p-space-md rounded-xl bg-surface-container-lowest/80 backdrop-blur-md shadow-sm motion-safe:animate-fade-up [animation-delay:320ms]">
-              <div className="flex items-center gap-space-md p-space-sm">
-                <div className="w-10 h-10 rounded-lg bg-secondary-container/40 flex items-center justify-center text-on-secondary-container">
-                  <Box size={22} />
-                </div>
-                <div className="text-left">
-                  <div className="font-headline-md text-headline-md text-on-surface">
-                    100%
-                  </div>
-                  <div className="font-code-sm text-code-sm text-on-surface-variant">
-                    Visual Dry-Runs
+            <dl className="grid w-full max-w-4xl grid-cols-1 divide-y divide-outline-variant/60 overflow-hidden rounded-2xl border border-outline-variant/70 bg-surface-container-lowest/85 text-left shadow-[0_1px_2px_rgba(19,27,46,0.04),0_18px_40px_-24px_rgba(19,27,46,0.25)] backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0 motion-safe:animate-fade-up [animation-delay:320ms]">
+              {HIGHLIGHTS.map(({ icon: Icon, value, label }) => (
+                <div key={label} className="flex items-center gap-space-md px-space-lg py-space-md sm:py-space-lg">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-fixed/60 text-primary ring-1 ring-inset ring-primary/10">
+                    <Icon size={20} strokeWidth={1.8} />
+                  </span>
+                  <div className="flex min-w-0 flex-col-reverse">
+                    <dt className="font-body-sm text-body-sm text-on-surface-variant">{label}</dt>
+                    <dd className="text-[22px] font-semibold leading-7 tracking-tight text-on-surface">{value}</dd>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-space-md p-space-sm">
-                <div className="w-10 h-10 rounded-lg bg-primary-fixed/50 flex items-center justify-center text-primary">
-                  <Cpu size={22} />
-                </div>
-                <div className="text-left">
-                  <div className="font-headline-md text-headline-md text-on-surface">
-                    Hardware
-                  </div>
-                  <div className="font-code-sm text-code-sm text-on-surface-variant">
-                    To-Code RAM Mapping
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-space-md p-space-sm">
-                <div className="w-10 h-10 rounded-lg bg-tertiary-fixed/50 flex items-center justify-center text-tertiary">
-                  <Brain size={22} />
-                </div>
-                <div className="text-left">
-                  <div className="font-headline-md text-headline-md text-on-surface">
-                    Zero
-                  </div>
-                  <div className="font-code-sm text-code-sm text-on-surface-variant">
-                    Pattern Memorization
-                  </div>
-                </div>
-              </div>
-            </div>
+              ))}
+            </dl>
           </section>
         </div>
 
         {/* Each section fades up as it scrolls into view (see .reveal). */}
         <div className="reveal">
-          <LearningPathSection />
+          <LearningPathSection courses={courses} />
         </div>
         <div className="reveal">
-          <AlgorithmRace />
+          <ProductTourSection />
+        </div>
+        <div className="reveal">
+          <WaterContainerSimulator />
         </div>
         <div className="reveal">
           <ComparisonSection />

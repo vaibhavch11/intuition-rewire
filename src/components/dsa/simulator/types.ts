@@ -39,5 +39,7 @@ export interface Simulation {
   buffer: string;
   /** Complexity badge in the memory window's title bar. */
   badge: string;
+  /** What the algorithm returns, revealed once the run reaches its last step. */
+  output: { label: string; value: string };
   steps: SimulationStep[];
 }

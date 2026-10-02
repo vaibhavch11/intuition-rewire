@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTopic } from "@/lib/dsa/data";
+import { getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
 import { requireSignedIn } from "@/lib/auth/session";
 import DryRunPlayer from "@/components/DryRunPlayer";
@@ -19,7 +19,7 @@ export default async function TopicPage(
   props: PageProps<"/dsa/[section]/[topic]">
 ) {
   const { section: sectionSlug, topic: topicSlug } = await props.params;
-  const result = getTopic(sectionSlug, topicSlug);
+  const result = await getTopic(sectionSlug, topicSlug);
   if (!result) notFound();
   const { section, topic } = result;
 
@@ -33,7 +33,11 @@ export default async function TopicPage(
   const nextTopic = section.topics[topicIndex + 1];
 
   return (
-    <div className="mx-auto max-w-6xl px-gutter-mobile py-space-2xl lg:px-space-2xl">
+    // Keyed by lesson so moving between lessons replays the entrance.
+    <div
+      key={`${section.slug}/${topic.slug}`}
+      className="mx-auto max-w-6xl px-gutter-mobile py-space-2xl motion-safe:animate-lesson-in lg:px-space-2xl"
+    >
           <div className="lg:hidden">
             <Link
               href={`/dsa/${section.slug}`}

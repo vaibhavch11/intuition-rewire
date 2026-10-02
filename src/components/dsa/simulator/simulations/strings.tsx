@@ -82,5 +82,6 @@ export const stringsSimulation: Simulation = {
   },
   buffer: `char_buffer[${WORD.length}] · ASCII`,
   badge: "O(1) Extra Memory",
+  output: { label: "Returns", value: "\"desserts\"" },
   steps: trace(),
 };

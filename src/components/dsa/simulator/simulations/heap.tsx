@@ -206,11 +206,12 @@ export const heapSimulation: Simulation = {
   algorithm: "Min-Heap Push (Sift-Up)",
   lead: "A heap is a tree with no pointers — index arithmetic over a flat array does all the linking.",
   input: {
-    label: "Push:",
-    value: `push(${PUSH})`,
+    label: "Input:",
+    value: `heap = [${INITIAL.join(", ")}], push(${PUSH})`,
     rule: "Write the new value at the end of the array, then sift up: while it is smaller than its parent at `(i - 1) / 2`, swap the two.",
   },
   buffer: `heap_array[${CAPACITY}] · implicit tree`,
   badge: "O(log n) Push",
+  output: { label: "Heap array", value: "[1, 2, 3, 4, 9, 5, 8, 7]" },
   steps: trace(),
 };

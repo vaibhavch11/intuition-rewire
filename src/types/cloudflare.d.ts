@@ -55,7 +55,8 @@ interface R2Bucket {
     options?: R2PutOptions
   ): Promise<R2Object>;
   list(options?: R2ListOptions): Promise<R2Objects>;
-  delete(key: string): Promise<void>;
+  /** Takes up to 1,000 keys at once. */
+  delete(keys: string | string[]): Promise<void>;
 }
 
 interface Fetcher {

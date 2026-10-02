@@ -278,5 +278,6 @@ export const trieSimulation: Simulation = {
   },
   buffer: "trie_nodes · 26 slots each",
   badge: "O(L) Insert",
+  output: { label: "Result", value: "\"cap\" stored · 1 new node" },
   steps: trace(),
 };

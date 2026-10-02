@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getSection } from "@/lib/dsa/data";
+import { getSection } from "@/lib/dsa/curriculum";
 import { groupByChapter } from "@/lib/dsa/types";
 import LessonIndex from "@/components/dsa/LessonIndex";
 
@@ -11,7 +11,7 @@ export default async function LessonLayout(
   props: LayoutProps<"/dsa/[section]/[topic]">
 ) {
   const { section: sectionSlug } = await props.params;
-  const section = getSection(sectionSlug);
+  const section = await getSection(sectionSlug);
   if (!section) notFound();
 
   const chapters = groupByChapter(section.topics).map((chapter) => ({

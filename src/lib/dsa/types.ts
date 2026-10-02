@@ -58,7 +58,9 @@ export type LessonBlock =
       width: number;
       height: number;
       scene: DrawingScene;
-    };
+    }
+  /** A step-through dry run readers can feed their own input; see practicePrograms. */
+  | { type: "simulator"; program: string; caption?: string };
 
 export interface DrawingScene {
   elements: unknown[];
@@ -112,6 +114,14 @@ export interface Section {
 export interface Chapter {
   title: string;
   topics: Topic[];
+}
+
+/** What a course card needs, small enough to hand to a client component. */
+export interface CourseSummary {
+  slug: string;
+  title: string;
+  category: SectionCategory;
+  lessons: number;
 }
 
 export interface CourseStats {

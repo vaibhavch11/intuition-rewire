@@ -307,5 +307,6 @@ export const singlyLinkedListSimulation: Simulation = {
   },
   buffer: `heap_nodes[${VALUES.length}] · non-contiguous`,
   badge: "O(1) Memory",
+  output: { label: "New head", value: "40 → 30 → 20 → 10" },
   steps: trace(),
 };

@@ -372,5 +372,6 @@ export const doublyLinkedListSimulation: Simulation = {
   },
   buffer: `heap_nodes[${VALUES.length}] · prev ⇄ next`,
   badge: "O(1) Insert",
+  output: { label: "List", value: "10 ⇄ 20 ⇄ 25 ⇄ 30 ⇄ 40" },
   steps: trace(),
 };

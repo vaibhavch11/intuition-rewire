@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Trace, TraceValue } from "@/lib/dsa/types";
+import CodeLines from "@/components/dsa/CodeLines";
 
 function formatValue(value: TraceValue): string {
   if (Array.isArray(value)) return `[${value.map(formatValue).join(", ")}]`;
@@ -20,7 +21,6 @@ function formatValue(value: TraceValue): string {
 export default function DryRunPlayer({ trace }: { trace: Trace }) {
   const [stepIndex, setStepIndex] = useState(0);
   const step = trace.steps[stepIndex];
-  const codeLines = trace.code.split("\n");
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === trace.steps.length - 1;
 
@@ -30,43 +30,26 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
   );
 
   return (
-    <div className="rounded-xl border border-gray-200 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm">
+    <div className="rounded-xl border border-outline-variant overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-surface-container-low border-b border-outline-variant text-sm">
         <span className="font-medium">Dry Run</span>
-        <span className="text-gray-500">
+        <span className="text-on-surface-variant">
           Step {stepIndex + 1} / {trace.steps.length}
         </span>
       </div>
 
       <div className="grid md:grid-cols-2 gap-0">
-        <pre className="text-sm font-mono p-4 overflow-x-auto bg-gray-900 text-gray-100 m-0">
-          {codeLines.map((line, i) => {
-            const lineNumber = i + 1;
-            const active = lineNumber === step.line;
-            return (
-              <div
-                key={lineNumber}
-                className={`px-2 -mx-2 rounded ${
-                  active ? "bg-brand/25 border-l-2 border-brand-light" : ""
-                }`}
-              >
-                <span className="inline-block w-6 text-gray-500 select-none">
-                  {lineNumber}
-                </span>
-                {line || " "}
-              </div>
-            );
-          })}
-        </pre>
+        <CodeLines code={trace.code} language={trace.language} activeLine={step.line} size="sm" />
+
 
         <div className="p-4 space-y-4 text-sm">
           <div>
-            <h4 className="font-semibold mb-1 text-gray-500 uppercase tracking-wide text-xs">
+            <h4 className="font-semibold mb-1 text-on-surface-variant uppercase tracking-wide text-xs">
               Call Stack
             </h4>
             <ul className="space-y-1 font-mono">
               {[...step.callStack].reverse().map((frame, i) => (
-                <li key={i} className="px-2 py-1 rounded bg-gray-100">
+                <li key={i} className="px-2 py-1 rounded bg-surface-container">
                   {frame}
                 </li>
               ))}
@@ -74,14 +57,14 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-1 text-gray-500 uppercase tracking-wide text-xs">
+            <h4 className="font-semibold mb-1 text-on-surface-variant uppercase tracking-wide text-xs">
               Variables
             </h4>
             <table className="w-full font-mono text-xs">
               <tbody>
                 {Object.entries(step.variables).map(([name, value]) => (
-                  <tr key={name} className="border-b border-gray-200">
-                    <td className="py-1 pr-2 text-gray-500 align-top whitespace-nowrap">
+                  <tr key={name} className="border-b border-outline-variant">
+                    <td className="py-1 pr-2 text-on-surface-variant align-top whitespace-nowrap">
                       {name}
                     </td>
                     <td className="py-1 break-all">{formatValue(value)}</td>
@@ -93,7 +76,7 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
 
           {arrayVarEntry && (
             <div>
-              <h4 className="font-semibold mb-1 text-gray-500 uppercase tracking-wide text-xs">
+              <h4 className="font-semibold mb-1 text-on-surface-variant uppercase tracking-wide text-xs">
                 {arrayVarEntry[0]}
               </h4>
               <div className="flex gap-1">
@@ -103,7 +86,7 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
                     className={`w-9 h-9 flex items-center justify-center rounded font-mono text-xs border ${
                       step.highlightIndices?.includes(idx)
                         ? "bg-brand-tint border-brand-light"
-                        : "border-gray-300"
+                        : "border-outline-variant"
                     }`}
                   >
                     {formatValue(v)}
@@ -113,7 +96,7 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
             </div>
           )}
 
-          <p className="text-gray-700 leading-relaxed">{step.note}</p>
+          <p className="text-on-surface leading-relaxed">{step.note}</p>
 
           {step.output && (
             <div className="font-mono text-xs px-2 py-1 rounded bg-brand-tint border border-brand-light/50">
@@ -123,11 +106,11 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-outline-variant">
         <button
           onClick={() => setStepIndex(0)}
           disabled={isFirst}
-          className="text-sm px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
+          className="text-sm px-3 py-1.5 rounded border border-outline-variant disabled:opacity-40"
         >
           Reset
         </button>
@@ -135,7 +118,7 @@ export default function DryRunPlayer({ trace }: { trace: Trace }) {
           <button
             onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
             disabled={isFirst}
-            className="text-sm px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
+            className="text-sm px-3 py-1.5 rounded border border-outline-variant disabled:opacity-40"
           >
             ← Prev
           </button>

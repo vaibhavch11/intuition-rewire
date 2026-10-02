@@ -240,5 +240,6 @@ export const binaryTreeSimulation: Simulation = {
   },
   buffer: `heap_nodes[${Object.keys(TREE).length}] + call_stack`,
   badge: "O(h) Stack Memory",
+  output: { label: "Visit order", value: "D, B, E, A, C, F" },
   steps: trace(),
 };

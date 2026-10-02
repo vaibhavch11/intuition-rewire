@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTopic } from "@/lib/dsa/data";
+import { getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
 import LessonEditor from "@/components/admin/LessonEditor";
 
@@ -8,7 +8,7 @@ export default async function AdminLessonPage(
   props: PageProps<"/admin/[section]/[topic]">
 ) {
   const { section: sectionSlug, topic: topicSlug } = await props.params;
-  const result = getTopic(sectionSlug, topicSlug);
+  const result = await getTopic(sectionSlug, topicSlug);
   if (!result) notFound();
   const { section, topic } = result;
 
@@ -42,7 +42,10 @@ export default async function AdminLessonPage(
 
       <LessonEditor
         sectionSlug={section.slug}
+        sectionTitle={section.title}
         topicSlug={topic.slug}
+        lessonTitle={topic.title}
+        chapterTitle={topic.chapter}
         initialBlocks={content?.blocks ?? []}
         updatedAt={content?.updatedAt ?? null}
       />

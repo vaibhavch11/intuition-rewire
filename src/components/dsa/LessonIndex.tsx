@@ -1,11 +1,24 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useStoredString } from "@/lib/browserStore";
 import { completedFrom, PROGRESS_KEY } from "@/lib/progress";
+
+/** A small pulsing dot on the lesson being opened, until it arrives. */
+function PendingDot() {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      aria-hidden
+      className={`ml-space-xs inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-container align-middle transition-opacity duration-200 ${
+        pending ? "opacity-100 motion-safe:animate-pulse" : "opacity-0"
+      }`}
+    />
+  );
+}
 
 export interface IndexItem {
   slug: string;
@@ -48,8 +61,15 @@ export default function LessonIndex({
     () => new Set(completedFrom(raw, sectionSlug)),
     [raw, sectionSlug]
   );
+  // Saved progress can still list lessons since removed in /admin, so only
+  // lessons that are in the course now count.
+  const finished = chapters.reduce(
+    (count, chapter) =>
+      count + chapter.items.filter((item) => done.has(item.slug)).length,
+    0
+  );
   const percent =
-    totalTopics === 0 ? 0 : Math.round((done.size / totalTopics) * 100);
+    totalTopics === 0 ? 0 : Math.round((finished / totalTopics) * 100);
 
   if (hidden) {
     return (
@@ -135,22 +155,25 @@ export default function LessonIndex({
                       )}
                       <span
                         aria-hidden
-                        className={`absolute left-0 top-1/2 h-[15px] w-[15px] -translate-y-1/2 rounded-full border-[1.5px] ${
+                        className={`absolute left-0 top-1/2 h-[15px] w-[15px] -translate-y-1/2 rounded-full border-[1.5px] transition-colors duration-200 ${
                           done.has(item.slug)
                             ? "border-primary bg-primary"
-                            : "border-outline bg-surface-container-lowest"
+                            : active
+                              ? "border-primary-container bg-primary-fixed"
+                              : "border-outline bg-surface-container-lowest"
                         }`}
                       />
                       <Link
                         href={`/dsa/${sectionSlug}/${item.slug}`}
                         aria-current={active ? "page" : undefined}
-                        className={`font-body-md text-body-md block rounded px-space-md py-space-sm ${
+                        className={`font-body-md text-body-md block rounded-lg px-space-md py-space-sm transition-colors duration-200 ${
                           active
-                            ? "bg-primary-fixed font-semibold text-on-primary-fixed"
+                            ? "bg-primary-fixed font-semibold text-on-primary-fixed shadow-[inset_3px_0_0_var(--c-primary-container)]"
                             : "text-on-surface-variant hover:bg-surface-container hover:text-primary"
                         }`}
                       >
                         {item.title}
+                        <PendingDot />
                       </Link>
                     </li>
                   );

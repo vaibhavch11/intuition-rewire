@@ -191,5 +191,6 @@ export const stackSimulation: Simulation = {
   },
   buffer: `stack_buffer[${CAPACITY}]`,
   badge: "O(n) Memory",
+  output: { label: "Returns", value: "true  ·  balanced" },
   steps: trace(),
 };
