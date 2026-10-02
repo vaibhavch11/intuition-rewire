@@ -1,7 +1,7 @@
 import { ArrowDown, Play, SquareTerminal, Cpu, Brain } from "lucide-react";
 import ParticleNetwork from "@/components/home/ParticleNetwork";
 import LearningPathSection from "@/components/home/LearningPathSection";
-import AlgorithmRace from "@/components/home/AlgorithmRace";
+import WaterContainerSimulator from "@/components/home/WaterContainerSimulator";
 import ComparisonSection from "@/components/home/ComparisonSection";
 import HardwareTeaserSection from "@/components/home/HardwareTeaserSection";
 import FinalCTA from "@/components/home/FinalCTA";
@@ -64,13 +64,13 @@ export default async function Home() {
                 <ArrowDown size={18} className="transition-transform duration-200 group-hover:translate-y-0.5" />
               </HashLink>
               <HashLink
-                href="#algorithm-race"
+                href="#water-challenge"
                 className="group inline-flex h-12 items-center justify-center gap-space-sm rounded-xl bg-surface-container-lowest pl-space-md pr-space-lg font-label-md text-[15px] font-semibold text-on-surface shadow-[0_1px_2px_rgba(19,27,46,0.05)] ring-1 ring-inset ring-outline-variant transition-all duration-200 hover:-translate-y-px hover:bg-surface-container-low hover:ring-outline/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-fixed text-primary transition-colors duration-200 group-hover:bg-primary-container group-hover:text-on-primary">
                   <Play size={12} fill="currentColor" className="translate-x-px" />
                 </span>
-                Watch the Algorithm Race
+                Try the Water Challenge
               </HashLink>
             </div>
 
@@ -98,7 +98,7 @@ export default async function Home() {
           <ProductTourSection />
         </div>
         <div className="reveal">
-          <AlgorithmRace />
+          <WaterContainerSimulator />
         </div>
         <div className="reveal">
           <ComparisonSection />

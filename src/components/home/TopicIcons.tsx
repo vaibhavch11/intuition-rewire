@@ -26,9 +26,12 @@ function Arrow({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: num
   const head = 2.3;
   const a1 = angle + Math.PI - 0.55;
   const a2 = angle + Math.PI + 0.55;
+  // Rounded so the server and the browser print the same path (their trig
+  // can differ in the last digit, which would break hydration).
+  const r = (n: number) => Math.round(n * 100) / 100;
   return (
     <path
-      d={`M${x1} ${y1}L${x2} ${y2}M${x2 + head * Math.cos(a1)} ${y2 + head * Math.sin(a1)}L${x2} ${y2}L${x2 + head * Math.cos(a2)} ${y2 + head * Math.sin(a2)}`}
+      d={`M${x1} ${y1}L${x2} ${y2}M${r(x2 + head * Math.cos(a1))} ${r(y2 + head * Math.sin(a1))}L${x2} ${y2}L${r(x2 + head * Math.cos(a2))} ${r(y2 + head * Math.sin(a2))}`}
       fill="none"
     />
   );

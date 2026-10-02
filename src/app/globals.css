@@ -286,6 +286,16 @@
   --animate-slide-in-right: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-in-left: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-lesson-in: lesson-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-wave: wave 3.2s linear infinite;
+
+  @keyframes wave {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 
   @keyframes lesson-in {
     from {

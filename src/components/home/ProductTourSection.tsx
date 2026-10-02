@@ -9,14 +9,14 @@ export default function ProductTourSection() {
       className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop py-space-2xl"
     >
       <SectionHeader
-        eyebrow="22-second tour"
+        eyebrow="23-second tour"
         icon={Clapperboard}
         title={
           <>
             Watch it <span className="text-primary-container">run</span>
           </>
         }
-        lead="Press Play on Kadane’s algorithm, flip through the Arrays course and watch Big-O win a race, all recorded straight from the platform."
+        lead="Walk through a lesson, take the water challenge and watch a BST insert step by step — all recorded straight from the platform."
       />
 
       <div className="mx-auto mt-space-xl max-w-5xl overflow-hidden rounded-3xl bg-surface-container-lowest shadow-[0_1px_2px_rgba(19,27,46,0.04),0_28px_56px_-32px_rgba(19,27,46,0.35)] ring-1 ring-outline-variant/70">
@@ -25,11 +25,11 @@ export default function ProductTourSection() {
           controls
           playsInline
           preload="metadata"
-          poster="/videos/intuition-rewire-tour.jpg"
-          aria-label="IntuitionRewire product tour: a step-by-step dry run of Kadane's algorithm, the Arrays course and the live algorithm race"
+          poster="/videos/intuition-rewire-tour-v3.jpg"
+          aria-label="IntuitionRewire product tour: the homepage in light and dark mode, a lesson walkthrough, the Container With Most Water challenge, a BST insert dry run and the 3D memory board"
         >
-          <source src="/videos/intuition-rewire-tour.mp4" type="video/mp4" />
-          <a href="/videos/intuition-rewire-tour.mp4" className="text-primary underline">
+          <source src="/videos/intuition-rewire-tour-v3.mp4" type="video/mp4" />
+          <a href="/videos/intuition-rewire-tour-v3.mp4" className="text-primary underline">
             Download the tour video
           </a>
         </video>
