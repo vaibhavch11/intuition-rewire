@@ -89,7 +89,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="font-label-md text-label-md inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-space-base text-on-primary shadow-sm transition-all hover:bg-primary-container active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:active:scale-100"
+      className="font-label-md text-label-md inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary-container px-space-base text-on-primary shadow-sm transition-all hover:bg-primary active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:active:scale-100"
     >
       {children}
     </button>

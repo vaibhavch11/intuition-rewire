@@ -82,7 +82,7 @@ export default function UserMenu() {
         <Link
           href={`/signup?next=${next}`}
           tabIndex={loading ? -1 : undefined}
-          className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-primary px-space-sm font-label-md text-label-md font-semibold text-on-primary shadow-sm shadow-primary/25 transition-all hover:bg-primary-container hover:shadow-md active:scale-[0.98] sm:px-space-base"
+          className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-primary-container px-space-sm font-label-md text-label-md font-semibold text-on-primary shadow-sm shadow-primary/25 transition-all hover:bg-primary hover:shadow-md active:scale-[0.98] sm:px-space-base"
         >
           Sign up<span className="hidden sm:inline">&nbsp;free</span>
         </Link>

@@ -80,11 +80,12 @@ export const arraysSimulation: Simulation = {
   algorithm: "Two Sum II (Sorted Array)",
   lead: "See memory mutations as they happen in CPU cache lines.",
   input: {
-    label: "Target Value:",
-    value: `target = ${TARGET}`,
+    label: "Input:",
+    value: `nums = [${NUMS.join(", ")}], target = ${TARGET}`,
     rule: "If `arr[L] + arr[R] > target`, shift right pointer leftward (`R--`). Otherwise, increment left pointer (`L++`).",
   },
   buffer: `contiguous_ram_buffer[${NUMS.length}]`,
   badge: "O(1) Memory",
+  output: { label: "Returns", value: "[1, 4]  ·  3 + 11 = 14" },
   steps: trace(),
 };

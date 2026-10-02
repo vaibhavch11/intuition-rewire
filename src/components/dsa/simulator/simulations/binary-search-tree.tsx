@@ -249,5 +249,6 @@ export const binarySearchTreeSimulation: Simulation = {
   },
   buffer: `heap_nodes[${Object.keys(INITIAL).length}] · ordered`,
   badge: "O(h) Insert",
+  output: { label: "Result", value: "7 linked as 6.right (depth 3)" },
   steps: trace(),
 };

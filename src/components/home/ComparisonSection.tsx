@@ -10,8 +10,11 @@ import {
   Infinity as InfinityIcon,
   type LucideIcon,
 } from "lucide-react";
+import SectionHeader from "@/components/home/SectionHeader";
 
-const OLD_WAY: { icon: LucideIcon; title: string; body: ReactNode }[] = [
+type Point = { icon: LucideIcon; title: string; body: ReactNode };
+
+const OLD_WAY: Point[] = [
   {
     icon: Frown,
     title: "Rote Pattern Matching",
@@ -36,7 +39,7 @@ const OLD_WAY: { icon: LucideIcon; title: string; body: ReactNode }[] = [
   },
 ];
 
-const NEW_WAY: { icon: LucideIcon; title: string; body: ReactNode }[] = [
+const NEW_WAY: Point[] = [
   {
     icon: Cpu,
     title: "Cache & RAM Physics",
@@ -54,76 +57,116 @@ const NEW_WAY: { icon: LucideIcon; title: string; body: ReactNode }[] = [
   },
 ];
 
+function Column({
+  tone,
+  label,
+  title,
+  points,
+  outcome,
+}: {
+  tone: "old" | "new";
+  label: string;
+  title: string;
+  points: Point[];
+  outcome: string;
+}) {
+  const isNew = tone === "new";
+  const Badge = isNew ? Check : X;
+  return (
+    <div
+      className={`flex flex-col rounded-3xl p-space-lg sm:p-space-xl ${
+        isNew
+          ? "bg-surface-container-lowest shadow-[0_28px_56px_-28px_rgba(79,70,229,0.45)] ring-2 ring-primary-container"
+          : "bg-surface-container-low ring-1 ring-outline-variant/70"
+      }`}
+    >
+      <div className="flex items-center gap-space-md">
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+            isNew ? "bg-primary-container text-on-primary" : "bg-error-container/70 text-error"
+          }`}
+        >
+          <Badge size={20} strokeWidth={2.4} />
+        </span>
+        <div>
+          <p
+            className={`font-label-tag text-label-tag uppercase tracking-wider ${
+              isNew ? "text-primary" : "text-on-surface-variant"
+            }`}
+          >
+            {label}
+          </p>
+          <h3 className="font-headline-md text-headline-md tracking-tight text-on-surface">{title}</h3>
+        </div>
+      </div>
+
+      <ul className="mt-space-lg flex-1 space-y-space-lg">
+        {points.map((point) => (
+          <li key={point.title} className="flex gap-space-md">
+            <span
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ${
+                isNew
+                  ? "bg-primary-fixed/60 text-primary ring-primary/10"
+                  : "bg-surface-container-lowest text-error ring-outline-variant/70"
+              }`}
+            >
+              <point.icon size={18} strokeWidth={1.9} />
+            </span>
+            <div>
+              <p className="font-label-md text-[15px] font-semibold text-on-surface">{point.title}</p>
+              <p className="mt-0.5 font-body-md text-body-md text-on-surface-variant">{point.body}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div
+        className={`mt-space-xl flex items-start gap-space-sm border-t pt-space-md ${
+          isNew ? "border-primary-container/20" : "border-outline-variant/70"
+        }`}
+      >
+        <span className="mt-0.5 shrink-0 font-label-tag text-label-tag uppercase tracking-wider text-on-surface-variant">
+          Outcome
+        </span>
+        <p className={`font-body-md text-body-md font-semibold ${isNew ? "text-primary" : "text-on-surface-variant"}`}>
+          {outcome}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ComparisonSection() {
   return (
-    <section className="w-full bg-surface-container-lowest py-space-2xl">
+    <section className="w-full py-space-2xl">
       <div className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop">
-        <div className="text-center max-w-3xl mx-auto mb-space-xl">
-          <span className="font-label-tag text-label-tag text-primary uppercase">
-            The Paradigmatic Shift
+        <SectionHeader
+          eyebrow="The paradigm shift"
+          title="Why Standard DSA Prep Fails You"
+          lead="Memorizing patterns leads to panic when an interviewer tweaks one parameter. Physical memory models make the solution inevitable."
+        />
+
+        <div className="relative mx-auto mt-space-xl grid max-w-6xl gap-space-lg md:grid-cols-2 md:gap-space-xl">
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-1/2 z-10 hidden h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-surface-container-lowest font-label-tag text-label-tag uppercase text-on-surface-variant shadow-md ring-1 ring-outline-variant md:flex"
+          >
+            vs
           </span>
-          <h2 className="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
-            Why Standard DSA Prep Fails You
-          </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-space-sm">
-            Memorizing patterns leads to panic when an interviewer tweaks one
-            parameter. Physical memory models make the solution inevitable.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
-          <div className="p-space-xl rounded-2xl bg-surface-container-low shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-space-sm mb-space-md">
-                <span className="w-8 h-8 rounded-full bg-error-container/50 flex items-center justify-center text-error">
-                  <X size={18} />
-                </span>
-                <h3 className="font-headline-md text-headline-md text-on-surface">
-                  The Standard Grind
-                </h3>
-              </div>
-              <ul className="space-y-space-md text-on-surface-variant font-body-md text-body-md">
-                {OLD_WAY.map((item) => (
-                  <li key={item.title} className="flex items-start gap-space-sm">
-                    <item.icon size={20} className="text-error shrink-0 mt-0.5" />
-                    <span>
-                      <strong>{item.title}:</strong> {item.body}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-space-lg pt-space-md border-t border-surface-container-high text-on-surface-variant font-code-sm text-code-sm">
-              Outcome: High interview anxiety &amp; brittle code
-            </div>
-          </div>
-
-          <div className="p-space-xl rounded-2xl bg-primary-container text-on-primary shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-primary-fixed-dim/20 rounded-full blur-2xl pointer-events-none" />
-            <div>
-              <div className="flex items-center gap-space-sm mb-space-md">
-                <span className="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
-                  <Check size={18} />
-                </span>
-                <h3 className="font-headline-md text-headline-md text-on-primary">
-                  Intuition Rewire
-                </h3>
-              </div>
-              <ul className="space-y-space-md text-on-primary-container font-body-md text-body-md">
-                {NEW_WAY.map((item) => (
-                  <li key={item.title} className="flex items-start gap-space-sm">
-                    <item.icon size={20} className="text-secondary-fixed shrink-0 mt-0.5" />
-                    <span>
-                      <strong>{item.title}:</strong> {item.body}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-space-lg pt-space-md border-t border-on-primary-container/20 text-on-primary-container font-code-sm text-code-sm">
-              Outcome: Flawless structural interviews &amp; principal engineer instincts
-            </div>
-          </div>
+          <Column
+            tone="old"
+            label="Typical prep"
+            title="The Standard Grind"
+            points={OLD_WAY}
+            outcome="High interview anxiety & brittle code"
+          />
+          <Column
+            tone="new"
+            label="With IntuitionRewire"
+            title="Intuition Rewire"
+            points={NEW_WAY}
+            outcome="Flawless structural interviews & principal engineer instincts"
+          />
         </div>
       </div>
     </section>

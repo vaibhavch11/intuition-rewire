@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getContentBucket } from "@/lib/admin/storage";
+import { isPracticeProgram } from "./practicePrograms";
 import type { LessonBlock, LessonContent } from "./types";
 
 const CONTENT_ROOT = path.join(process.cwd(), "content", "lessons");
@@ -108,6 +109,16 @@ function parseBlock(input: unknown, index: number): LessonBlock {
           elements: input.scene.elements,
           files: isRecord(input.scene.files) ? input.scene.files : {},
         },
+      };
+    }
+    case "simulator": {
+      if (!isPracticeProgram(input.program)) {
+        throw new Error(`${at("program")} is not a known simulator`);
+      }
+      return {
+        type: "simulator",
+        program: input.program,
+        caption: optionalCaption(input.caption),
       };
     }
     default:

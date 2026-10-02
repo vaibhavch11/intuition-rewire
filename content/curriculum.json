@@ -1,0 +1,27 @@
+{
+  "sections": {
+    "arrays": {
+      "removedTopics": [
+        "intro-understanding-the-problem",
+        "intro-possible-solution",
+        "intro-working-example",
+        "md-understanding-the-problem",
+        "md-possible-solution",
+        "md-supported-operations",
+        "sa-roadmap",
+        "bs-understanding",
+        "bs-monotonic-predicate",
+        "bs-ship-capacity",
+        "bs-minimum-rate",
+        "bs-rotated-search"
+      ],
+      "removedChapters": [
+        "Pattern: Binary search on answer",
+        "Pattern: Cyclic sort"
+      ],
+      "chapters": [],
+      "topics": []
+    }
+  },
+  "updatedAt": "2026-10-01T15:12:51.580Z"
+}

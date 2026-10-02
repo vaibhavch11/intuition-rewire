@@ -191,5 +191,6 @@ export const queueSimulation: Simulation = {
   },
   buffer: `ring_buffer[${CAPACITY}]`,
   badge: "O(1) Enqueue / Dequeue",
+  output: { label: "Queue (front → back)", value: "30, 40, 50, 60" },
   steps: trace(),
 };

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Route, Search } from "lucide-react";
+import HashLink from "@/components/HashLink";
+import SearchPalette, { OPEN_SEARCH_EVENT } from "@/components/SearchPalette";
 import UserMenu from "@/components/auth/UserMenu";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -14,9 +17,63 @@ const NAV_LINKS = [
   { href: "/pricing", label: "Pricing" },
 ];
 
+const LEARNING_PATH = "/#learning-path";
+
+/** Page sections that light up their own nav link while you're reading them. */
+const SPIED_SECTIONS = ["learning-path", "dry-run-engine"];
+
+/**
+ * Which spied sections cross a thin band near the top of the screen — where
+ * a section sits once you have scrolled (or jumped) to it.
+ * Scoped to the path it was measured on, so a new page never inherits the
+ * last page's answer.
+ */
+function useSectionsInView(pathname: string): Set<string> {
+  const [seen, setSeen] = useState<{ path: string; ids: string[] }>({ path: "", ids: [] });
+
+  useEffect(() => {
+    const visible = new Set<string>();
+    let observer: IntersectionObserver | undefined;
+    // Wait a frame so the new page's sections are in the DOM.
+    const timer = window.setTimeout(() => {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) visible.add(entry.target.id);
+            else visible.delete(entry.target.id);
+          }
+          setSeen({ path: pathname, ids: [...visible] });
+        },
+        { rootMargin: "-20% 0px -75% 0px" }
+      );
+      for (const id of SPIED_SECTIONS) {
+        const element = document.getElementById(id);
+        if (element) observer.observe(element);
+      }
+    }, 60);
+    return () => {
+      window.clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, [pathname]);
+
+  return new Set(seen.path === pathname ? seen.ids : []);
+}
+
+function activeHref(pathname: string, inView: Set<string>): string | null {
+  if (pathname === "/") return inView.has("learning-path") ? "/#learning-path" : "/";
+  if (/^\/dsa\/[^/]+$/.test(pathname) && inView.has("dry-run-engine")) {
+    return "/dsa/arrays#dry-run-engine";
+  }
+  if (pathname === "/dsa" || pathname.startsWith("/dsa/")) return "/dsa";
+  if (pathname.startsWith("/pricing")) return "/pricing";
+  return null;
+}
+
 export default function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const current = activeHref(pathname, useSectionsInView(pathname));
 
   useEffect(() => {
     if (!open) return;
@@ -42,48 +99,42 @@ export default function Header() {
 
           <nav className="hidden lg:flex items-center gap-space-xs">
             {NAV_LINKS.map((link) => {
-              const active = link.href === "/" ? pathname === "/" : false;
+              const active = link.href === current;
               return (
-                <Link
+                <HashLink
                   key={link.href}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={
+                  className={`whitespace-nowrap rounded-lg px-space-md py-space-xs font-label-md text-label-md transition-colors duration-200 ${
                     active
-                      ? "whitespace-nowrap px-space-md py-space-xs transition-colors bg-primary-container text-on-primary font-semibold rounded-lg"
-                      : "whitespace-nowrap px-space-md py-space-xs font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors"
-                  }
+                      ? "bg-primary-container text-on-primary font-semibold shadow-sm"
+                      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                  }`}
                 >
                   {link.label}
-                </Link>
+                </HashLink>
               );
             })}
           </nav>
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-space-md">
-          <div className="relative w-full min-w-0 max-w-[220px] hidden xl:block">
-            <div className="flex items-center justify-between w-full h-8 px-space-md bg-surface-container-low rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-              <div className="flex items-center gap-space-xs text-on-surface-variant">
-                <Search size={16} />
-                <span className="font-code-sm text-code-sm text-on-surface-variant">
-                  Search syntax...
-                </span>
-              </div>
-              <kbd className="font-label-tag text-label-tag px-space-2xs py-0.5 bg-surface-container-highest text-on-surface-variant rounded">
-                ⌘K
-              </kbd>
-            </div>
-          </div>
+          <SearchPalette />
 
           <div className="flex shrink-0 items-center gap-space-sm pl-space-xs">
+            <ThemeToggle className="hidden sm:inline-flex" />
             {/* Same destination as the "Roadmap" link, so only shown when there's room. */}
-            <Link
-              href="/#learning-path"
-              className="hidden xl:inline-flex items-center h-9 whitespace-nowrap px-space-md font-label-md text-label-md font-semibold bg-secondary-container text-on-secondary-container rounded-lg hover:bg-secondary hover:text-on-secondary transition-colors"
+            <HashLink
+              href={LEARNING_PATH}
+              className={`hidden xl:inline-flex items-center gap-space-xs h-9 whitespace-nowrap rounded-lg px-space-md font-label-md text-label-md font-semibold text-primary transition-colors ${
+                current === LEARNING_PATH
+                  ? "bg-primary-fixed ring-1 ring-inset ring-primary/40"
+                  : "bg-primary-fixed/60 hover:bg-primary-fixed"
+              }`}
             >
+              <Route size={16} aria-hidden />
               Learning Path
-            </Link>
+            </HashLink>
             <UserMenu />
           </div>
         </div>
@@ -126,25 +177,49 @@ export default function Header() {
       >
         <nav className="overflow-hidden">
           <div className="border-t border-outline-variant px-gutter-mobile py-space-md flex flex-col gap-space-sm">
-            {[...NAV_LINKS, { href: "/#learning-path", label: "Learning Path" }].map(
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                window.dispatchEvent(new Event(OPEN_SEARCH_EVENT));
+              }}
+              style={{ transitionDelay: open ? "40ms" : "0ms" }}
+              className={`flex items-center gap-space-sm rounded-lg bg-surface-container-low px-space-sm py-space-sm text-left font-label-md text-label-md text-on-surface-variant transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
+              }`}
+            >
+              <Search size={16} />
+              Search lessons…
+            </button>
+            <ThemeToggle
+              variant="row"
+              className={`transition-all duration-300 ease-out motion-reduce:transition-none ${
+                open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
+              }`}
+            />
+            {[...NAV_LINKS, { href: LEARNING_PATH, label: "Learning Path" }].map(
               (link, i) => {
                 const isCta = i === NAV_LINKS.length;
+                const active = !isCta && link.href === current;
                 return (
-                  <Link
+                  <HashLink
                     key={`${link.href}-${link.label}`}
                     href={link.href}
                     onClick={() => setOpen(false)}
+                    aria-current={active ? "page" : undefined}
                     style={{ transitionDelay: open ? `${80 + i * 45}ms` : "0ms" }}
                     className={`transition-all duration-300 ease-out motion-reduce:transition-none ${
                       open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
                     } ${
                       isCta
                         ? "rounded-lg bg-primary-container text-on-primary px-space-md py-space-sm text-center font-label-md text-label-md mt-space-xs"
-                        : "font-label-md text-label-md text-on-surface-variant py-space-xs"
+                        : active
+                          ? "rounded-lg bg-primary-fixed/60 px-space-sm py-space-xs font-label-md text-label-md font-semibold text-primary"
+                          : "px-space-sm py-space-xs font-label-md text-label-md text-on-surface-variant"
                     }`}
                   >
                     {link.label}
-                  </Link>
+                  </HashLink>
                 );
               }
             )}

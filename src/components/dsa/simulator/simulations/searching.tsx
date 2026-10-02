@@ -70,11 +70,12 @@ export const searchingSimulation: Simulation = {
   algorithm: "Binary Search",
   lead: "A sorted array lets one read at the midpoint discard half of the remaining memory.",
   input: {
-    label: "Target Value:",
-    value: `target = ${TARGET}`,
+    label: "Input:",
+    value: `arr = [${SORTED.join(", ")}], target = ${TARGET}`,
     rule: "Read `mid = lo + (hi - lo) / 2`. If `arr[mid] < target`, move `lo = mid + 1`; if it's greater, move `hi = mid - 1`. Every read halves the window.",
   },
   buffer: `sorted_ram_buffer[${SORTED.length}]`,
   badge: "O(log n) Time",
+  output: { label: "Returns", value: "5  ·  arr[5] = 23" },
   steps: trace(),
 };

@@ -3,6 +3,7 @@ import { Figtree, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { THEME_SCRIPT } from "@/lib/themeScript";
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -24,10 +25,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // The theme script below sets the `dark` class before React hydrates.
     <html
       lang="en"
       className={`${figtree.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-surface font-body-md text-on-surface">
         <Header />
         <div className="flex flex-col flex-1 pt-header-height">{children}</div>

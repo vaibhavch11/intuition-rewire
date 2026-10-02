@@ -278,10 +278,12 @@ export function Canvas({
 }) {
   return (
     <div className="overflow-x-auto">
+      {/* Shrinks with its column down to 60% of full size, then scrolls
+          rather than letting labels get too small to read. */}
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="mx-auto block h-auto w-full"
-        style={{ minWidth: Math.round(width * 0.75), maxWidth: width }}
+        style={{ minWidth: Math.round(width * 0.6), maxWidth: width }}
       >
         {children}
       </svg>

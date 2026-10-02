@@ -170,5 +170,6 @@ export const recursionSimulation: Simulation = {
   },
   buffer: "call_stack · grows ↓",
   badge: "O(n) Stack Memory",
+  output: { label: "Returns", value: "24" },
   steps: trace(),
 };

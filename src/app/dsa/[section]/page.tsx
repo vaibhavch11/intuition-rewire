@@ -18,10 +18,11 @@ import DryRunEngine from "@/components/dsa/simulator/DryRunEngine";
 import { getSimulation } from "@/components/dsa/simulator/simulations";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
-  Fundamental: "bg-indigo-50 text-indigo-700 ring-indigo-200",
-  Easy: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  Medium: "bg-amber-50 text-amber-700 ring-amber-200",
-  Hard: "bg-red-50 text-red-700 ring-red-200",
+  Fundamental:
+    "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-400/15 dark:text-indigo-300 dark:ring-indigo-400/30",
+  Easy: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-300 dark:ring-emerald-400/30",
+  Medium: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30",
+  Hard: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-400/15 dark:text-red-300 dark:ring-red-400/30",
 };
 
 function StatChip({
@@ -116,34 +117,15 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
     (section.requirements?.length ?? 0) > 0;
   const simulation = getSimulation(section.slug);
 
-  const backLink = (
-    <Link
-      href="/dsa"
-      className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
-    >
-      ← All courses
-    </Link>
-  );
-
   return (
     <main>
-      {simulation && (
-        <section
-          id="dry-run-engine"
-          className="border-b border-outline-variant/50"
-        >
-          <div className="mx-auto max-w-6xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
-            {backLink}
-            <div className="mt-space-lg">
-              {/* Keyed so switching courses never carries a step index over. */}
-              <DryRunEngine key={section.slug} simulation={simulation} />
-            </div>
-          </div>
-        </section>
-      )}
-
       <div className="mx-auto max-w-4xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
-        {!simulation && backLink}
+        <Link
+          href="/dsa"
+          className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
+        >
+          ← All courses
+        </Link>
 
         <header className="mt-space-md rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
           <h1 className="font-headline-lg text-headline-lg text-on-surface">
@@ -189,6 +171,14 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
             )}
           </ul>
         </header>
+
+        {/* After the course intro, sized to the reading column. */}
+        {simulation && (
+          <section id="dry-run-engine" className="mt-space-lg">
+            {/* Keyed so switching courses never carries a step index over. */}
+            <DryRunEngine key={section.slug} simulation={simulation} />
+          </section>
+        )}
 
         {section.outcomes && section.outcomes.length > 0 && (
           <section className="mt-space-lg rounded-xl border border-outline-variant/40 bg-surface-container-low p-space-lg">

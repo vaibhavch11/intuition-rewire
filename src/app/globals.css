@@ -1,54 +1,178 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- Color palette ----
+   Light by default; a `dark` class on <html> (set before first paint by the
+   script in the root layout) swaps every token at once. */
+:root {
+  color-scheme: light;
+  /* Outline and empty-shape fill for the colourful course icons. */
+  --icon-ink: #1e2235;
+  --icon-paper: #ffffff;
+  --c-surface-tint: #4d44e3;
+  --c-on-error-container: #93000a;
+  --c-surface-variant: #e6e6e9;
+  --c-secondary-fixed-dim: #4edea3;
+  --c-on-secondary-fixed-variant: #005236;
+  --c-secondary: #006c49;
+  --c-surface-dim: #e0e0e4;
+  --c-primary-fixed-dim: #c3c0ff;
+  --c-inverse-on-surface: #f5f5f6;
+  --c-surface-container-high: #ededef;
+  --c-surface-bright: #ffffff;
+  --c-on-tertiary-fixed-variant: #653e00;
+  --c-error: #ba1a1a;
+  --c-on-primary-container: #dad7ff;
+  --c-secondary-fixed: #6ffbbe;
+  --c-on-secondary-fixed: #002113;
+  --c-surface-container: #f4f4f5;
+  --c-inverse-primary: #c3c0ff;
+  --c-inverse-surface: #283044;
+  --c-on-surface-variant: #464555;
+  --c-tertiary-fixed-dim: #ffb95f;
+  --c-surface-container-lowest: #ffffff;
+  --c-on-tertiary-fixed: #2a1700;
+  --c-tertiary: #684000;
+  --c-primary-fixed: #e2dfff;
+  --c-on-primary-fixed: #0f0069;
+  --c-primary-container: #4f46e5;
+  --c-error-container: #ffdad6;
+  --c-outline-variant: #d6d6da;
+  --c-on-tertiary-container: #ffd4a4;
+  --c-on-background: #131b2e;
+  --c-on-secondary-container: #00714d;
+  --c-on-surface: #131b2e;
+  --c-surface: #ffffff;
+  --c-surface-container-low: #fafafa;
+  --c-on-primary-fixed-variant: #3323cc;
+  --c-on-primary: #ffffff;
+  --c-tertiary-fixed: #ffddb8;
+  --c-on-secondary: #ffffff;
+  --c-secondary-container: #6cf8bb;
+  --c-background: #ffffff;
+  --c-on-tertiary: #ffffff;
+  --c-surface-container-highest: #e6e6e9;
+  --c-on-error: #ffffff;
+  --c-tertiary-container: #885500;
+  --c-outline: #7a7a82;
+  --c-primary: #3525cd;
+  --editor-bg: #1d2333;
+  --editor-text: #e4e7f1;
+  --editor-muted: rgb(228 231 241 / 0.62);
+  --editor-gutter: rgb(228 231 241 / 0.32);
+  --editor-active: rgb(99 91 255 / 0.34);
+  --editor-active-edge: #a5a0ff;
+}
+
+.dark {
+  color-scheme: dark;
+  --icon-ink: #d9ddee;
+  --icon-paper: #10162a;
+  --c-surface-tint: #a9a4ff;
+  --c-on-error-container: #ffdad6;
+  --c-surface-variant: #27314f;
+  --c-secondary-fixed-dim: #4edea3;
+  --c-on-secondary-fixed-variant: #005236;
+  --c-secondary: #4edea3;
+  --c-surface-dim: #0b1020;
+  --c-primary-fixed-dim: #4a44b8;
+  --c-inverse-on-surface: #eef0f7;
+  --c-surface-container-high: #1f2843;
+  --c-surface-bright: #252e4a;
+  --c-on-tertiary-fixed-variant: #ffcf94;
+  --c-error: #ff8a80;
+  --c-on-primary-container: #dad7ff;
+  --c-secondary-fixed: #6ffbbe;
+  --c-on-secondary-fixed: #002113;
+  --c-surface-container: #19213a;
+  --c-inverse-primary: #3525cd;
+  --c-inverse-surface: #1c2440;
+  --c-on-surface-variant: #a6acc4;
+  --c-tertiary-fixed-dim: #ffb95f;
+  --c-surface-container-lowest: #10162a;
+  --c-on-tertiary-fixed: #ffddb8;
+  --c-tertiary: #ffb95f;
+  --c-primary-fixed: #232056;
+  --c-on-primary-fixed: #e2dfff;
+  --c-primary-container: #5b53ee;
+  --c-error-container: #4d1715;
+  --c-on-tertiary-container: #ffd4a4;
+  --c-outline-variant: #2d3653;
+  --c-on-background: #e7e9f3;
+  --c-on-secondary-container: #8cf5c6;
+  --c-on-surface: #e7e9f3;
+  --c-surface: #0b1020;
+  --c-surface-container-low: #141b31;
+  --c-on-primary-fixed-variant: #c3c0ff;
+  --c-on-primary: #ffffff;
+  --c-tertiary-fixed: #3b2a12;
+  --c-on-secondary: #00311f;
+  --c-secondary-container: #0e4a35;
+  --c-background: #0b1020;
+  --c-on-tertiary: #472a00;
+  --c-surface-container-highest: #27314f;
+  --c-on-error: #4a0005;
+  --c-tertiary-container: #5f3b00;
+  --c-outline: #6f7795;
+  --c-primary: #8079ff;
+  --editor-bg: #0d1222;
+  --editor-text: #e4e7f1;
+  --editor-muted: rgb(228 231 241 / 0.6);
+  --editor-gutter: rgb(228 231 241 / 0.28);
+  --editor-active: rgb(99 91 255 / 0.3);
+  --editor-active-edge: #a5a0ff;
+}
+
 @theme inline {
   /* ---- Material You–style color tokens ---- */
-  --color-surface-tint: #4d44e3;
-  --color-on-error-container: #93000a;
-  --color-surface-variant: #e6e6e9;
-  --color-secondary-fixed-dim: #4edea3;
-  --color-on-secondary-fixed-variant: #005236;
-  --color-secondary: #006c49;
-  --color-surface-dim: #e0e0e4;
-  --color-primary-fixed-dim: #c3c0ff;
-  --color-inverse-on-surface: #f5f5f6;
-  --color-surface-container-high: #ededef;
-  --color-surface-bright: #ffffff;
-  --color-on-tertiary-fixed-variant: #653e00;
-  --color-error: #ba1a1a;
-  --color-on-primary-container: #dad7ff;
-  --color-secondary-fixed: #6ffbbe;
-  --color-on-secondary-fixed: #002113;
-  --color-surface-container: #f4f4f5;
-  --color-inverse-primary: #c3c0ff;
-  --color-inverse-surface: #283044;
-  --color-on-surface-variant: #464555;
-  --color-tertiary-fixed-dim: #ffb95f;
-  --color-surface-container-lowest: #ffffff;
-  --color-on-tertiary-fixed: #2a1700;
-  --color-tertiary: #684000;
-  --color-primary-fixed: #e2dfff;
-  --color-on-primary-fixed: #0f0069;
-  --color-primary-container: #4f46e5;
-  --color-error-container: #ffdad6;
-  --color-outline-variant: #d6d6da;
-  --color-on-tertiary-container: #ffd4a4;
-  --color-on-background: #131b2e;
-  --color-on-secondary-container: #00714d;
-  --color-on-surface: #131b2e;
-  --color-surface: #ffffff;
-  --color-surface-container-low: #fafafa;
-  --color-on-primary-fixed-variant: #3323cc;
-  --color-on-primary: #ffffff;
-  --color-tertiary-fixed: #ffddb8;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #6cf8bb;
-  --color-background: #ffffff;
-  --color-on-tertiary: #ffffff;
-  --color-surface-container-highest: #e6e6e9;
-  --color-on-error: #ffffff;
-  --color-tertiary-container: #885500;
-  --color-outline: #7a7a82;
-  --color-primary: #3525cd;
+  --color-surface-tint: var(--c-surface-tint);
+  --color-on-error-container: var(--c-on-error-container);
+  --color-surface-variant: var(--c-surface-variant);
+  --color-secondary-fixed-dim: var(--c-secondary-fixed-dim);
+  --color-on-secondary-fixed-variant: var(--c-on-secondary-fixed-variant);
+  --color-secondary: var(--c-secondary);
+  --color-surface-dim: var(--c-surface-dim);
+  --color-primary-fixed-dim: var(--c-primary-fixed-dim);
+  --color-inverse-on-surface: var(--c-inverse-on-surface);
+  --color-surface-container-high: var(--c-surface-container-high);
+  --color-surface-bright: var(--c-surface-bright);
+  --color-on-tertiary-fixed-variant: var(--c-on-tertiary-fixed-variant);
+  --color-error: var(--c-error);
+  --color-on-primary-container: var(--c-on-primary-container);
+  --color-secondary-fixed: var(--c-secondary-fixed);
+  --color-on-secondary-fixed: var(--c-on-secondary-fixed);
+  --color-surface-container: var(--c-surface-container);
+  --color-inverse-primary: var(--c-inverse-primary);
+  --color-inverse-surface: var(--c-inverse-surface);
+  --color-on-surface-variant: var(--c-on-surface-variant);
+  --color-tertiary-fixed-dim: var(--c-tertiary-fixed-dim);
+  --color-surface-container-lowest: var(--c-surface-container-lowest);
+  --color-on-tertiary-fixed: var(--c-on-tertiary-fixed);
+  --color-tertiary: var(--c-tertiary);
+  --color-primary-fixed: var(--c-primary-fixed);
+  --color-on-primary-fixed: var(--c-on-primary-fixed);
+  --color-primary-container: var(--c-primary-container);
+  --color-error-container: var(--c-error-container);
+  --color-outline-variant: var(--c-outline-variant);
+  --color-on-tertiary-container: var(--c-on-tertiary-container);
+  --color-on-background: var(--c-on-background);
+  --color-on-secondary-container: var(--c-on-secondary-container);
+  --color-on-surface: var(--c-on-surface);
+  --color-surface: var(--c-surface);
+  --color-surface-container-low: var(--c-surface-container-low);
+  --color-on-primary-fixed-variant: var(--c-on-primary-fixed-variant);
+  --color-on-primary: var(--c-on-primary);
+  --color-tertiary-fixed: var(--c-tertiary-fixed);
+  --color-on-secondary: var(--c-on-secondary);
+  --color-secondary-container: var(--c-secondary-container);
+  --color-background: var(--c-background);
+  --color-on-tertiary: var(--c-on-tertiary);
+  --color-surface-container-highest: var(--c-surface-container-highest);
+  --color-on-error: var(--c-on-error);
+  --color-tertiary-container: var(--c-tertiary-container);
+  --color-outline: var(--c-outline);
+  --color-primary: var(--c-primary);
 
   /* Backward-compatible aliases used by earlier /dsa pages */
   --color-brand: var(--color-primary-container);
@@ -159,6 +283,42 @@
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.35s ease-out both;
   --animate-pop-in: pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-in-right: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-in-left: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-lesson-in: lesson-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes lesson-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(28px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-28px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 
   @keyframes fade-up {
     from {
@@ -217,9 +377,14 @@
   }
 }
 
+/* Jumping to #section stops below the fixed header instead of under it. */
+html {
+  scroll-padding-top: calc(var(--spacing-header-height) + 16px);
+}
+
 body {
-  background: var(--color-surface);
-  color: var(--color-on-surface);
+  background: var(--c-surface);
+  color: var(--c-on-surface);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
@@ -266,4 +431,31 @@ kbd {
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* ---- Code editor: lesson code and the simulator's code panel ---- */
+.code-editor {
+  background: var(--editor-bg);
+  color: var(--editor-text);
+}
+.tok-comment { color: #8790ab; font-style: italic; }
+.tok-string { color: #86e3bb; }
+.tok-number { color: #ffbe7a; }
+.tok-keyword { color: #c0b9ff; }
+.tok-function { color: #8fb8ff; }
+.tok-type { color: #ffd6a5; }
+.tok-punct { color: #a9b0c7; }
+.tok-meta { color: #f5a8cf; }
+
+/* Excalidraw drawings are dark ink on white; in dark mode flip them the
+   same way Excalidraw's own dark theme does, keeping hues recognisable. */
+.dark .drawing-art {
+  filter: invert(0.92) hue-rotate(180deg);
+}
+
+/* Theme switches cross-fade instead of snapping. Only while switching, so
+   ordinary hovers keep their own timing. */
+.theme-switching,
+.theme-switching * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease !important;
 }

@@ -4,10 +4,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
+import { PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import type { LessonBlock, LessonBlockType } from "@/lib/dsa/types";
 import ConfirmDialog from "./ConfirmDialog";
 import DrawingBlockEditor from "./DrawingBlockEditor";
-import { inputClass } from "./fieldStyles";
+import { fieldClass, inputClass } from "./fieldStyles";
 import { errorMessage, sendCurriculumChange } from "./sendCurriculumChange";
 
 const BLOCK_LABELS: Record<LessonBlockType, string> = {
@@ -17,6 +18,7 @@ const BLOCK_LABELS: Record<LessonBlockType, string> = {
   code: "Code",
   drawing: "Drawing",
   figure: "Image",
+  simulator: "Simulator",
 };
 
 function emptyBlock(type: LessonBlockType): LessonBlock {
@@ -40,6 +42,8 @@ function emptyBlock(type: LessonBlockType): LessonBlock {
         height: 0,
         scene: { elements: [], files: {} },
       };
+    case "simulator":
+      return { type: "simulator", program: PRACTICE_PROGRAMS[0].id };
   }
 }
 
@@ -338,6 +342,36 @@ export default function LessonEditor({
                 onError={setError}
                 inputClass={inputClass}
               />
+            )}
+
+            {block.type === "simulator" && (
+              <div className="space-y-space-sm">
+                <select
+                  value={block.program}
+                  aria-label="Simulator"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, program: e.target.value })
+                  }
+                  className={`${fieldClass} w-full`}
+                >
+                  {PRACTICE_PROGRAMS.map((program) => (
+                    <option key={program.id} value={program.id}>
+                      {program.title}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={block.caption ?? ""}
+                  placeholder="Caption (optional) — defaults to how to use the simulator"
+                  onChange={(e) =>
+                    replaceBlock(index, { ...block, caption: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Readers can change the input and step through the code line by line.
+                </p>
+              </div>
             )}
 
             {block.type === "figure" && (

@@ -58,7 +58,9 @@ export type LessonBlock =
       width: number;
       height: number;
       scene: DrawingScene;
-    };
+    }
+  /** A step-through dry run readers can feed their own input; see practicePrograms. */
+  | { type: "simulator"; program: string; caption?: string };
 
 export interface DrawingScene {
   elements: unknown[];

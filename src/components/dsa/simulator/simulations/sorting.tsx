@@ -118,11 +118,12 @@ export const sortingSimulation: Simulation = {
   algorithm: "Lomuto Partition",
   lead: "Quicksort's real work happens in place: one scan, a handful of swaps, zero extra arrays.",
   input: {
-    label: "Pivot:",
-    value: `pivot = arr[${HI}] = ${PIVOT}`,
+    label: "Input:",
+    value: `arr = [${INPUT.join(", ")}], pivot = arr[${HI}] = ${PIVOT}`,
     rule: "Scan `j` from left to right. When `arr[j] <= pivot`, increment `i` and swap `arr[i]` with `arr[j]`. Finally swap the pivot into `arr[i + 1]`.",
   },
   buffer: `contiguous_ram_buffer[${INPUT.length}]`,
   badge: "O(1) Memory",
+  output: { label: "Partitioned", value: "[2, 4, 3, 5, 9, 8, 7]  ·  pivot at index 3" },
   steps: trace(),
 };

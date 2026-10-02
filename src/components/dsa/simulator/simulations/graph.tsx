@@ -215,5 +215,6 @@ export const graphSimulation: Simulation = {
   },
   buffer: `adjacency_list[${Object.keys(ADJACENCY).length}]`,
   badge: "O(V + E) Time",
+  output: { label: "Visit order", value: "A, B, C, D, E, F" },
   steps: trace(),
 };
