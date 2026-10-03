@@ -23,6 +23,12 @@ export default function Footer() {
             <Link href="/terms" className="text-on-surface-variant hover:text-primary">
               Terms
             </Link>
+            <Link href="/refund-policy" className="text-on-surface-variant hover:text-primary">
+              Refunds
+            </Link>
+            <Link href="/contact" className="text-on-surface-variant hover:text-primary">
+              Contact
+            </Link>
           </nav>
           <p className="font-code-sm text-code-sm text-on-surface-variant">
             © {new Date().getFullYear()} Intuition Rewire. Systematic Engineering Mastery.
