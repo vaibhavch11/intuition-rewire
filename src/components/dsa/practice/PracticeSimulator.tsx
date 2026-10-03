@@ -15,6 +15,7 @@ import { CELL_TONES, PointerTags } from "@/components/dsa/simulator/visuals";
 import { isPracticeProgram, PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import { PROGRAM_LOADERS } from "./loaders";
 import { formatField, parseField } from "./parseInput";
+import { ListDiagram, StackColumn, TreeDiagram } from "./StructureViews";
 import {
   cell,
   formatValue,
@@ -307,6 +308,7 @@ export default function PracticeSimulator({
                     <input
                       value={texts[field.key] ?? ""}
                       inputMode={field.kind === "number" ? "numeric" : "text"}
+                      placeholder={field.hint}
                       spellCheck={false}
                       onChange={(e) => setTexts((t) => ({ ...t, [field.key]: e.target.value }))}
                       className="h-10 rounded-lg border border-outline-variant bg-surface-container-lowest px-space-sm font-code-md text-code-md text-on-surface outline-none focus:border-primary"
@@ -349,6 +351,19 @@ export default function PracticeSimulator({
           {/* The explanation below narrates this picture for screen readers. */}
           <div aria-hidden className="overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
             <div className="flex w-max min-w-full flex-col gap-space-lg">
+              {(frame.trees.length > 0 || frame.stacks.length > 0) && (
+                <div className="flex flex-wrap items-end gap-space-xl">
+                  {frame.trees.map((tree) => (
+                    <TreeDiagram key={tree.name} view={tree} />
+                  ))}
+                  {frame.stacks.map((stack) => (
+                    <StackColumn key={stack.name} view={stack} />
+                  ))}
+                </div>
+              )}
+              {frame.lists.map((list) => (
+                <ListDiagram key={list.name} view={list} />
+              ))}
               {frame.grids.length > 0 && (
                 <div className="flex flex-wrap items-start gap-space-xl">
                   {frame.grids.map((grid) => (

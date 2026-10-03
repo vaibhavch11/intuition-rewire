@@ -14,6 +14,10 @@ export function formatField(field: Field, value: InputValue): string {
       return (value as number[][]).map((row) => row.join(" ")).join("\n");
     case "pairs":
       return (value as number[][]).map(([a, b]) => `[${a},${b}]`).join(" ");
+    case "tree":
+      return (value as (number | null)[]).map((v) => (v === null ? "null" : String(v))).join(", ");
+    case "text":
+      return String(value);
   }
 }
 
@@ -76,6 +80,38 @@ export function parseField(field: Field, text: string): Parsed {
         return { error: `${field.label}: every row needs the same number of values.` };
       }
       return { value: rows };
+    }
+
+    case "tree": {
+      const tokens = text.replace(/[[\]]/g, " ").split(/[\s,]+/).filter(Boolean);
+      if (tokens.length === 0) return { value: [] };
+      const { min, max } = bounds(field);
+      const values: (number | null)[] = [];
+      for (const token of tokens) {
+        if (/^(null|none|nil|#|x)$/i.test(token)) {
+          values.push(null);
+          continue;
+        }
+        if (!/^-?\d+$/.test(token)) {
+          return { error: `${field.label}: "${token}" isn't a number. Write the tree level by level, using null for a missing child, like 1, 2, 3, null, 4.` };
+        }
+        const value = Number(token);
+        if (value < min || value > max) return { error: `${field.label}: keep every value between ${min} and ${max}.` };
+        values.push(value);
+      }
+      while (values.length > 0 && values[values.length - 1] === null) values.pop();
+      if (values.length > 0 && values[0] === null) return { error: `${field.label}: the first value is the root, so it can't be null.` };
+      if (values.filter((v) => v !== null).length > limit) {
+        return { error: `${field.label}: use at most ${limit} nodes so the tree stays readable.` };
+      }
+      return { value: values };
+    }
+
+    case "text": {
+      const trimmed = text.trim();
+      if (!trimmed) return { error: `${field.label}: enter something to run.` };
+      if (trimmed.length > limit) return { error: `${field.label}: keep it to ${limit} characters.` };
+      return { value: trimmed };
     }
 
     case "pairs": {

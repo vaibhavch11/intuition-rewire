@@ -1,5 +1,6 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
+import { linkedListSection } from "./linked-list";
 import { stringsSection } from "./strings";
 
 function placeholderSection(
@@ -33,12 +34,7 @@ function placeholderSection(
 export const builtInSections: Section[] = [
   arraysSection,
   stringsSection,
-  placeholderSection(
-    "singly-linked-list",
-    "Singly Linked List",
-    "Nodes linked one direction by pointers instead of contiguous memory.",
-    "data-structure"
-  ),
+  linkedListSection,
   placeholderSection(
     "doubly-linked-list",
     "Doubly Linked List",

@@ -1,6 +1,6 @@
-import type { CellTone, Pointer, PointerTone } from "@/components/dsa/simulator/visuals";
+import type { CellTone, EdgeTone, Pointer, PointerTone } from "@/components/dsa/simulator/visuals";
 
-export type { CellTone, Pointer, PointerTone };
+export type { CellTone, EdgeTone, Pointer, PointerTone };
 
 export type Scalar = number | string | null;
 
@@ -21,6 +21,64 @@ export interface GridView {
   tones?: Record<string, CellTone>;
 }
 
+/**
+ * One node of a linked list drawing. A node whose `value` is null is drawn as
+ * a dashed "null" box, so pointers and arrows can point at null too.
+ */
+export interface ListNodeView {
+  id: number;
+  value: Scalar;
+  /** Column and row on the drawing grid; rows let two lists sit apart. */
+  col: number;
+  row?: number;
+  tone?: CellTone;
+}
+
+/** A `next` arrow from one node to another (or to a null box). */
+export interface ListLink {
+  from: number;
+  to: number;
+  tone?: EdgeTone;
+}
+
+/** Nodes joined by `next` arrows: reversal, cycles, two lists meeting. */
+export interface ListView {
+  name: string;
+  nodes: ListNodeView[];
+  links: ListLink[];
+  /** Pointer tags above nodes, keyed by node id. */
+  pointers?: Record<number, Pointer[]>;
+}
+
+export interface TreeNodeView {
+  id: number;
+  value: Scalar;
+  left: number | null;
+  right: number | null;
+}
+
+/** A binary tree, laid out by in-order position and depth. */
+export interface TreeView {
+  name: string;
+  nodes: TreeNodeView[];
+  root: number | null;
+  tones?: Record<number, CellTone>;
+  pointers?: Record<number, Pointer[]>;
+  /** Tone of the edge leading into a node from its parent. */
+  edgeTones?: Record<number, EdgeTone>;
+  /** Small text under a node, e.g. its depth or column. */
+  captions?: Record<number, string>;
+}
+
+/** A vertical stack, bottom first: the call stack, an operator stack. */
+export interface StackView {
+  name: string;
+  values: Scalar[];
+  tones?: Record<number, CellTone>;
+  /** Text beside the top cell; defaults to "top". */
+  topLabel?: string;
+}
+
 /** Everything the simulator shows for one step. */
 export interface Frame {
   /** 1-indexed line of `Program.code` that just ran. */
@@ -29,11 +87,14 @@ export interface Frame {
   note: string;
   arrays: ArrayView[];
   grids: GridView[];
+  lists: ListView[];
+  trees: TreeView[];
+  stacks: StackView[];
   vars: [string, string][];
   done: boolean;
 }
 
-export type FieldKind = "array" | "number" | "grid" | "pairs";
+export type FieldKind = "array" | "number" | "grid" | "pairs" | "tree" | "text";
 
 export interface Field {
   key: string;
@@ -44,9 +105,12 @@ export interface Field {
   /** Bounds for every number entered. */
   min?: number;
   max?: number;
+  /** Text fields: what the input should look like, shown when it's rejected. */
+  hint?: string;
 }
 
-export type InputValue = number | number[] | number[][];
+/** A tree field holds level-order values with null for a missing child. */
+export type InputValue = number | number[] | number[][] | (number | null)[] | string;
 export type Input = Record<string, InputValue>;
 
 export interface Program {
@@ -73,6 +137,9 @@ export function formatValue(value: unknown): string {
 interface FrameParts {
   arrays?: ArrayView[];
   grids?: GridView[];
+  lists?: ListView[];
+  trees?: TreeView[];
+  stacks?: StackView[];
   vars?: Record<string, unknown>;
   done?: boolean;
 }
@@ -100,6 +167,21 @@ export function recorder() {
           values: g.values.map((row) => [...row]),
           tones: { ...g.tones },
         })),
+        lists: (parts.lists ?? []).map((l) => ({
+          ...l,
+          nodes: l.nodes.map((n) => ({ ...n })),
+          links: l.links.map((k) => ({ ...k })),
+          pointers: { ...l.pointers },
+        })),
+        trees: (parts.trees ?? []).map((t) => ({
+          ...t,
+          nodes: t.nodes.map((n) => ({ ...n })),
+          tones: { ...t.tones },
+          pointers: { ...t.pointers },
+          edgeTones: { ...t.edgeTones },
+          captions: { ...t.captions },
+        })),
+        stacks: (parts.stacks ?? []).map((st) => ({ ...st, values: [...st.values], tones: { ...st.tones } })),
         vars: Object.entries(parts.vars ?? {}).map(([k, v]) => [k, formatValue(v)]),
         done: parts.done ?? false,
       });
