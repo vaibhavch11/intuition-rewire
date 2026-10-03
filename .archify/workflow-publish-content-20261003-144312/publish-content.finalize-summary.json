@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\candidate.json",
+    "sha256": "eb8863dc08e7897c5b2b2ef55fc88f120b3afbfb8d36c185de2f2246734eb906",
+    "bytes": 9500
+  },
+  "artifact": {
+    "path": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\publish-content.html",
+    "sha256": "a5acc3d5118eefc4b591b2a6b651af83826fe8b2d8dfc146c09991e324abf879",
+    "bytes": 772631
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\publish-content.finalize.json",
+    "summaryReceipt": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\publish-content.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\publish-content.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-03T09:13:46.772Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 6385
+}

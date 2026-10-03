@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b3a6fe38-a789-4d0d-bd69-fff1c77ecbb8",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\candidate.json",
+  "output": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\workflow-publish-content-20261003-144312\\publish-content.html",
+  "specification": {
+    "sha256": "4e5db604a325bd07c3620d258850b8b25566dd3fa9759313c8cfc73558511e6d",
+    "bytes": 9951
+  },
+  "artifact": {
+    "sha256": "965284706581bf26682882961a2c8075930ae5fdad97fb035d6196788d5ff438",
+    "bytes": 772649
+  }
+}

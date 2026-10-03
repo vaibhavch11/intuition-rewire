@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a6129b6a-f2b5-4e00-8357-60dc6e809879",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\sequence-open-lesson-20261003-144312\\candidate.json",
+  "output": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\sequence-open-lesson-20261003-144312\\open-lesson.html",
+  "specification": {
+    "sha256": "ce25b8ea2a42e8f5ce5eb9f8b1de1ba09865f13738a4acc29a367a3f602bdaec",
+    "bytes": 7999
+  },
+  "artifact": {
+    "sha256": "e73ba7e3b04287160fd978ff9469038ea45b162e170607049cc6e625f43a8fce",
+    "bytes": 766989
+  }
+}

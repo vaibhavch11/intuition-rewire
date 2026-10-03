@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Opening a lesson page",
+    "output": ".archify/sequence-open-lesson-20261003-144312/open-lesson.html",
+    "viewBox": [
+      1080,
+      696
+    ],
+    "column_fit": "spread",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/vaibhavch11/intuition-rewire.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9dcff90fa70dc4720d9e6073e48bd30ba2610e4f"
+    }
+  },
+  "participants": [
+    {
+      "id": "learner",
+      "type": "external",
+      "label": "Learner",
+      "sublabel": "browser",
+      "sources": [
+        {
+          "path": "src/lib/auth/paths.ts",
+          "line": 1,
+          "end_line": 9,
+          "label": "lessons need an account"
+        }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "Session proxy",
+      "sublabel": "src/proxy.ts",
+      "sources": [
+        {
+          "path": "src/proxy.ts",
+          "line": 4,
+          "end_line": 12,
+          "label": "runs before routes"
+        },
+        {
+          "path": "src/lib/supabase/proxy.ts",
+          "line": 22,
+          "end_line": 72,
+          "label": "gate + redirect"
+        }
+      ]
+    },
+    {
+      "id": "supabase",
+      "type": "security",
+      "label": "Supabase Auth",
+      "sublabel": "JWT verify",
+      "sources": [
+        {
+          "path": "src/lib/supabase/proxy.ts",
+          "line": 50,
+          "end_line": 53,
+          "label": "getClaims()"
+        },
+        {
+          "path": "src/lib/auth/session.ts",
+          "line": 15,
+          "end_line": 39,
+          "label": "page backstop"
+        }
+      ]
+    },
+    {
+      "id": "page",
+      "type": "backend",
+      "label": "Lesson page",
+      "sublabel": "TopicPage",
+      "sources": [
+        {
+          "path": "src/app/dsa/[section]/[topic]/page.tsx",
+          "line": 16,
+          "end_line": 29,
+          "label": "force-dynamic render"
+        }
+      ]
+    },
+    {
+      "id": "curriculum",
+      "type": "backend",
+      "label": "Curriculum",
+      "sublabel": "getTopic()",
+      "sources": [
+        {
+          "path": "src/lib/dsa/curriculum.ts",
+          "line": 102,
+          "end_line": 111,
+          "label": "readEdits"
+        },
+        {
+          "path": "src/lib/dsa/curriculum.ts",
+          "line": 188,
+          "end_line": 213,
+          "label": "outline + getTopic"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "type": "backend",
+      "label": "Lesson content",
+      "sublabel": "getLessonContent()",
+      "sources": [
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 152,
+          "end_line": 182,
+          "label": "disk, then R2"
+        }
+      ]
+    },
+    {
+      "id": "bucket",
+      "type": "database",
+      "label": "R2 bucket",
+      "sublabel": "lessons + edits",
+      "sources": [
+        {
+          "path": "src/lib/admin/storage.ts",
+          "line": 9,
+          "end_line": 16,
+          "label": "CONTENT_BUCKET"
+        },
+        {
+          "path": "wrangler.jsonc",
+          "line": 11,
+          "end_line": 16,
+          "label": "R2 binding"
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "type": "cloud",
+      "label": "Static assets",
+      "sublabel": "drawings · JS",
+      "sources": [
+        {
+          "path": "wrangler.jsonc",
+          "line": 7,
+          "end_line": 10,
+          "label": "ASSETS binding"
+        },
+        {
+          "path": "src/components/dsa/practice/PracticeSimulator.tsx",
+          "line": 158,
+          "end_line": 168,
+          "label": "lazy simulator load"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 268,
+      "label": "1 · Sign-in gate"
+    },
+    {
+      "from": 292,
+      "to": 578,
+      "label": "2 · Server render"
+    }
+  ],
+  "messages": [
+    {
+      "id": "request",
+      "from": "learner",
+      "to": "proxy",
+      "y": 174,
+      "label": "GET /dsa/:course/:lesson",
+      "variant": "emphasis"
+    },
+    {
+      "id": "verify",
+      "from": "proxy",
+      "to": "supabase",
+      "y": 202,
+      "label": "getClaims() → verified",
+      "variant": "security"
+    },
+    {
+      "id": "redirect",
+      "from": "proxy",
+      "to": "learner",
+      "y": 230,
+      "label": "307 /login?next=…",
+      "variant": "dashed",
+      "note": "only without a valid session"
+    },
+    {
+      "id": "continue",
+      "from": "proxy",
+      "to": "page",
+      "y": 258,
+      "label": "signed in: render",
+      "variant": "emphasis"
+    },
+    {
+      "id": "get-topic",
+      "from": "page",
+      "to": "curriculum",
+      "y": 314,
+      "label": "getTopic()"
+    },
+    {
+      "id": "read-edits",
+      "from": "curriculum",
+      "to": "bucket",
+      "y": 342,
+      "label": "get curriculum.json"
+    },
+    {
+      "id": "edits",
+      "from": "bucket",
+      "to": "curriculum",
+      "y": 370,
+      "label": "admin edits",
+      "variant": "return"
+    },
+    {
+      "id": "topic",
+      "from": "curriculum",
+      "to": "page",
+      "y": 398,
+      "label": "course + lesson",
+      "variant": "return"
+    },
+    {
+      "id": "backstop",
+      "from": "page",
+      "to": "supabase",
+      "y": 426,
+      "label": "requireSignedIn()",
+      "variant": "security"
+    },
+    {
+      "id": "get-content",
+      "from": "page",
+      "to": "content",
+      "y": 454,
+      "label": "getLessonContent()"
+    },
+    {
+      "id": "read-lesson",
+      "from": "content",
+      "to": "bucket",
+      "y": 482,
+      "label": "get lesson JSON"
+    },
+    {
+      "id": "blocks",
+      "from": "bucket",
+      "to": "content",
+      "y": 510,
+      "label": "lesson blocks",
+      "variant": "return"
+    },
+    {
+      "id": "content-back",
+      "from": "content",
+      "to": "page",
+      "y": 538,
+      "label": "LessonContent",
+      "variant": "return"
+    },
+    {
+      "id": "html",
+      "from": "page",
+      "to": "learner",
+      "y": 566,
+      "label": "HTML (no-store)",
+      "variant": "return"
+    },
+    {
+      "id": "fetch-assets",
+      "from": "learner",
+      "to": "assets",
+      "y": 594,
+      "label": "drawings + simulator chunk",
+      "variant": "dashed"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "proxy",
+      "from": 168,
+      "to": 264,
+      "type": "security"
+    },
+    {
+      "participant": "supabase",
+      "from": 196,
+      "to": 208,
+      "type": "security"
+    },
+    {
+      "participant": "supabase",
+      "from": 420,
+      "to": 432,
+      "type": "security"
+    },
+    {
+      "participant": "page",
+      "from": 252,
+      "to": 572,
+      "type": "backend"
+    },
+    {
+      "participant": "curriculum",
+      "from": 308,
+      "to": 404,
+      "type": "backend"
+    },
+    {
+      "participant": "bucket",
+      "from": 336,
+      "to": 376,
+      "type": "database"
+    },
+    {
+      "participant": "content",
+      "from": 448,
+      "to": 544,
+      "type": "backend"
+    },
+    {
+      "participant": "bucket",
+      "from": 476,
+      "to": 516,
+      "type": "database"
+    },
+    {
+      "participant": "assets",
+      "from": 588,
+      "to": 597,
+      "type": "cloud"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Two sign-in checks",
+      "items": [
+        "The proxy redirects signed-out visitors before any page code runs",
+        "The page calls requireSignedIn() again as a backstop"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Fresh on every request",
+      "items": [
+        "Lesson pages are force-dynamic, so a save in /admin shows up without a redeploy",
+        "In next dev both reads try content/ on disk first, then R2"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "After the HTML arrives",
+      "items": [
+        "Drawings are static SVG files",
+        "Each simulator downloads only its own program chunk"
+      ]
+    }
+  ]
+}
