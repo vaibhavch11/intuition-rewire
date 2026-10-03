@@ -115,7 +115,9 @@ function GridBox({ view }: { view: GridView }) {
           ))}
           {view.values.map((row, r) => (
             <Fragment key={r}>
-              <span className="pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant">{r}</span>
+              <span className="pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant">
+                {view.rowLabels?.[r] ?? r}
+              </span>
               {Array.from({ length: cols }, (_, c) =>
                 c < row.length ? (
                   <Cell key={c} value={row[c]} tone={view.tones?.[cell(r, c)]} />
@@ -351,7 +353,9 @@ export default function PracticeSimulator({
           {/* The explanation below narrates this picture for screen readers. */}
           <div aria-hidden className="overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
             <div className="flex w-max min-w-full flex-col gap-space-lg">
-              {(frame.trees.length > 0 || frame.stacks.length > 0) && (
+              {/* A stack sits beside a tree (a traversal's work list); otherwise it
+                  goes below the arrays, so the input stays put as the stack grows. */}
+              {frame.trees.length > 0 && (
                 <div className="flex flex-wrap items-end gap-space-xl">
                   {frame.trees.map((tree) => (
                     <TreeDiagram key={tree.name} view={tree} />
@@ -374,6 +378,13 @@ export default function PracticeSimulator({
               {frame.arrays.map((array) => (
                 <ArrayRow key={array.name} view={array} />
               ))}
+              {frame.trees.length === 0 && frame.stacks.length > 0 && (
+                <div className="flex flex-wrap items-end gap-space-xl">
+                  {frame.stacks.map((stack) => (
+                    <StackColumn key={stack.name} view={stack} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
   Arrow,
   CELL_TONES,
@@ -258,12 +259,14 @@ export function StackColumn({ view }: { view: StackView }) {
       {view.values.length === 0 ? (
         <Empty />
       ) : (
-        <div className="flex flex-col gap-1 border-b-2 border-outline-variant pb-1">
+        // A two-column grid, so every cell takes the width of the widest one,
+        // like a real stack of equal boxes, with the top label beside it.
+        <div className="inline-grid grid-cols-[auto_auto] items-center gap-x-space-xs gap-y-1 border-b-2 border-outline-variant pb-1">
           {view.values
             .map((value, i) => ({ value, i }))
             .reverse()
             .map(({ value, i }) => (
-              <div key={i} className="flex items-center gap-space-xs">
+              <Fragment key={i}>
                 <div
                   className={`flex h-9 min-w-14 items-center justify-center rounded-lg px-2 font-code-md text-code-md font-semibold transition-all duration-300 motion-reduce:transition-none sm:h-10 ${
                     CELL_TONES[view.tones?.[i] ?? "idle"]
@@ -271,12 +274,10 @@ export function StackColumn({ view }: { view: StackView }) {
                 >
                   {formatValue(value)}
                 </div>
-                {i === top && (
-                  <span className="whitespace-nowrap font-code-sm text-code-sm font-semibold text-primary">
-                    ◀ {view.topLabel ?? "top"}
-                  </span>
-                )}
-              </div>
+                <span className="whitespace-nowrap font-code-sm text-code-sm font-semibold text-primary">
+                  {i === top ? `◀ ${view.topLabel ?? "top"}` : ""}
+                </span>
+              </Fragment>
             ))}
         </div>
       )}

@@ -19,6 +19,8 @@ export interface GridView {
   name: string;
   values: Scalar[][];
   tones?: Record<string, CellTone>;
+  /** Labels down the left edge instead of row numbers, e.g. heights for a skyline. */
+  rowLabels?: string[];
 }
 
 /**

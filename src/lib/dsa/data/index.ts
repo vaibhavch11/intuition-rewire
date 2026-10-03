@@ -1,6 +1,7 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
 import { linkedListSection } from "./linked-list";
+import { stackSection } from "./stack";
 import { stringsSection } from "./strings";
 
 function placeholderSection(
@@ -47,12 +48,7 @@ export const builtInSections: Section[] = [
     "Constant-time lookup by trading memory for a hashing function and collision strategy.",
     "data-structure"
   ),
-  placeholderSection(
-    "stack",
-    "Stack",
-    "Last-in, first-out — the structure behind call stacks, undo history, and expression parsing.",
-    "data-structure"
-  ),
+  stackSection,
   placeholderSection(
     "queue",
     "Queue",
