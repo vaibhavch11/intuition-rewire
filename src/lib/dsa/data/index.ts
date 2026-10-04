@@ -1,5 +1,6 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
+import { binaryTreeSection } from "./binary-tree";
 import { linkedListSection } from "./linked-list";
 import { stackSection } from "./stack";
 import { stringsSection } from "./strings";
@@ -55,12 +56,7 @@ export const builtInSections: Section[] = [
     "First-in, first-out — the structure behind task scheduling and breadth-first traversal.",
     "data-structure"
   ),
-  placeholderSection(
-    "binary-tree",
-    "Binary Tree",
-    "Hierarchical structures for representing nested relationships and enabling fast search.",
-    "data-structure"
-  ),
+  binaryTreeSection,
   placeholderSection(
     "binary-search-tree",
     "Binary Search Tree",
