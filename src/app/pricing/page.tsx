@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 const PERKS = [
   { icon: BookOpen, title: "Every lesson stays free", text: "All courses, drawings and simulators are open to anyone with a free account." },
-  { icon: Heart, title: "Pay what it's worth to you", text: "Support with $5 or any amount you choose — once, no subscription." },
+  { icon: Heart, title: "Pay what it's worth to you", text: "Support with any amount you choose — once, no subscription." },
   { icon: Sparkles, title: "Fund the next courses", text: "Your support pays for new courses like stacks, queues and trees." },
 ];
 
@@ -34,8 +34,8 @@ export default async function PricingPage() {
           Free to learn. Pay what you want.
         </h1>
         <p className="font-body-lg text-body-lg mx-auto mt-space-sm max-w-2xl text-on-surface-variant">
-          IntuitionRewire is free for everyone. If it helped you, support it with a one-time payment of $5 or any amount
-          you like.
+          IntuitionRewire is free for everyone. If it helped you, support it with a one-time payment of any amount you
+          like.
         </p>
       </div>
 

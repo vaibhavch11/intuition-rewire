@@ -6,7 +6,6 @@ import { CheckCircle2, Heart, Loader2, Lock } from "lucide-react";
 import {
   checkSupportAmount,
   formatDollars,
-  MIN_SUPPORT_CENTS,
   parseDollars,
   SUGGESTED_DOLLARS,
 } from "@/lib/payments/amounts";
@@ -177,9 +176,7 @@ export default function SupportCheckout({
 
       {choice === "custom" && (
         <label className="mt-space-md block">
-          <span className="font-label-md text-label-md text-on-surface-variant">
-            Your amount (minimum {formatDollars(MIN_SUPPORT_CENTS)})
-          </span>
+          <span className="font-label-md text-label-md text-on-surface-variant">Your amount</span>
           <div className="mt-1 flex h-12 items-center rounded-xl border border-outline-variant bg-surface-container-lowest px-space-sm focus-within:border-primary">
             <span className="font-headline-md text-body-lg text-on-surface-variant">$</span>
             <input
@@ -187,7 +184,7 @@ export default function SupportCheckout({
               inputMode="decimal"
               value={custom}
               onChange={(e) => setCustom(e.target.value)}
-              placeholder="15"
+              placeholder="1"
               aria-invalid={Boolean(problem)}
               className="ml-1 w-full bg-transparent font-headline-md text-body-lg text-on-surface outline-none"
             />

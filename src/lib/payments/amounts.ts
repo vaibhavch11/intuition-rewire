@@ -5,12 +5,16 @@
  */
 export const SUPPORT_CURRENCY = "USD";
 
-/** Amounts are whole cents, Razorpay's smallest unit for USD. */
-export const MIN_SUPPORT_CENTS = 500;
+/**
+ * Amounts are whole cents, Razorpay's smallest unit for USD. We set no minimum
+ * of our own: 100 cents ($1.00) is the smallest order Razorpay's Orders API
+ * accepts, so anything below it would only fail at checkout.
+ */
+export const MIN_SUPPORT_CENTS = 100;
 export const MAX_SUPPORT_CENTS = 50_000;
 
 /** One-tap choices on the Pricing page, in dollars. */
-export const SUGGESTED_DOLLARS = [5, 10, 25, 50];
+export const SUGGESTED_DOLLARS = [5, 10, 20, 25];
 
 export function formatDollars(cents: number): string {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -25,7 +29,7 @@ export function parseDollars(text: string): number | null {
 
 export function checkSupportAmount(cents: number): string | null {
   if (!Number.isInteger(cents)) return "Enter an amount in dollars, like 5 or 12.50.";
-  if (cents < MIN_SUPPORT_CENTS) return `The minimum is ${formatDollars(MIN_SUPPORT_CENTS)}.`;
+  if (cents < MIN_SUPPORT_CENTS) return `Razorpay can't take a payment under ${formatDollars(MIN_SUPPORT_CENTS)}.`;
   if (cents > MAX_SUPPORT_CENTS) return `The most you can pay at once is ${formatDollars(MAX_SUPPORT_CENTS)}.`;
   return null;
 }
