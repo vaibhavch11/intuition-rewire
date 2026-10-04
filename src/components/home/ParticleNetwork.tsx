@@ -1,24 +1,42 @@
 "use client";
 
-import { useMemo, useRef, useSyncExternalStore } from "react";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useInView, useIsClient, usePrefersReducedMotion } from "./clientHooks";
 
-const PARTICLE_COUNT = 46;
+/** The desktop field: 46 particles spread over ±7.5 units across. */
+const MAX_PARTICLES = 46;
+const MAX_HALF_WIDTH = 7.5;
 const CONNECT_DISTANCE = 2.4;
-const BOUNDS = { x: 7.5, y: 3.6, z: 1.2 } as const;
+const CONNECT_DISTANCE_SQ = CONNECT_DISTANCE * CONNECT_DISTANCE;
+const HALF_HEIGHT = 3.6;
+const HALF_DEPTH = 1.2;
 
-type Axis = keyof typeof BOUNDS;
+type Bounds = { x: number; y: number; z: number };
+type Axis = keyof Bounds;
 const AXES: Axis[] = ["x", "y", "z"];
 
 type Particle = { position: THREE.Vector3; velocity: THREE.Vector3 };
 
-function createParticles(): Particle[] {
-  return Array.from({ length: PARTICLE_COUNT }, () => ({
+/** One line segment's two endpoints, reused for every segment of every frame. */
+const SEGMENT = new Float32Array(6);
+function segment(a: THREE.Vector3, b: THREE.Vector3): Float32Array {
+  SEGMENT[0] = a.x;
+  SEGMENT[1] = a.y;
+  SEGMENT[2] = a.z;
+  SEGMENT[3] = b.x;
+  SEGMENT[4] = b.y;
+  SEGMENT[5] = b.z;
+  return SEGMENT;
+}
+
+function createParticles(count: number, bounds: Bounds): Particle[] {
+  return Array.from({ length: count }, () => ({
     position: new THREE.Vector3(
-      (Math.random() * 2 - 1) * BOUNDS.x,
-      (Math.random() * 2 - 1) * BOUNDS.y,
-      (Math.random() * 2 - 1) * BOUNDS.z
+      (Math.random() * 2 - 1) * bounds.x,
+      (Math.random() * 2 - 1) * bounds.y,
+      (Math.random() * 2 - 1) * bounds.z
     ),
     velocity: new THREE.Vector3(
       (Math.random() - 0.5) * 0.012,
@@ -28,39 +46,34 @@ function createParticles(): Particle[] {
   }));
 }
 
-// Subscribes to nothing — this is the standard client-only-render gate that
-// avoids calling setState from an effect (and the SSR/hydration mismatch a
-// plain `useState(false)` + `useEffect` would otherwise need).
-function useIsClient() {
-  return useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-}
-
 function Field() {
   const pointsGeoRef = useRef<THREE.BufferGeometry>(null);
   const linesGeoRef = useRef<THREE.BufferGeometry>(null);
 
-  // Created lazily on the first animation tick (not during render) so the
-  // one-time randomness here never runs inside a pure render function.
-  const particlesRef = useRef<Particle[] | null>(null);
-  // Deterministic (all-zero) allocations — safe to create during render.
-  const positions = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
-  const linePositions = useMemo(
-    () => new Float32Array(PARTICLE_COUNT * PARTICLE_COUNT * 3),
-    []
-  );
+  // Created lazily on the first frame (not during render) so the one-time
+  // randomness never runs inside a pure render function. A narrow screen only
+  // shows the middle of the desktop field, so it gets a narrower field with
+  // proportionally fewer particles: the same density for less work.
+  const fieldRef = useRef<{ particles: Particle[]; bounds: Bounds } | null>(null);
+  // Sized for the desktop field; a narrower one uses the start of each buffer.
+  const positions = useMemo(() => new Float32Array(MAX_PARTICLES * 3), []);
+  const linePositions = useMemo(() => new Float32Array(MAX_PARTICLES * MAX_PARTICLES * 3), []);
 
-  useFrame(() => {
-    if (!particlesRef.current) particlesRef.current = createParticles();
-    const particles = particlesRef.current;
+  useFrame(({ viewport }) => {
+    if (!fieldRef.current) {
+      const halfWidth = Math.min(MAX_HALF_WIDTH, viewport.width / 2 + 0.5);
+      const count = Math.max(12, Math.round((MAX_PARTICLES * halfWidth) / MAX_HALF_WIDTH));
+      const bounds = { x: halfWidth, y: HALF_HEIGHT, z: HALF_DEPTH };
+      fieldRef.current = { particles: createParticles(count, bounds), bounds };
+      pointsGeoRef.current?.setDrawRange(0, count);
+    }
+    const { particles, bounds } = fieldRef.current;
+    const count = particles.length;
 
     for (const p of particles) {
       p.position.add(p.velocity);
       for (const axis of AXES) {
-        const bound = BOUNDS[axis];
+        const bound = bounds[axis];
         if (p.position[axis] > bound || p.position[axis] < -bound) {
           p.velocity[axis] *= -1;
         }
@@ -73,21 +86,15 @@ function Field() {
       positions[i * 3 + 2] = p.position.z;
     });
 
+    // Copied through one reused scratch segment: no arrays allocated per
+    // frame, so no garbage-collection pauses mid-scroll.
     let lineCount = 0;
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      for (let j = i + 1; j < PARTICLE_COUNT; j++) {
-        if (particles[i].position.distanceTo(particles[j].position) < CONNECT_DISTANCE) {
-          linePositions.set(
-            [
-              particles[i].position.x,
-              particles[i].position.y,
-              particles[i].position.z,
-              particles[j].position.x,
-              particles[j].position.y,
-              particles[j].position.z,
-            ],
-            lineCount * 6
-          );
+    for (let i = 0; i < count; i++) {
+      const a = particles[i].position;
+      for (let j = i + 1; j < count; j++) {
+        const b = particles[j].position;
+        if (a.distanceToSquared(b) < CONNECT_DISTANCE_SQ) {
+          linePositions.set(segment(a, b), lineCount * 6);
           lineCount++;
         }
       }
@@ -124,16 +131,25 @@ function Field() {
 
 export default function ParticleNetwork() {
   const isClient = useIsClient();
-  if (!isClient) return null;
+  const reducedMotion = usePrefersReducedMotion();
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(wrapperRef);
 
   return (
-    <Canvas
-      orthographic
-      camera={{ zoom: 60, position: [0, 0, 10] }}
-      gl={{ alpha: true, antialias: true }}
-      dpr={[1, 1.5]}
-    >
-      <Field />
-    </Canvas>
+    <div ref={wrapperRef} className="h-full w-full">
+      {isClient && (
+        // Draws only while on screen: scrolled away (or with reduced motion)
+        // it keeps its last frame instead of redrawing 60 times a second.
+        <Canvas
+          orthographic
+          camera={{ zoom: 60, position: [0, 0, 10] }}
+          gl={{ alpha: true, antialias: true }}
+          dpr={[1, 1.5]}
+          frameloop={inView && !reducedMotion ? "always" : "demand"}
+        >
+          <Field />
+        </Canvas>
+      )}
+    </div>
   );
 }

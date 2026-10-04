@@ -29,8 +29,24 @@ export default async function Home() {
       <div className="flex flex-col w-full">
         {/* Top ambient glow field + three.js particle network */}
         <div className="relative w-full overflow-hidden">
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-primary-fixed-dim/40 via-surface-variant/30 to-transparent blur-3xl pointer-events-none -z-10 rounded-full" />
-          <div className="absolute top-20 right-10 w-72 h-72 bg-secondary-fixed/20 blur-2xl pointer-events-none -z-10 rounded-full" />
+          {/* Big blur filters are costly for phone GPUs, so below lg the same
+              glows are drawn as soft radial gradients instead. */}
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-primary-fixed-dim/40 via-surface-variant/30 to-transparent blur-3xl pointer-events-none -z-10 rounded-full hidden lg:block" />
+          <div className="absolute top-20 right-10 w-72 h-72 bg-secondary-fixed/20 blur-2xl pointer-events-none -z-10 rounded-full hidden lg:block" />
+          <div
+            className="absolute -top-56 left-1/2 -translate-x-1/2 w-[900px] h-[640px] pointer-events-none -z-10 lg:hidden"
+            style={{
+              background:
+                "radial-gradient(closest-side, color-mix(in oklab, var(--color-primary-fixed-dim) 40%, transparent), color-mix(in oklab, var(--color-surface-variant) 30%, transparent) 55%, transparent)",
+            }}
+          />
+          <div
+            className="absolute top-10 right-0 w-96 h-96 pointer-events-none -z-10 lg:hidden"
+            style={{
+              background:
+                "radial-gradient(closest-side, color-mix(in oklab, var(--color-secondary-fixed) 20%, transparent), transparent)",
+            }}
+          />
           <div className="absolute inset-0 -z-10 pointer-events-none">
             <ParticleNetwork />
           </div>
@@ -74,7 +90,7 @@ export default async function Home() {
               </HashLink>
             </div>
 
-            <dl className="grid w-full max-w-4xl grid-cols-1 divide-y divide-outline-variant/60 overflow-hidden rounded-2xl border border-outline-variant/70 bg-surface-container-lowest/85 text-left shadow-[0_1px_2px_rgba(19,27,46,0.04),0_18px_40px_-24px_rgba(19,27,46,0.25)] backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0 motion-safe:animate-fade-up [animation-delay:320ms]">
+            <dl className="grid w-full max-w-4xl grid-cols-1 divide-y divide-outline-variant/60 overflow-hidden rounded-2xl border border-outline-variant/70 bg-surface-container-lowest/95 text-left shadow-[0_1px_2px_rgba(19,27,46,0.04),0_18px_40px_-24px_rgba(19,27,46,0.25)] lg:bg-surface-container-lowest/85 lg:backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0 motion-safe:animate-fade-up [animation-delay:320ms]">
               {HIGHLIGHTS.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex items-center gap-space-md px-space-lg py-space-md sm:py-space-lg">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-fixed/60 text-primary ring-1 ring-inset ring-primary/10">

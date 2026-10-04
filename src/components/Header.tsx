@@ -85,7 +85,9 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    // No frosted-glass blur below lg: re-blurring the page under a fixed bar on
+    // every scroll frame is what makes phones stutter. A near-solid bar looks the same.
+    <header className="fixed top-0 left-0 right-0 w-full z-50 bg-surface-container-lowest/[0.97] shadow-[0_1px_8px_rgba(0,0,0,0.04)] lg:bg-surface-container-lowest/90 lg:backdrop-blur-xl">
       <div className="h-14 max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-lg">
         <div className="flex items-center gap-space-lg shrink-0">
           <Link href="/" className="flex items-center gap-space-sm">
