@@ -1,0 +1,386 @@
+{
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "You almost never build a hash map yourself — every language ships a fast one. This lesson is the toolkit: the same operations in all four languages, the one idiom you'll type more than any other (counting), and the traps that catch people in each language."
+    },
+    {
+      "type": "heading",
+      "text": "The built-in hash map in each language"
+    },
+    {
+      "type": "drawing",
+      "src": "/drawings/e88dd284-16b1-4898-858e-db908bfb7956.svg",
+      "alt": "A cheat sheet. JavaScript Map: new Map(), set, get which gives undefined if missing, get with ?? 0 for a default, has, delete, size, and for-of over the map. Python dict: braces, m[k] = v, m[k] which raises KeyError if missing, m.get(k, 0), k in m, del, len, and items(). Java HashMap: put, get which gives null if missing, getOrDefault, containsKey, remove, size, and entrySet(). C++ unordered_map: m[k] = v, m.at(k) which throws if missing, count to check, erase, size, and a range-for over the map.",
+      "width": 978,
+      "height": 548,
+      "scene": {
+        "elements": [
+          {
+            "id": "2uQfw-iPKEc1vgk2CoLfT",
+            "type": "rectangle",
+            "x": 0,
+            "y": 0,
+            "width": 450,
+            "height": 230,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "#ffec99",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a0",
+            "roundness": {
+              "type": 3
+            },
+            "seed": 876697964,
+            "version": 2,
+            "versionNonce": 1082344300,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false
+          },
+          {
+            "id": "psdZYnQRcQmkpuCYR9hhm",
+            "type": "text",
+            "x": 20,
+            "y": 15,
+            "width": 360.79949951171875,
+            "height": 200,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "transparent",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a1",
+            "roundness": null,
+            "seed": 774652756,
+            "version": 2,
+            "versionNonce": 1859516756,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false,
+            "text": "JavaScript  (Map)\n\ncreate   const m = new Map()\nput      m.set(k, v)\nget      m.get(k)    undefined if missing\ndefault  m.get(k) ?? 0\nhas      m.has(k)\nremove   m.delete(k)\nsize     m.size\nloop     for (const [k, v] of m)",
+            "fontSize": 16,
+            "fontFamily": 8,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "containerId": null,
+            "originalText": "JavaScript  (Map)\n\ncreate   const m = new Map()\nput      m.set(k, v)\nget      m.get(k)    undefined if missing\ndefault  m.get(k) ?? 0\nhas      m.has(k)\nremove   m.delete(k)\nsize     m.size\nloop     for (const [k, v] of m)",
+            "autoResize": true,
+            "lineHeight": 1.25
+          },
+          {
+            "id": "jdDhRfpiy-gtkfAS8inSe",
+            "type": "rectangle",
+            "x": 480,
+            "y": 0,
+            "width": 450,
+            "height": 230,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "#a5d8ff",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a2",
+            "roundness": {
+              "type": 3
+            },
+            "seed": 1277905900,
+            "version": 2,
+            "versionNonce": 211809772,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false
+          },
+          {
+            "id": "Bg1V2q3mBrs1iS-1ps6-p",
+            "type": "text",
+            "x": 500,
+            "y": 15,
+            "width": 360.79949951171875,
+            "height": 200,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "transparent",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a3",
+            "roundness": null,
+            "seed": 1475393748,
+            "version": 2,
+            "versionNonce": 99856084,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false,
+            "text": "Python  (dict)\n\ncreate   m = {}\nput      m[k] = v\nget      m[k]        KeyError if missing!\ndefault  m.get(k, 0)\nhas      k in m\nremove   del m[k]\nsize     len(m)\nloop     for k, v in m.items():",
+            "fontSize": 16,
+            "fontFamily": 8,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "containerId": null,
+            "originalText": "Python  (dict)\n\ncreate   m = {}\nput      m[k] = v\nget      m[k]        KeyError if missing!\ndefault  m.get(k, 0)\nhas      k in m\nremove   del m[k]\nsize     len(m)\nloop     for k, v in m.items():",
+            "autoResize": true,
+            "lineHeight": 1.25
+          },
+          {
+            "id": "Om1ZgZizb6LTLvKXFIqkU",
+            "type": "rectangle",
+            "x": 0,
+            "y": 270,
+            "width": 450,
+            "height": 230,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "#ffd8a8",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a4",
+            "roundness": {
+              "type": 3
+            },
+            "seed": 1731391084,
+            "version": 2,
+            "versionNonce": 1199724652,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false
+          },
+          {
+            "id": "kBkSvDwS1M4NnamTmgCt8",
+            "type": "text",
+            "x": 20,
+            "y": 285,
+            "width": 334.3995361328125,
+            "height": 200,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "transparent",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a5",
+            "roundness": null,
+            "seed": 210402900,
+            "version": 2,
+            "versionNonce": 717141076,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false,
+            "text": "Java  (HashMap)\n\ncreate   Map<K, V> m = new HashMap<>()\nput      m.put(k, v)\nget      m.get(k)    null if missing\ndefault  m.getOrDefault(k, 0)\nhas      m.containsKey(k)\nremove   m.remove(k)\nsize     m.size()\nloop     for (var e : m.entrySet())",
+            "fontSize": 16,
+            "fontFamily": 8,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "containerId": null,
+            "originalText": "Java  (HashMap)\n\ncreate   Map<K, V> m = new HashMap<>()\nput      m.put(k, v)\nget      m.get(k)    null if missing\ndefault  m.getOrDefault(k, 0)\nhas      m.containsKey(k)\nremove   m.remove(k)\nsize     m.size()\nloop     for (var e : m.entrySet())",
+            "autoResize": true,
+            "lineHeight": 1.25
+          },
+          {
+            "id": "bX3qAmXHAUZpzBjSf9Omu",
+            "type": "rectangle",
+            "x": 480,
+            "y": 270,
+            "width": 450,
+            "height": 230,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "#b2f2bb",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a6",
+            "roundness": {
+              "type": 3
+            },
+            "seed": 908214508,
+            "version": 2,
+            "versionNonce": 1827957484,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false
+          },
+          {
+            "id": "_Jttih9rW8vMBSFPsDj2n",
+            "type": "text",
+            "x": 500,
+            "y": 285,
+            "width": 334.3995361328125,
+            "height": 200,
+            "angle": 0,
+            "strokeColor": "#1e1e1e",
+            "backgroundColor": "transparent",
+            "fillStyle": "solid",
+            "strokeWidth": 2,
+            "strokeStyle": "solid",
+            "roughness": 1,
+            "opacity": 100,
+            "groupIds": [],
+            "frameId": null,
+            "index": "a7",
+            "roundness": null,
+            "seed": 1691325396,
+            "version": 2,
+            "versionNonce": 1527581140,
+            "isDeleted": false,
+            "boundElements": null,
+            "updated": 1791190649493,
+            "link": null,
+            "locked": false,
+            "text": "C++  (unordered_map)\n\ncreate   unordered_map<K, V> m\nput      m[k] = v\nget      m.at(k)     throws if missing\ndefault  m.count(k) ? m[k] : 0\nhas      m.count(k)\nremove   m.erase(k)\nsize     m.size()\nloop     for (auto& [k, v] : m)",
+            "fontSize": 16,
+            "fontFamily": 8,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "containerId": null,
+            "originalText": "C++  (unordered_map)\n\ncreate   unordered_map<K, V> m\nput      m[k] = v\nget      m.at(k)     throws if missing\ndefault  m.count(k) ? m[k] : 0\nhas      m.count(k)\nremove   m.erase(k)\nsize     m.size()\nloop     for (auto& [k, v] : m)",
+            "autoResize": true,
+            "lineHeight": 1.25
+          }
+        ],
+        "files": {}
+      }
+    },
+    {
+      "type": "paragraph",
+      "text": "All of these are O(1) on average, except looping, which visits every entry. For a **set**, use `Set` (JavaScript), `set()` (Python), `HashSet` (Java) or `unordered_set` (C++) — the same operations without values."
+    },
+    {
+      "type": "heading",
+      "text": "The counting idiom"
+    },
+    {
+      "type": "paragraph",
+      "text": "Counting is the move you'll make most: look up the current count (treating a missing key as **0**), add one, store it back. Every language has a short way to write it:"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**JavaScript:** `count.set(x, (count.get(x) ?? 0) + 1)`",
+        "**Python:** `count[x] = count.get(x, 0) + 1` — or a `defaultdict(int)` and `count[x] += 1`, or `Counter(items)` to count a whole list at once",
+        "**Java:** `count.merge(x, 1, Integer::sum)` — or `count.put(x, count.getOrDefault(x, 0) + 1)`",
+        "**C++:** `count[x]++` — a missing key is created with the value 0 first"
+      ]
+    },
+    {
+      "type": "simulator",
+      "program": "char-frequency",
+      "caption": "One pass builds the whole table of counts."
+    },
+    {
+      "type": "paragraph",
+      "text": "Counting is usually the **first pass** of a solution. For example, to find the first character that appears only once (LeetCode's *First Unique Character in a String*), count everything, then walk the string again and return the first index whose count is 1:"
+    },
+    {
+      "type": "code",
+      "language": "javascript",
+      "code": "function firstUniqChar(s) {\n  const count = new Map();\n  for (const ch of s) count.set(ch, (count.get(ch) ?? 0) + 1);   // pass 1: count\n  for (let i = 0; i < s.length; i++) {\n    if (count.get(s[i]) === 1) return i;                          // pass 2: first count of 1\n  }\n  return -1;\n}"
+    },
+    {
+      "type": "code",
+      "language": "python",
+      "code": "from collections import Counter\n\ndef first_uniq_char(s):\n    count = Counter(s)                       # pass 1: count every character\n    for i, ch in enumerate(s):\n        if count[ch] == 1:                   # pass 2: the first one seen once\n            return i\n    return -1"
+    },
+    {
+      "type": "code",
+      "language": "java",
+      "code": "int firstUniqChar(String s) {\n    Map<Character, Integer> count = new HashMap<>();\n    for (char ch : s.toCharArray()) count.merge(ch, 1, Integer::sum);   // pass 1: count\n    for (int i = 0; i < s.length(); i++) {\n        if (count.get(s.charAt(i)) == 1) return i;                      // pass 2: first count of 1\n    }\n    return -1;\n}"
+    },
+    {
+      "type": "code",
+      "language": "cpp",
+      "code": "int firstUniqChar(string s) {\n    unordered_map<char, int> count;\n    for (char ch : s) count[ch]++;               // pass 1: a missing key starts at 0\n    for (int i = 0; i < (int)s.size(); i++) {\n        if (count[s[i]] == 1) return i;          // pass 2: the first count of 1\n    }\n    return -1;\n}"
+    },
+    {
+      "type": "paragraph",
+      "text": "**Time O(n), space O(k)** for k different characters — at most 26 for lowercase letters, which is why `int count[26]` works just as well here."
+    },
+    {
+      "type": "heading",
+      "text": "Mistakes to avoid"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "**JavaScript: use `Map`, not a plain object, for counting.** Object keys are converted to strings, so `1` and `\"1\"` collide, and inherited names like `\"constructor\"` already exist. And `m[k]` doesn't work on a `Map` — use `get` and `set`.",
+        "**Python: a missing key raises `KeyError`.** Use `m.get(k, 0)`, `defaultdict` or `Counter`. Use tuples, not lists, as keys.",
+        "**Java: `get` returns `null` for a missing key,** and unboxing that `null` into an `int` throws a NullPointerException — use `getOrDefault`. Compare two `Integer` values with `.equals`, not `==`: `==` only happens to work for small numbers (−128 to 127), because Java caches those.",
+        "**C++: `m[k]` inserts a key if it's missing.** Just *checking* with `m[k]` quietly adds entries (and can break a loop over the map). Use `m.count(k)` or `m.find(k)` to check.",
+        "**Don't change a map while looping over it.** Java throws `ConcurrentModificationException`, Python raises `RuntimeError`. Collect the changes first, apply them after.",
+        "**Don't rely on order** in Java's `HashMap` or C++'s `unordered_map`. JavaScript's `Map` and Python's `dict` keep insertion order."
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "When you need order: sorted maps"
+    },
+    {
+      "type": "paragraph",
+      "text": "Java's `TreeMap` and C++'s `std::map` keep their keys **sorted**, so you can ask for the smallest key, the next key after x, or every key in a range — at **O(log n)** per operation instead of O(1). Python and JavaScript have no built-in sorted map; sort the keys when you need them in order."
+    },
+    {
+      "type": "heading",
+      "text": "Key takeaways"
+    },
+    {
+      "type": "list",
+      "ordered": false,
+      "items": [
+        "Built-ins: JavaScript `Map`, Python `dict`, Java `HashMap`, C++ `unordered_map` — plus a set version of each.",
+        "Counting: treat a missing key as **0**, add one, store it back.",
+        "Know your language's trap: object keys in JavaScript, `KeyError` in Python, `null` and `Integer ==` in Java, `m[k]` inserting in C++.",
+        "Need sorted keys? Use `TreeMap` or `std::map`, at O(log n)."
+      ]
+    }
+  ],
+  "updatedAt": "2026-10-05T08:57:29.687Z"
+}

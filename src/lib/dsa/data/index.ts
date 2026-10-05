@@ -1,6 +1,7 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
 import { binaryTreeSection } from "./binary-tree";
+import { hashTableSection } from "./hash-table";
 import { linkedListSection } from "./linked-list";
 import { stackSection } from "./stack";
 import { stringsSection } from "./strings";
@@ -43,12 +44,7 @@ export const builtInSections: Section[] = [
     "Nodes linked in both directions, trading extra memory for O(1) backward traversal.",
     "data-structure"
   ),
-  placeholderSection(
-    "hash-table",
-    "Hash Table",
-    "Constant-time lookup by trading memory for a hashing function and collision strategy.",
-    "data-structure"
-  ),
+  hashTableSection,
   stackSection,
   placeholderSection(
     "queue",
