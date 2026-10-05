@@ -24,6 +24,7 @@ import {
   type Frame,
   type GridView,
   type Input,
+  type MapView,
   type Program,
 } from "./types";
 
@@ -110,7 +111,7 @@ function GridBox({ view }: { view: GridView }) {
           <span />
           {Array.from({ length: cols }, (_, c) => (
             <span key={c} className="text-center font-code-sm text-[11px] leading-4 text-on-surface-variant">
-              {c}
+              {view.columnLabels ? (view.columnLabels[c] ?? "") : c}
             </span>
           ))}
           {view.values.map((row, r) => (
@@ -126,6 +127,39 @@ function GridBox({ view }: { view: GridView }) {
                 )
               )}
             </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A hash map: one column per entry, key above value, in insertion order. */
+function MapTable({ view }: { view: MapView }) {
+  const heading = "pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant";
+  return (
+    <div>
+      <p className="mb-1 font-code-sm text-code-sm font-semibold text-on-surface-variant">{view.name}</p>
+      {view.entries.length === 0 ? (
+        <Empty />
+      ) : (
+        <div
+          className="inline-grid items-center gap-x-1.5 gap-y-1"
+          style={{ gridTemplateColumns: `auto repeat(${view.entries.length}, auto)` }}
+        >
+          <span />
+          {view.entries.map((_, i) => (
+            <div key={`tag${i}`} className="flex justify-center">
+              <PointerTags pointers={view.pointers?.[i]} />
+            </div>
+          ))}
+          <span className={heading}>{view.keyLabel ?? "key"}</span>
+          {view.entries.map(([key], i) => (
+            <Cell key={`key${i}`} value={key} tone={view.tones?.[i]} />
+          ))}
+          <span className={heading}>{view.valueLabel ?? "value"}</span>
+          {view.entries.map(([, value], i) => (
+            <Cell key={`value${i}`} value={value} tone={view.tones?.[i]} />
           ))}
         </div>
       )}
@@ -378,6 +412,13 @@ export default function PracticeSimulator({
               {frame.arrays.map((array) => (
                 <ArrayRow key={array.name} view={array} />
               ))}
+              {frame.maps.length > 0 && (
+                <div className="flex flex-wrap items-start gap-space-xl">
+                  {frame.maps.map((map) => (
+                    <MapTable key={map.name} view={map} />
+                  ))}
+                </div>
+              )}
               {frame.trees.length === 0 && frame.stacks.length > 0 && (
                 <div className="flex flex-wrap items-end gap-space-xl">
                   {frame.stacks.map((stack) => (

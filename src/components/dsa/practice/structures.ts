@@ -4,14 +4,40 @@ import type {
   ListLink,
   ListNodeView,
   ListView,
+  MapView,
   Pointer,
   PointerTone,
+  Scalar,
   TreeNodeView,
   TreeView,
 } from "./types";
 
 /** The id a list's trailing null box uses, so pointers can point at it. */
 export const NULL_ID = -1;
+
+/** One highlighted map entry: its key, a tone, and an optional tag above it. */
+export type MapMark<K> = [key: K, tone: CellTone, tag?: string, tagTone?: PointerTone];
+
+/**
+ * A MapView of a JavaScript Map, in insertion order. Entries are marked by
+ * key, so a program never has to work out where a key sits in the table.
+ */
+export function mapView<K extends Scalar, V extends Scalar>(
+  name: string,
+  map: Map<K, V>,
+  { keyLabel, valueLabel, marks = [] }: { keyLabel?: string; valueLabel?: string; marks?: MapMark<K>[] } = {}
+): MapView {
+  const keys = [...map.keys()];
+  const tones: Record<number, CellTone> = {};
+  const pointers: Record<number, Pointer[]> = {};
+  for (const [key, tone, tag, tagTone] of marks) {
+    const i = keys.indexOf(key);
+    if (i < 0) continue;
+    tones[i] = tone;
+    if (tag) (pointers[i] ??= []).push({ label: tag, tone: tagTone ?? "primary" });
+  }
+  return { name, entries: [...map].map(([k, v]) => [k, v]), tones, pointers, keyLabel, valueLabel };
+}
 
 /** Pointer tags keyed by node id, from `{ label: id }`; missing ids are skipped. */
 export function tagsAt(

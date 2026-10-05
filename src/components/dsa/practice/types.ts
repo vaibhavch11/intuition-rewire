@@ -21,6 +21,22 @@ export interface GridView {
   tones?: Record<string, CellTone>;
   /** Labels down the left edge instead of row numbers, e.g. heights for a skyline. */
   rowLabels?: string[];
+  /** Labels along the top instead of column numbers; `[]` hides them (hash buckets). */
+  columnLabels?: string[];
+}
+
+/**
+ * A hash map as a two-row table: each column is one entry, key above value,
+ * in insertion order. Tones and pointers are keyed by that position.
+ */
+export interface MapView {
+  name: string;
+  entries: [Scalar, Scalar][];
+  tones?: Record<number, CellTone>;
+  pointers?: Record<number, Pointer[]>;
+  /** Row headings, e.g. "sum" and "index"; default "key" and "value". */
+  keyLabel?: string;
+  valueLabel?: string;
 }
 
 /**
@@ -92,6 +108,7 @@ export interface Frame {
   lists: ListView[];
   trees: TreeView[];
   stacks: StackView[];
+  maps: MapView[];
   vars: [string, string][];
   done: boolean;
 }
@@ -142,6 +159,7 @@ interface FrameParts {
   lists?: ListView[];
   trees?: TreeView[];
   stacks?: StackView[];
+  maps?: MapView[];
   vars?: Record<string, unknown>;
   done?: boolean;
 }
@@ -184,6 +202,12 @@ export function recorder() {
           captions: { ...t.captions },
         })),
         stacks: (parts.stacks ?? []).map((st) => ({ ...st, values: [...st.values], tones: { ...st.tones } })),
+        maps: (parts.maps ?? []).map((m) => ({
+          ...m,
+          entries: m.entries.map(([key, value]) => [key, value] as [Scalar, Scalar]),
+          tones: { ...m.tones },
+          pointers: { ...m.pointers },
+        })),
         vars: Object.entries(parts.vars ?? {}).map(([k, v]) => [k, formatValue(v)]),
         done: parts.done ?? false,
       });
