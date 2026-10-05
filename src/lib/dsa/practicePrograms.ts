@@ -96,6 +96,21 @@ export const PRACTICE_PROGRAMS = [
   { id: "cousins", title: "Cousins in a binary tree (level by level)" },
   { id: "top-view", title: "Top view (first node of each column, breadth-first)" },
   { id: "left-view", title: "Left view (first node to reach each depth)" },
+  { id: "map-ops", title: "Put, get and remove in a hash map" },
+  { id: "hash-buckets", title: "Hash buckets with chaining" },
+  { id: "char-frequency", title: "Counting characters with a hash map" },
+  { id: "distinct-in-window", title: "Distinct elements in every window" },
+  { id: "pairs-divisible-by-k", title: "Pairs divisible by k (remainder counts)" },
+  { id: "largest-zero-sum", title: "Largest zero-sum subarray (first index of each prefix sum)" },
+  { id: "zeros-and-ones", title: "Largest subarray of 0s and 1s (0 as −1)" },
+  { id: "count-zero-sum", title: "Count zero-sum subarrays (prefix sum counts)" },
+  { id: "sum-equals-k", title: "Subarray sum equals k (prefix sum counts)" },
+  { id: "sums-divisible-by-k", title: "Subarray sums divisible by k (remainder counts)" },
+  { id: "equal-0-1-2", title: "Equal 0s, 1s and 2s (difference keys)" },
+  { id: "longest-no-repeat", title: "Longest substring without repeating characters" },
+  { id: "longest-k-unique", title: "Longest substring with k unique characters" },
+  { id: "at-most-k-unique", title: "Count substrings with at most k unique characters" },
+  { id: "exactly-k-unique", title: "Exactly k unique = at most k − at most (k − 1)" },
 ] as const;
 
 export type PracticeProgramId = (typeof PRACTICE_PROGRAMS)[number]["id"];
