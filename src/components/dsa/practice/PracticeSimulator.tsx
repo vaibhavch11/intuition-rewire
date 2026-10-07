@@ -293,7 +293,7 @@ export default function PracticeSimulator({
     <section
       aria-label={`Dry-run simulator: ${title}`}
       onKeyDown={onKeyDown}
-      className="my-space-2xl overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
+      className="render-lazy [--lazy-size:1280px] my-space-2xl overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
     >
       <header className="border-b border-outline-variant/40 bg-surface-container-low px-space-md py-space-md sm:px-space-lg">
         <span className="inline-flex items-center gap-space-xs rounded-full bg-secondary-container/40 px-space-sm py-0.5 font-label-tag text-label-tag uppercase text-on-secondary-container">

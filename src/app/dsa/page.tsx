@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getSections } from "@/lib/dsa/curriculum";
 import { courseStats } from "@/lib/dsa/types";
 import type { Section } from "@/lib/dsa/types";
-import MemoryLattice from "@/components/dsa/MemoryLattice";
+import LargeScreenLattice from "@/components/dsa/LargeScreenLattice";
 
 function CourseCard({ section }: { section: Section }) {
   const stats = courseStats(section);
@@ -114,7 +114,7 @@ export default async function DsaIndexPage() {
             className="hidden h-[300px] w-full lg:block"
             role="presentation"
           >
-            <MemoryLattice />
+            <LargeScreenLattice />
           </div>
         </div>
       </section>

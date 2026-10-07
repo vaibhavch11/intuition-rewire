@@ -3,6 +3,7 @@
 import { useMemo, useRef, useSyncExternalStore } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useInView } from "@/components/home/clientHooks";
 
 const COLS = 12;
 const ROWS = 3;
@@ -99,19 +100,25 @@ function Cells({ animate }: { animate: boolean }) {
 export default function MemoryLattice() {
   const isClient = useIsClient();
   const reducedMotion = usePrefersReducedMotion();
-  if (!isClient) return null;
+  const box = useRef<HTMLDivElement>(null);
+  const inView = useInView(box);
 
   return (
-    <Canvas
-      orthographic
-      camera={{ zoom: 62, position: [0, 0, 12] }}
-      gl={{ alpha: true, antialias: true }}
-      dpr={[1, 1.5]}
-      frameloop={reducedMotion ? "demand" : "always"}
-    >
-      <ambientLight intensity={1.9} />
-      <directionalLight position={[4, 6, 8]} intensity={1.5} />
-      <Cells animate={!reducedMotion} />
-    </Canvas>
+    <div ref={box} className="h-full w-full">
+      {isClient && (
+        // Scrolled away (or with reduced motion) it keeps its last frame.
+        <Canvas
+          orthographic
+          camera={{ zoom: 62, position: [0, 0, 12] }}
+          gl={{ alpha: true, antialias: true }}
+          dpr={[1, 1.5]}
+          frameloop={inView && !reducedMotion ? "always" : "demand"}
+        >
+          <ambientLight intensity={1.9} />
+          <directionalLight position={[4, 6, 8]} intensity={1.5} />
+          <Cells animate={!reducedMotion} />
+        </Canvas>
+      )}
+    </div>
   );
 }

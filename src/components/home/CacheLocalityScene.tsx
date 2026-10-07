@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { useInView, useIsClient, usePrefersReducedMotion } from "@/components/home/clientHooks";
+import { useInView, useIsClient, useMediaQuery, usePrefersReducedMotion } from "@/components/home/clientHooks";
 import { useIsDark } from "@/components/ThemeToggle";
 import { boxCorners, fitCamera } from "@/components/home/fitCamera";
+import { ACCESS_COUNT, DRAM_NS, L1_NS, type MemoryTick } from "@/components/home/cacheLocality";
 
 // A small slice of RAM: row 0 holds an array, rows 1–4 hold linked-list nodes.
 const COLS = 16;
 const ROWS = 5;
 const PITCH = 0.6;
 const BOARD_W = COLS * PITCH;
-const N = 12;
+const N = ACCESS_COUNT;
 const ARRAY_COL = 2; // the array fills columns 2–13 of one 64-byte cache line
 /** [row, col] of each list node, in pointer order. */
 const NODES: [number, number][] = [
@@ -25,10 +26,6 @@ const MISS_S = 0.45;
 const HIT_S = 0.08;
 const PERIOD_S = 7;
 
-export const L1_NS = 0.5;
-export const DRAM_NS = 80;
-export const ARRAY_NS = DRAM_NS + (N - 1) * L1_NS;
-export const LIST_NS = N * DRAM_NS;
 
 const TONE = {
   free: new THREE.Color("#f4f3f9"),
@@ -58,8 +55,6 @@ const arrival = (k: number) => (k + 1) * MISS_S;
 const ARRAY_DONE = readEnd(N - 1);
 const LIST_DONE = arrival(N - 1);
 
-/** Simulated cost so far for each layout, reported whenever it changes. */
-export type MemoryTick = { arrayNs: number; listNs: number; arrayMisses: number; listMisses: number };
 
 function Memory({ onTick, animate, dark }: { onTick: (tick: MemoryTick) => void; animate: boolean; dark: boolean }) {
   const tones = useMemo(() => (dark ? { ...TONE, ...DARK_TONE } : TONE), [dark]);
@@ -271,6 +266,9 @@ export default function CacheLocalityScene({ onTick }: { onTick: (tick: MemoryTi
   const dark = useIsDark();
   const box = useRef<HTMLDivElement>(null);
   const inView = useInView(box);
+  // Phones: fewer pixels and a smaller shadow map — the difference is invisible
+  // at that size, the GPU work is not.
+  const touch = useMediaQuery("(pointer: coarse)");
 
   return (
     <div ref={box} className="h-full w-full">
@@ -278,7 +276,7 @@ export default function CacheLocalityScene({ onTick }: { onTick: (tick: MemoryTi
         <Canvas
           flat
           shadows="percentage"
-          dpr={[1, 2]}
+          dpr={touch ? [1, 1.5] : [1, 2]}
           frameloop={inView && !reducedMotion ? "always" : "demand"}
           gl={{ alpha: true, antialias: true }}
           camera={{ fov: 30, position: [0, 8, 6] }}
@@ -289,7 +287,7 @@ export default function CacheLocalityScene({ onTick }: { onTick: (tick: MemoryTi
             position={[-4, 9, 5]}
             intensity={1.75}
             castShadow
-            shadow-mapSize={[1024, 1024]}
+            shadow-mapSize={touch ? [512, 512] : [1024, 1024]}
             shadow-camera-left={-6}
             shadow-camera-right={6}
             shadow-camera-top={4}

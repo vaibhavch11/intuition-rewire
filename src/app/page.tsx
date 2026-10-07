@@ -1,5 +1,5 @@
 import { ArrowDown, Play, SquareTerminal, Cpu, Brain } from "lucide-react";
-import ParticleNetwork from "@/components/home/ParticleNetwork";
+import HeroParticles from "@/components/home/HeroParticles";
 import LearningPathSection from "@/components/home/LearningPathSection";
 import WaterContainerSimulator from "@/components/home/WaterContainerSimulator";
 import ComparisonSection from "@/components/home/ComparisonSection";
@@ -48,7 +48,7 @@ export default async function Home() {
             }}
           />
           <div className="absolute inset-0 -z-10 pointer-events-none">
-            <ParticleNetwork />
+            <HeroParticles />
           </div>
 
           <section className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop pt-space-2xl pb-space-xl flex flex-col items-center text-center">

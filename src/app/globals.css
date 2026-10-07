@@ -285,7 +285,10 @@
   --animate-pop-in: pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-in-right: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-in-left: slide-in-left 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-lesson-in: lesson-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* "backwards", not "both": an animation that keeps filling a transform makes
+     the lesson the containing box for position: fixed children, which shrank
+     the full-screen figure view into the page. */
+  --animate-lesson-in: lesson-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   --animate-wave: wave 3.2s linear infinite;
 
   @keyframes wave {
@@ -375,6 +378,17 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* Long pages: a block far off screen skips layout and paint until it comes
+   near, so phones don't lay out a whole lesson at once. --lazy-size is the
+   stand-in height until the block has rendered once; after that the browser
+   remembers its real height ("auto"), so the guess only needs to be close.
+   Note: like `transform`, it makes the block the containing box for any
+   position: fixed child, so keep full-screen overlays outside it. */
+.render-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--lazy-size, 400px);
 }
 
 @supports (animation-timeline: view()) {
