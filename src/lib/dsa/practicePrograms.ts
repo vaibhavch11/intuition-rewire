@@ -111,6 +111,14 @@ export const PRACTICE_PROGRAMS = [
   { id: "longest-k-unique", title: "Longest substring with k unique characters" },
   { id: "at-most-k-unique", title: "Count substrings with at most k unique characters" },
   { id: "exactly-k-unique", title: "Exactly k unique = at most k − at most (k − 1)" },
+  { id: "queue-ops", title: "Enqueue, dequeue and peek" },
+  { id: "deque-palindrome", title: "Palindrome check with a deque (both ends)" },
+  { id: "recent-counter", title: "Recent calls (a queue as a time window)" },
+  { id: "hot-potato", title: "Hot potato (a queue that goes round in a circle)" },
+  { id: "circular-queue", title: "Queue on a circular array (wrap around, then double)" },
+  { id: "linked-queue", title: "A queue built on a linked list (head and tail)" },
+  { id: "stack-two-queues", title: "A stack using two queues (costly push)" },
+  { id: "queue-two-stacks", title: "A queue using two stacks (pour only when empty)" },
 ] as const;
 
 export type PracticeProgramId = (typeof PRACTICE_PROGRAMS)[number]["id"];

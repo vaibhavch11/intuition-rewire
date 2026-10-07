@@ -112,4 +112,12 @@ export const PROGRAM_LOADERS: Record<PracticeProgramId, Loader> = {
   "longest-k-unique": () => import("./programs/longest-k-unique"),
   "at-most-k-unique": () => import("./programs/at-most-k-unique"),
   "exactly-k-unique": () => import("./programs/exactly-k-unique"),
+  "queue-ops": () => import("./programs/queue-ops"),
+  "deque-palindrome": () => import("./programs/deque-palindrome"),
+  "recent-counter": () => import("./programs/recent-counter"),
+  "hot-potato": () => import("./programs/hot-potato"),
+  "circular-queue": () => import("./programs/circular-queue"),
+  "linked-queue": () => import("./programs/linked-queue"),
+  "stack-two-queues": () => import("./programs/stack-two-queues"),
+  "queue-two-stacks": () => import("./programs/queue-two-stacks"),
 };

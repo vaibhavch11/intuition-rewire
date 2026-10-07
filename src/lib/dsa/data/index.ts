@@ -3,6 +3,7 @@ import { arraysSection } from "./arrays";
 import { binaryTreeSection } from "./binary-tree";
 import { hashTableSection } from "./hash-table";
 import { linkedListSection } from "./linked-list";
+import { queueSection } from "./queue";
 import { stackSection } from "./stack";
 import { stringsSection } from "./strings";
 
@@ -46,12 +47,7 @@ export const builtInSections: Section[] = [
   ),
   hashTableSection,
   stackSection,
-  placeholderSection(
-    "queue",
-    "Queue",
-    "First-in, first-out — the structure behind task scheduling and breadth-first traversal.",
-    "data-structure"
-  ),
+  queueSection,
   binaryTreeSection,
   placeholderSection(
     "binary-search-tree",
