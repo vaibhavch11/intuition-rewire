@@ -6,7 +6,10 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Serve .html files at their exact path (no redirect to /name), as
+    // Google Search Console's verification file requires.
+    "html_handling": "none"
   },
   "r2_buckets": [
     {
