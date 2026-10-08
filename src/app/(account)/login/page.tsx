@@ -10,7 +10,7 @@ import {
   Divider,
   NotConfigured,
 } from "@/components/auth/ui";
-import { requiresSignIn, safeNextPath } from "@/lib/auth/paths";
+import { isLessonPath, safeNextPath } from "@/lib/auth/paths";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = { title: "Sign in — IntuitionRewire" };
@@ -27,8 +27,8 @@ export default async function LoginPage(props: PageProps<"/login">) {
     <AuthCard
       title="Welcome back"
       subtitle={
-        requiresSignIn(next)
-          ? "Sign in to open this lesson."
+        isLessonPath(next)
+          ? "Sign in to read the whole lesson."
           : "Sign in to continue learning."
       }
       footer={

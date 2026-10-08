@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -8,8 +9,14 @@ import {
   Puzzle,
   SquareTerminal,
 } from "lucide-react";
-import { getSection } from "@/lib/dsa/curriculum";
-import { courseStats, groupByChapter } from "@/lib/dsa/types";
+import { getSection, getSections } from "@/lib/dsa/curriculum";
+import { relatedCourses } from "@/lib/dsa/related";
+import { courseDescription, courseTitle } from "@/lib/dsa/seo";
+import { courseStats, groupByChapter, isComingSoon } from "@/lib/dsa/types";
+import { courseJsonLd, courseOgImage, pageMetadata } from "@/lib/seo";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import JsonLd from "@/components/seo/JsonLd";
+import RelatedCourses from "@/components/dsa/RelatedCourses";
 import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
 import ExpandableIntro from "@/components/dsa/ExpandableIntro";
@@ -105,6 +112,20 @@ function SyllabusRow({
   );
 }
 
+export async function generateMetadata(props: PageProps<"/dsa/[section]">): Promise<Metadata> {
+  const { section: sectionSlug } = await props.params;
+  const section = await getSection(sectionSlug);
+  if (!section) return {};
+  return pageMetadata({
+    title: courseTitle(section),
+    description: courseDescription(section),
+    path: `/dsa/${section.slug}`,
+    image: courseOgImage(section.slug, section.title),
+    // A course with no lessons yet is a thin page: out of search until it's written.
+    noindex: isComingSoon(section),
+  });
+}
+
 export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
   const { section: sectionSlug } = await props.params;
   const section = await getSection(sectionSlug);
@@ -116,16 +137,18 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
     (section.overview?.length ?? 0) > 0 ||
     (section.requirements?.length ?? 0) > 0;
   const simulation = getSimulation(section.slug);
+  const related = relatedCourses(section.slug, await getSections());
 
   return (
     <main>
       <div className="mx-auto max-w-4xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
-        <Link
-          href="/dsa"
-          className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
-        >
-          ← All courses
-        </Link>
+        <Breadcrumbs
+          crumbs={[
+            { name: "Home", path: "/" },
+            { name: "Courses", path: "/dsa" },
+            { name: section.title, path: `/dsa/${section.slug}` },
+          ]}
+        />
 
         <header className="mt-space-md rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
           <h1 className="font-headline-lg text-headline-lg text-on-surface">
@@ -282,6 +305,18 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
             ))}
           </div>
         </section>
+
+        <RelatedCourses courses={related} />
+
+        {!isComingSoon(section) && (
+          <JsonLd
+            data={courseJsonLd({
+              name: section.title,
+              description: courseDescription(section),
+              path: `/dsa/${section.slug}`,
+            })}
+          />
+        )}
       </div>
     </main>
   );

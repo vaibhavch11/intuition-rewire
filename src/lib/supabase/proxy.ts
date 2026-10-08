@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   handlesAuth,
-  requiresSignIn,
+  isLessonPath,
   safeNextPath,
   SIGNED_OUT_ONLY,
 } from "@/lib/auth/paths";
@@ -16,14 +16,15 @@ import {
 const NO_STORE = "private, no-store";
 
 /**
- * Refreshes an expiring session and enforces sign-in on protected pages.
- * Public pages return immediately without touching Supabase.
+ * Refreshes an expiring session on lessons (signed-in readers get the whole
+ * lesson, everyone else its opening) and on the auth pages. Other pages return
+ * immediately without touching Supabase.
  */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   if (
     !isSupabaseConfigured() ||
-    !(requiresSignIn(pathname) || handlesAuth(pathname))
+    !(isLessonPath(pathname) || handlesAuth(pathname))
   ) {
     return NextResponse.next();
   }
@@ -59,10 +60,6 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     return redirect;
   };
 
-  if (!signedIn && requiresSignIn(pathname)) {
-    const returnTo = safeNextPath(`${pathname}${request.nextUrl.search}`);
-    return redirectTo(`/login?next=${encodeURIComponent(returnTo)}`);
-  }
   if (signedIn && SIGNED_OUT_ONLY.includes(pathname)) {
     return redirectTo(safeNextPath(request.nextUrl.searchParams.get("next")));
   }

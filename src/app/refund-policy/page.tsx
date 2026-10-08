@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { CONTACT_EMAIL, LegalDocument, LegalSection } from "@/components/LegalDocument";
 
-export const metadata: Metadata = { title: "Refund Policy — IntuitionRewire" };
+export const metadata: Metadata = pageMetadata({
+  title: "Refund & Cancellation Policy | IntuitionRewire",
+  description:
+    "IntuitionRewire is free; payments are optional one-time support with nothing to cancel. See when and how to get a refund, and what to do if a payment fails.",
+  path: "/refund-policy",
+});
 
 export default function RefundPolicyPage() {
   return (

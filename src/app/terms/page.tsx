@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { CONTACT_EMAIL, LegalDocument, LegalSection } from "@/components/LegalDocument";
 
-export const metadata: Metadata = { title: "Terms of Service — IntuitionRewire" };
+export const metadata: Metadata = pageMetadata({
+  title: "Terms of Service | IntuitionRewire",
+  description:
+    "The terms for using IntuitionRewire, a learning site for data structures and algorithms: your account, acceptable use, our content and how changes work.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

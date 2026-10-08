@@ -267,6 +267,42 @@ async function listAuthoredInBucket(authored: Set<string>): Promise<void> {
   } while (cursor);
 }
 
+/**
+ * When each written lesson last changed, keyed "course/lesson", for the
+ * sitemap: the `updatedAt` saved in the file on disk, else the time the R2 copy
+ * was uploaded or last saved from /admin. A listing, not a read of every lesson,
+ * so it stays cheap on every request.
+ */
+export async function listLessonDates(): Promise<Map<string, Date>> {
+  const dates = new Map<string, Date>();
+  try {
+    for (const sectionSlug of await fs.readdir(CONTENT_ROOT)) {
+      for (const file of await fs.readdir(path.join(CONTENT_ROOT, sectionSlug))) {
+        if (!file.endsWith(".json")) continue;
+        const raw = await fs.readFile(path.join(CONTENT_ROOT, sectionSlug, file), "utf8");
+        const saved = new Date(raw.match(/"updatedAt"\s*:\s*"([^"]+)"/)?.[1] ?? "");
+        if (!Number.isNaN(saved.getTime())) dates.set(`${sectionSlug}/${file.slice(0, -".json".length)}`, saved);
+      }
+    }
+  } catch {
+    // No real filesystem (deployed Worker) — R2 has the dates.
+  }
+
+  const bucket = await getContentBucket();
+  if (bucket) {
+    let cursor: string | undefined;
+    do {
+      const listed = await bucket.list({ prefix: "lessons/", cursor });
+      for (const object of listed.objects) {
+        const slug = object.key.slice("lessons/".length).replace(/\.json$/, "");
+        if (slug && !dates.has(slug)) dates.set(slug, object.uploaded);
+      }
+      cursor = listed.truncated ? listed.cursor : undefined;
+    } while (cursor);
+  }
+  return dates;
+}
+
 export async function listAuthoredLessons(): Promise<Set<string>> {
   const authored = new Set<string>();
   await listAuthoredOnDisk(authored);

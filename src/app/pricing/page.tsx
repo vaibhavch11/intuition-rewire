@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
+import { faqJsonLd, pageMetadata } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
 import Link from "next/link";
 import { BookOpen, Heart, Sparkles } from "lucide-react";
 import SupportCheckout from "@/components/pricing/SupportCheckout";
 import { getSignedInUser } from "@/lib/auth/session";
 import { isRazorpayConfigured } from "@/lib/payments/razorpay";
 
-export const metadata: Metadata = { title: "Pricing — IntuitionRewire" };
+export const metadata: Metadata = pageMetadata({
+  title: "Pricing: Free to Learn, Pay What You Want | IntuitionRewire",
+  description:
+    "IntuitionRewire is free for everyone: every DSA lesson, drawing and simulator. If it helped you, support it with a one-time payment of any amount you choose.",
+  path: "/pricing",
+});
 
 // Reads the session, so it can't be prerendered at build time.
 export const dynamic = "force-dynamic";
@@ -28,6 +35,7 @@ export default async function PricingPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-gutter-mobile py-space-2xl lg:px-gutter-desktop">
+      <JsonLd data={faqJsonLd(FAQ)} />
       <div className="text-center">
         <p className="font-label-tag text-label-tag uppercase tracking-wide text-primary">Pricing</p>
         <h1 className="font-headline-xl text-headline-xl-mobile mt-space-xs text-on-surface lg:text-headline-xl">

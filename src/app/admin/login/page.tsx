@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { isAdminConfigured, isAdminRequest } from "@/lib/admin/auth";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
 
-export const metadata = { title: "Admin sign in" };
+export const metadata = { title: "Admin sign in", robots: { index: false, follow: false } };
 
 export default async function AdminLoginPage() {
   if (await isAdminRequest()) redirect("/admin");

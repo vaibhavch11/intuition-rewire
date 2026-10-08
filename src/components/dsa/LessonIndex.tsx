@@ -51,10 +51,15 @@ export default function LessonIndex({
 
   // Only on first mount: bring the active lesson into view when someone lands
   // directly on a deep link. Later navigations keep whatever scroll they had.
+  // Scrolls the index only: scrollIntoView would also scroll the page, landing
+  // readers (and visitors from search) below the lesson's title.
   useEffect(() => {
-    navRef.current
-      ?.querySelector('[aria-current="page"]')
-      ?.scrollIntoView({ block: "center" });
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!nav || !active) return;
+    const navTop = nav.getBoundingClientRect().top;
+    const box = active.getBoundingClientRect();
+    nav.scrollTop += box.top - navTop - (nav.clientHeight - box.height) / 2;
   }, []);
 
   const done = useMemo(

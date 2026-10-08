@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getSections } from "@/lib/dsa/curriculum";
+import { fitDescription, pageMetadata } from "@/lib/seo";
 import { courseStats } from "@/lib/dsa/types";
 import type { Section } from "@/lib/dsa/types";
 import LargeScreenLattice from "@/components/dsa/LargeScreenLattice";
@@ -58,6 +60,20 @@ function CourseGrid({ title, items }: { title: string; items: Section[] }) {
       </div>
     </section>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const sections = await getSections();
+  const lessons = sections.reduce((n, s) => n + courseStats(s).lessons, 0);
+  const problems = sections.reduce((n, s) => n + courseStats(s).problems, 0);
+  return pageMetadata({
+    title: "DSA Courses & Interview Problems | IntuitionRewire",
+    description: fitDescription(
+      `${sections.length} data structures and algorithms courses, ${lessons} lessons and ${problems} interview problems. Every lesson is built around a dry run: watch the memory change, step by step.`,
+      ["Free to learn."]
+    ),
+    path: "/dsa",
+  });
 }
 
 export default async function DsaIndexPage() {

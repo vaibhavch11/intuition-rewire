@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { CONTACT_EMAIL, LegalDocument, LegalSection } from "@/components/LegalDocument";
 
-export const metadata: Metadata = { title: "Privacy Policy — IntuitionRewire" };
+export const metadata: Metadata = pageMetadata({
+  title: "Privacy Policy | IntuitionRewire",
+  description:
+    "How IntuitionRewire handles your data: we collect only what we need to sign you in and keep the site secure. We don’t sell your data, show ads or track you.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

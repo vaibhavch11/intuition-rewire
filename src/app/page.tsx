@@ -8,6 +8,15 @@ import FinalCTA from "@/components/home/FinalCTA";
 import ProductTourSection from "@/components/home/ProductTourSection";
 import HashLink from "@/components/HashLink";
 import { getSections } from "@/lib/dsa/curriculum";
+import { pageMetadata, websiteJsonLd } from "@/lib/seo";
+import JsonLd from "@/components/seo/JsonLd";
+
+export const metadata = pageMetadata({
+  title: "IntuitionRewire: Learn DSA by Watching It Run",
+  description:
+    "Learn data structures and algorithms by watching them run: hand-drawn lessons, step-by-step dry-run simulators and interview problems in four languages.",
+  path: "/",
+});
 
 const HIGHLIGHTS = [
   { icon: SquareTerminal, value: "100%", label: "Visual dry-runs" },
@@ -26,6 +35,7 @@ export default async function Home() {
 
   return (
     <main className="w-full bg-surface min-h-[calc(100vh-56px)]">
+      <JsonLd data={websiteJsonLd()} />
       <div className="flex flex-col w-full">
         {/* Top ambient glow field + three.js particle network */}
         <div className="relative w-full overflow-hidden">
