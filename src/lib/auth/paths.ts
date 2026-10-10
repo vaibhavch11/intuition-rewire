@@ -1,10 +1,9 @@
 /**
- * Lessons (`/dsa/<course>/<lesson>`) need an account. The homepage, the course
- * list and each course page — simulator included — stay public so visitors can
- * see what they are signing up for. To put the whole site behind sign-in, make
- * this return true for everything that isn't an auth page.
+ * Lessons (`/dsa/<course>/<lesson>`). Everyone — search engines included —
+ * sees a lesson's opening; the rest needs a free account. The homepage, the
+ * course list and each course page stay fully public.
  */
-export function requiresSignIn(pathname: string): boolean {
+export function isLessonPath(pathname: string): boolean {
   return /^\/dsa\/[^/]+\/[^/]+/.test(pathname);
 }
 

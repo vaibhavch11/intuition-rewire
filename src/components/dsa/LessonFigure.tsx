@@ -32,7 +32,9 @@ export default function LessonFigure({
 
   return (
     <figure className="my-space-2xl">
-      <div className="relative rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-space-lg py-space-2xl">
+      {/* render-lazy sits on the image box, not the figure: the full-screen
+          view below is position: fixed and must not be contained by it. */}
+      <div className="render-lazy [--lazy-size:200px] relative rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-space-lg py-space-2xl">
         <button
           type="button"
           onClick={() => setZoomed(true)}

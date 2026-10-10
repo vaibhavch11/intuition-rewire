@@ -1,0 +1,69 @@
+{
+  "schema_version": 2,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Lifecycle of a lesson",
+    "output": ".archify/lifecycle-lesson-20261003-144312/lesson-lifecycle.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/vaibhavch11/intuition-rewire.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9dcff90fa70dc4720d9e6073e48bd30ba2610e4f"
+    }
+  },
+  "lanes": [
+    { "id": "main", "label": "Lesson content" },
+    { "id": "terminal", "label": "Removed" }
+  ],
+  "states": [
+    {
+      "id": "outline", "type": "start", "label": "In the outline", "sublabel": "built-in or added in /admin", "lane": "main", "col": 0, "step": "01",
+      "sources": [
+        { "path": "src/lib/dsa/curriculum.ts", "line": 148, "end_line": 180, "label": "buildOutline" },
+        { "path": "src/lib/dsa/curriculum.ts", "line": 391, "end_line": 409, "label": "add-lesson" }
+      ]
+    },
+    {
+      "id": "writing", "type": "waiting", "label": "Being written", "sublabel": "placeholder page", "lane": "main", "col": 1, "step": "02",
+      "sources": [{ "path": "src/app/dsa/[section]/[topic]/page.tsx", "line": 60, "end_line": 70, "label": "no content yet" }]
+    },
+    {
+      "id": "authored", "type": "active", "label": "Authored", "sublabel": "JSON in git", "lane": "main", "col": 2, "step": "03",
+      "sources": [
+        { "path": "src/lib/dsa/content.ts", "line": 209, "end_line": 214, "label": "dev save writes disk" },
+        { "path": "src/lib/dsa/content.ts", "line": 174, "end_line": 182, "label": "disk read first" }
+      ]
+    },
+    {
+      "id": "live", "type": "success", "label": "Live", "sublabel": "JSON in R2", "lane": "main", "col": 3, "step": "04",
+      "sources": [{ "path": "scripts/seed-r2-content.mjs", "line": 55, "end_line": 72, "label": "seed uploads missing" }]
+    },
+    {
+      "id": "edited", "type": "active", "label": "Edited live", "sublabel": "R2 newer than git", "lane": "main", "col": 4, "step": "05",
+      "sources": [
+        { "path": "src/app/api/admin/content/[section]/[topic]/route.ts", "line": 31, "end_line": 42, "label": "save + revalidate" },
+        { "path": "scripts/seed-r2-content.mjs", "line": 5, "end_line": 8, "label": "seed never overwrites" }
+      ]
+    },
+    {
+      "id": "removed", "type": "failure", "label": "Removed", "sublabel": "content deleted", "lane": "terminal", "col": 3,
+      "sources": [
+        { "path": "src/lib/dsa/curriculum.ts", "line": 411, "end_line": 433, "label": "remove + delete" },
+        { "path": "src/lib/dsa/curriculum.ts", "line": 317, "end_line": 337, "label": "slug never reused" }
+      ]
+    }
+  ],
+  "transitions": [
+    { "id": "no-content", "from": "outline", "to": "writing", "label": "no JSON yet" },
+    { "id": "dev-save", "from": "writing", "to": "authored", "label": "save in dev" },
+    { "id": "seed", "from": "authored", "to": "live", "label": "seed-content" },
+    { "id": "live-edit", "from": "live", "to": "edited", "label": "save in /admin" },
+    { "id": "remove", "from": "live", "to": "removed", "label": "remove in /admin", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Where the page reads from", "items": ["next dev: content/lessons on disk, then R2", "Deployed: R2 only, fresh on every request"] },
+    { "dot": "amber", "title": "Git vs live edits", "items": ["seed-content uploads only lessons R2 doesn't have", "A lesson edited live keeps its R2 version until it is deliberately replaced"] },
+    { "dot": "rose", "title": "Removing", "items": ["Removing a lesson in /admin works from any state", "Its JSON is deleted from R2 and disk", "Its slug is never handed to a new lesson"] }
+  ]
+}

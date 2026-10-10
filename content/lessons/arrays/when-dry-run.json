@@ -39,7 +39,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Here is the second-largest algorithm from the next chapter, dry-run on `[12, 35, 1, 10, 34]`:"
+      "text": "Here is a classic warm-up — finding the second largest element — dry-run on `[12, 35, 1, 10, 34]`:"
     },
     {
       "type": "code",

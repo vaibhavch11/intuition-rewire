@@ -15,6 +15,7 @@ import { CELL_TONES, PointerTags } from "@/components/dsa/simulator/visuals";
 import { isPracticeProgram, PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import { PROGRAM_LOADERS } from "./loaders";
 import { formatField, parseField } from "./parseInput";
+import { ListDiagram, StackColumn, TreeDiagram } from "./StructureViews";
 import {
   cell,
   formatValue,
@@ -23,6 +24,7 @@ import {
   type Frame,
   type GridView,
   type Input,
+  type MapView,
   type Program,
 } from "./types";
 
@@ -109,12 +111,14 @@ function GridBox({ view }: { view: GridView }) {
           <span />
           {Array.from({ length: cols }, (_, c) => (
             <span key={c} className="text-center font-code-sm text-[11px] leading-4 text-on-surface-variant">
-              {c}
+              {view.columnLabels ? (view.columnLabels[c] ?? "") : c}
             </span>
           ))}
           {view.values.map((row, r) => (
             <Fragment key={r}>
-              <span className="pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant">{r}</span>
+              <span className="pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant">
+                {view.rowLabels?.[r] ?? r}
+              </span>
               {Array.from({ length: cols }, (_, c) =>
                 c < row.length ? (
                   <Cell key={c} value={row[c]} tone={view.tones?.[cell(r, c)]} />
@@ -123,6 +127,39 @@ function GridBox({ view }: { view: GridView }) {
                 )
               )}
             </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A hash map: one column per entry, key above value, in insertion order. */
+function MapTable({ view }: { view: MapView }) {
+  const heading = "pr-1 text-right font-code-sm text-[11px] leading-4 text-on-surface-variant";
+  return (
+    <div>
+      <p className="mb-1 font-code-sm text-code-sm font-semibold text-on-surface-variant">{view.name}</p>
+      {view.entries.length === 0 ? (
+        <Empty />
+      ) : (
+        <div
+          className="inline-grid items-center gap-x-1.5 gap-y-1"
+          style={{ gridTemplateColumns: `auto repeat(${view.entries.length}, auto)` }}
+        >
+          <span />
+          {view.entries.map((_, i) => (
+            <div key={`tag${i}`} className="flex justify-center">
+              <PointerTags pointers={view.pointers?.[i]} />
+            </div>
+          ))}
+          <span className={heading}>{view.keyLabel ?? "key"}</span>
+          {view.entries.map(([key], i) => (
+            <Cell key={`key${i}`} value={key} tone={view.tones?.[i]} />
+          ))}
+          <span className={heading}>{view.valueLabel ?? "value"}</span>
+          {view.entries.map(([, value], i) => (
+            <Cell key={`value${i}`} value={value} tone={view.tones?.[i]} />
           ))}
         </div>
       )}
@@ -256,7 +293,7 @@ export default function PracticeSimulator({
     <section
       aria-label={`Dry-run simulator: ${title}`}
       onKeyDown={onKeyDown}
-      className="my-space-2xl overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
+      className="render-lazy [--lazy-size:1280px] my-space-2xl overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
     >
       <header className="border-b border-outline-variant/40 bg-surface-container-low px-space-md py-space-md sm:px-space-lg">
         <span className="inline-flex items-center gap-space-xs rounded-full bg-secondary-container/40 px-space-sm py-0.5 font-label-tag text-label-tag uppercase text-on-secondary-container">
@@ -307,6 +344,7 @@ export default function PracticeSimulator({
                     <input
                       value={texts[field.key] ?? ""}
                       inputMode={field.kind === "number" ? "numeric" : "text"}
+                      placeholder={field.hint}
                       spellCheck={false}
                       onChange={(e) => setTexts((t) => ({ ...t, [field.key]: e.target.value }))}
                       className="h-10 rounded-lg border border-outline-variant bg-surface-container-lowest px-space-sm font-code-md text-code-md text-on-surface outline-none focus:border-primary"
@@ -349,6 +387,21 @@ export default function PracticeSimulator({
           {/* The explanation below narrates this picture for screen readers. */}
           <div aria-hidden className="overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
             <div className="flex w-max min-w-full flex-col gap-space-lg">
+              {/* A stack sits beside a tree (a traversal's work list); otherwise it
+                  goes below the arrays, so the input stays put as the stack grows. */}
+              {frame.trees.length > 0 && (
+                <div className="flex flex-wrap items-end gap-space-xl">
+                  {frame.trees.map((tree) => (
+                    <TreeDiagram key={tree.name} view={tree} />
+                  ))}
+                  {frame.stacks.map((stack) => (
+                    <StackColumn key={stack.name} view={stack} />
+                  ))}
+                </div>
+              )}
+              {frame.lists.map((list) => (
+                <ListDiagram key={list.name} view={list} />
+              ))}
               {frame.grids.length > 0 && (
                 <div className="flex flex-wrap items-start gap-space-xl">
                   {frame.grids.map((grid) => (
@@ -359,6 +412,20 @@ export default function PracticeSimulator({
               {frame.arrays.map((array) => (
                 <ArrayRow key={array.name} view={array} />
               ))}
+              {frame.maps.length > 0 && (
+                <div className="flex flex-wrap items-start gap-space-xl">
+                  {frame.maps.map((map) => (
+                    <MapTable key={map.name} view={map} />
+                  ))}
+                </div>
+              )}
+              {frame.trees.length === 0 && frame.stacks.length > 0 && (
+                <div className="flex flex-wrap items-end gap-space-xl">
+                  {frame.stacks.map((stack) => (
+                    <StackColumn key={stack.name} view={stack} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

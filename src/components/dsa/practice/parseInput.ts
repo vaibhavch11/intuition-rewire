@@ -14,6 +14,10 @@ export function formatField(field: Field, value: InputValue): string {
       return (value as number[][]).map((row) => row.join(" ")).join("\n");
     case "pairs":
       return (value as number[][]).map(([a, b]) => `[${a},${b}]`).join(" ");
+    case "tree":
+      return (value as (number | null)[]).map((v) => (v === null ? "null" : String(v))).join(", ");
+    case "text":
+      return String(value);
   }
 }
 
@@ -78,18 +82,53 @@ export function parseField(field: Field, text: string): Parsed {
       return { value: rows };
     }
 
+    case "tree": {
+      const tokens = text.replace(/[[\]]/g, " ").split(/[\s,]+/).filter(Boolean);
+      if (tokens.length === 0) return { value: [] };
+      const { min, max } = bounds(field);
+      const values: (number | null)[] = [];
+      for (const token of tokens) {
+        if (/^(null|none|nil|#|x)$/i.test(token)) {
+          values.push(null);
+          continue;
+        }
+        if (!/^-?\d+$/.test(token)) {
+          return { error: `${field.label}: "${token}" isn't a number. Write the tree level by level, using null for a missing child, like 1, 2, 3, null, 4.` };
+        }
+        const value = Number(token);
+        if (value < min || value > max) return { error: `${field.label}: keep every value between ${min} and ${max}.` };
+        values.push(value);
+      }
+      while (values.length > 0 && values[values.length - 1] === null) values.pop();
+      if (values.length > 0 && values[0] === null) return { error: `${field.label}: the first value is the root, so it can't be null.` };
+      if (values.filter((v) => v !== null).length > limit) {
+        return { error: `${field.label}: use at most ${limit} nodes so the tree stays readable.` };
+      }
+      return { value: values };
+    }
+
+    case "text": {
+      const trimmed = text.trim();
+      if (!trimmed) return { error: `${field.label}: enter something to run.` };
+      if (trimmed.length > limit) return { error: `${field.label}: keep it to ${limit} characters.` };
+      return { value: trimmed };
+    }
+
     case "pairs": {
       const pattern = /\[\s*(-?\d+)\s*,\s*(-?\d+)\s*\]/g;
+      // Intervals are [start,end]; points (ordered: false) are any [x,y].
+      const ordered = field.ordered ?? true;
+      const shape = ordered ? "[start,end], like [1,3] [2,6]" : "[x,y], like [1,3] [-2,2]";
       if (text.replace(pattern, "").replace(/[\s,;]/g, "") !== "") {
-        return { error: `${field.label}: write each one as [start,end], like [1,3] [2,6].` };
+        return { error: `${field.label}: write each one as ${shape}.` };
       }
       const pairs = [...text.matchAll(pattern)].map((m) => [Number(m[1]), Number(m[2])]);
-      if (pairs.length === 0) return { error: `${field.label}: enter at least one [start,end] pair.` };
+      if (pairs.length === 0) return { error: `${field.label}: enter at least one ${ordered ? "[start,end] pair" : "[x,y] point"}.` };
       if (pairs.length > limit) return { error: `${field.label}: use at most ${limit} pairs.` };
       const { min, max } = bounds(field);
       for (const [a, b] of pairs) {
-        if (a > b) return { error: `${field.label}: [${a},${b}] ends before it starts.` };
-        if (a < min || b > max) return { error: `${field.label}: keep values between ${min} and ${max}.` };
+        if (ordered && a > b) return { error: `${field.label}: [${a},${b}] ends before it starts.` };
+        if (Math.min(a, b) < min || Math.max(a, b) > max) return { error: `${field.label}: keep values between ${min} and ${max}.` };
       }
       return { value: pairs };
     }

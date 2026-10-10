@@ -1329,7 +1329,7 @@
         "**Can values be negative?** Negatives break sliding windows on sums (adding an element can make the sum smaller) — see Kadane's algorithm and prefix sums instead.",
         "**Can values be zero?** Zeros break \"divide by the total\" tricks — see Product of array except self.",
         "**Is the array sorted?** Then two pointers or binary search are on the table.",
-        "**Are values in a small range, like 1 to n?** Then an array can replace a hash map, or the index-as-address tricks of **Cyclic sort** apply.",
+        "**Are values in a small range, like 1 to n?** Then an array can replace a hash map, or each value can point at an index — see **Find All Duplicates in an Array**.",
         "**How big can the answer get?** If sums can exceed about 2.1 × 10⁹, use `long` in Java and C++.",
         "**Are duplicates allowed?** Duplicates are the most common source of wrong answers — decide early how they should be counted."
       ]
@@ -1354,7 +1354,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Two lines of constraints, and you already know the intended solution is **O(n) with a hash map** — which is exactly the **Two Sum** solution in the Hash map chapter."
+      "text": "Two lines of constraints, and you already know the intended solution is **O(n) with a hash map** — which is exactly the best **Two Sum** solution in **Most asked interview questions**."
     },
     {
       "type": "heading",

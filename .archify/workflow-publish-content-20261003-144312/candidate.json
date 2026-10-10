@@ -1,0 +1,461 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Publishing lesson content",
+    "output": ".archify/workflow-publish-content-20261003-144312/publish-content.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/vaibhavch11/intuition-rewire.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9dcff90fa70dc4720d9e6073e48bd30ba2610e4f"
+    },
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Browser UI"
+        },
+        "backend": {
+          "label": "Worker code / script"
+        },
+        "security": {
+          "label": "Check or stop"
+        },
+        "database": {
+          "label": "Storage"
+        },
+        "cloud": {
+          "label": "Cloudflare deploy"
+        },
+        "external": {
+          "label": "Developer"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "live",
+      "label": "Live edit: admin browser → Worker"
+    },
+    {
+      "id": "refused",
+      "label": "Refused",
+      "variant": "exception"
+    },
+    {
+      "id": "storage",
+      "label": "Storage"
+    },
+    {
+      "id": "release",
+      "label": "Release: git + CLI"
+    }
+  ],
+  "phases": [
+    {
+      "id": "edit-phase",
+      "label": "Edit",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "check-phase",
+      "label": "Check",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "store-phase",
+      "label": "Store + serve",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "edit",
+    "gate",
+    "exists",
+    "save",
+    "bucket",
+    "live"
+  ],
+  "nodes": [
+    {
+      "id": "edit",
+      "lane": "live",
+      "col": 0,
+      "type": "frontend",
+      "label": "Edit lesson",
+      "sublabel": "/admin editor",
+      "width": 140,
+      "sources": [
+        {
+          "path": "src/app/admin/(protected)/layout.tsx",
+          "line": 6,
+          "end_line": 7,
+          "label": "admin-only area"
+        }
+      ]
+    },
+    {
+      "id": "live",
+      "lane": "live",
+      "col": 5,
+      "type": "frontend",
+      "label": "Lesson page updated",
+      "sublabel": "no redeploy needed",
+      "width": 150,
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 41,
+          "end_line": 42,
+          "label": "revalidatePath"
+        },
+        {
+          "path": "src/app/dsa/[section]/[topic]/page.tsx",
+          "line": 10,
+          "end_line": 16,
+          "label": "force-dynamic"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "lane": "live",
+      "col": 1,
+      "type": "security",
+      "label": "Same origin + session",
+      "sublabel": "ir_admin cookie",
+      "width": 150,
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 11,
+          "end_line": 16,
+          "label": "403 / 401"
+        },
+        {
+          "path": "src/lib/admin/auth.ts",
+          "line": 59,
+          "end_line": 77,
+          "label": "cookie + origin"
+        }
+      ]
+    },
+    {
+      "id": "exists",
+      "lane": "live",
+      "col": 2,
+      "type": "security",
+      "label": "Still in the course?",
+      "sublabel": "getTopic()",
+      "width": 150,
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 18,
+          "end_line": 23,
+          "label": "404 if removed"
+        }
+      ]
+    },
+    {
+      "id": "save",
+      "lane": "live",
+      "col": 3,
+      "type": "backend",
+      "label": "saveLessonContent",
+      "sublabel": "blocks validated",
+      "width": 150,
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 25,
+          "end_line": 39,
+          "label": "parseBlocks + save"
+        },
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 191,
+          "end_line": 200,
+          "label": "save entry"
+        }
+      ]
+    },
+    {
+      "id": "bucket",
+      "lane": "storage",
+      "col": 4,
+      "type": "database",
+      "label": "R2 bucket",
+      "sublabel": "lessons/<course>/<slug>.json",
+      "width": 170,
+      "sources": [
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 202,
+          "end_line": 207,
+          "label": "bucket.put"
+        }
+      ]
+    },
+    {
+      "id": "disk",
+      "lane": "storage",
+      "col": 3,
+      "type": "database",
+      "label": "content/ on disk",
+      "sublabel": "next dev only",
+      "width": 150,
+      "sources": [
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 209,
+          "end_line": 214,
+          "label": "best-effort write"
+        }
+      ]
+    },
+    {
+      "id": "commit",
+      "lane": "release",
+      "col": 0,
+      "type": "external",
+      "label": "Commit lessons",
+      "sublabel": "content/ + drawings",
+      "width": 140,
+      "sources": [
+        {
+          "path": "scripts/seed-r2-content.mjs",
+          "line": 2,
+          "end_line": 8,
+          "label": "author, commit, seed"
+        }
+      ]
+    },
+    {
+      "id": "deploy",
+      "lane": "release",
+      "col": 1,
+      "type": "cloud",
+      "label": "npm run deploy",
+      "sublabel": "Worker + static assets",
+      "width": 150,
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 11,
+          "label": "opennextjs build + deploy"
+        },
+        {
+          "path": "wrangler.jsonc",
+          "line": 4,
+          "end_line": 10,
+          "label": "worker + assets"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "lane": "release",
+      "col": 2,
+      "type": "backend",
+      "label": "npm run seed-content",
+      "sublabel": "lessons + curriculum.json",
+      "width": 160,
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 13,
+          "label": "seed script"
+        },
+        {
+          "path": "scripts/seed-r2-content.mjs",
+          "line": 55,
+          "end_line": 72,
+          "label": "walk content/lessons"
+        }
+      ]
+    },
+    {
+      "id": "keyCheck",
+      "lane": "release",
+      "col": 3,
+      "type": "security",
+      "label": "Key already in R2?",
+      "sublabel": "wrangler r2 get",
+      "width": 150,
+      "sources": [
+        {
+          "path": "scripts/seed-r2-content.mjs",
+          "line": 29,
+          "end_line": 36,
+          "label": "existsInBucket"
+        }
+      ]
+    },
+    {
+      "id": "denied",
+      "lane": "refused",
+      "col": 2,
+      "type": "security",
+      "label": "Not saved",
+      "sublabel": "403 / 401 / 404",
+      "width": 140,
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 11,
+          "end_line": 23,
+          "label": "early returns"
+        }
+      ]
+    },
+    {
+      "id": "skipped",
+      "lane": "release",
+      "col": 4,
+      "type": "security",
+      "label": "Skipped",
+      "sublabel": "live R2 copy wins",
+      "width": 140,
+      "sources": [
+        {
+          "path": "scripts/seed-r2-content.mjs",
+          "line": 63,
+          "end_line": 66,
+          "label": "skip existing"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "put-lesson",
+      "from": "edit",
+      "to": "gate",
+      "label": "PUT",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "signed-in",
+      "from": "gate",
+      "to": "exists",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "in-course",
+      "from": "exists",
+      "to": "save",
+      "label": "yes",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "put-r2",
+      "from": "save",
+      "to": "bucket",
+      "label": "put JSON",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "serve",
+      "from": "bucket",
+      "to": "live",
+      "label": "next read",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "write-disk",
+      "from": "save",
+      "to": "disk",
+      "label": "dev copy",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "refused",
+      "from": "gate",
+      "to": "denied",
+      "label": "no session",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "removed",
+      "from": "exists",
+      "to": "denied",
+      "label": "removed",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "ship",
+      "from": "commit",
+      "to": "deploy",
+      "variant": "default"
+    },
+    {
+      "id": "then-seed",
+      "from": "deploy",
+      "to": "seed",
+      "variant": "default"
+    },
+    {
+      "id": "check-key",
+      "from": "seed",
+      "to": "keyCheck",
+      "variant": "default"
+    },
+    {
+      "id": "upload-missing",
+      "from": "keyCheck",
+      "to": "bucket",
+      "label": "missing: upload",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "skip-existing",
+      "from": "keyCheck",
+      "to": "skipped",
+      "label": "exists",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Live edits",
+      "items": [
+        "A save in /admin writes R2 and shows on the next request",
+        "Removed lessons can't be saved back into existence"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Releases",
+      "items": [
+        "Deploy ships code and committed drawings as static assets",
+        "seed-content only uploads keys that R2 doesn't have yet"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Who wins",
+      "items": [
+        "A lesson edited live in /admin is never overwritten by the seed",
+        "Replacing it means a deliberate, separate upload"
+      ]
+    }
+  ]
+}

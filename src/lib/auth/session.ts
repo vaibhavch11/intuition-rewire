@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,16 +23,4 @@ export async function getSignedInUser(): Promise<SignedInUser | null> {
     id: claims.sub,
     email: typeof claims.email === "string" ? claims.email : null,
   };
-}
-
-/**
- * Server-side gate for pages that need an account. The proxy redirects first;
- * this is the backstop in case a request ever reaches the page without it.
- * While Supabase isn't configured nobody could sign in, so the page stays open.
- */
-export async function requireSignedIn(returnTo: string): Promise<void> {
-  if (!isSupabaseConfigured()) return;
-  if (!(await getSignedInUser())) {
-    redirect(`/login?next=${encodeURIComponent(returnTo)}`);
-  }
 }

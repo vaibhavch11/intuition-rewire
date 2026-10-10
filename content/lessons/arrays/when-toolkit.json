@@ -2,7 +2,7 @@
   "blocks": [
     {
       "type": "paragraph",
-      "text": "Hundreds of array problems are solved with fewer than ten techniques. The skill interviewers are really testing is **recognition**: reading a problem and thinking \"this smells like a sliding window\". This lesson is your map; each technique links to where it's taught in depth."
+      "text": "Hundreds of array problems are solved with fewer than ten techniques. The skill interviewers are really testing is **recognition**: reading a problem and thinking \"this smells like a sliding window\". This lesson is your map; under each technique are the interview questions in this course that use it."
     },
     {
       "type": "drawing",
@@ -1236,7 +1236,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Second largest element, Best time to buy and sell stock, Majority element, Maximum subarray sum (Kadane) — in **Most asked: problems on a single array**."
+        "Best Time to Buy and Sell Stock, Majority Element, Maximum Subarray Sum (Kadane) and Increasing Triplet Subsequence — all in **Most asked interview questions**."
       ]
     },
     {
@@ -1251,7 +1251,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Move zeroes, Remove duplicates, Sort colors, and the whole **Pattern: Two pointers** chapter (pair with target sum, container with most water, three sum, trapping rain water)."
+        "Move Zeroes, Sort 0s, 1s and 2s, Container With Most Water, 3Sum, and the in-place version of Merge Intervals."
       ]
     },
     {
@@ -1266,7 +1266,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "**Pattern: Sliding window** — fixed-size and variable-size windows."
+        "A close cousin of Kadane's algorithm in **Maximum Subarray Sum** — and the reason **Subarray Sum Equals K** needs a different tool: with negative numbers, a window can't tell when to shrink."
       ]
     },
     {
@@ -1281,7 +1281,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Product of array except self, and the **Pattern: Prefix sum** chapter."
+        "Product of Array Except Self, and Subarray Sum Equals K."
       ]
     },
     {
@@ -1296,7 +1296,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Intersection of two arrays, and **Pattern: Hash map lookup** (Two Sum, longest consecutive sequence)."
+        "Two Sum, Subarray Sum Equals K, and the hash-set versions of Find All Duplicates and 3Sum."
       ]
     },
     {
@@ -1311,7 +1311,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Merge overlapping intervals in **Pattern: Line sweep**; intersection by sorting."
+        "Merge Intervals and 3Sum — and Kth Largest Element, where sorting is the brute force that a heap or quickselect beats."
       ]
     },
     {
@@ -1326,7 +1326,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Find a peak element, Search a sorted 2D matrix, and **Pattern: Binary search on answer**."
+        "Find Peak Element — binary search on the slope of the values, without them being sorted."
       ]
     },
     {
@@ -1341,7 +1341,7 @@
       "type": "list",
       "ordered": false,
       "items": [
-        "Set matrix zeroes (markers inside the grid), and **Pattern: Cyclic sort**."
+        "Find All Duplicates in an Array — marking each value as seen by flipping the sign at its index."
       ]
     },
     {

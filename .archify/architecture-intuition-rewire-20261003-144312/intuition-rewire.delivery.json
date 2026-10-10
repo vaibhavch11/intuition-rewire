@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fc9d9730-875c-49f8-86ce-23ef2e3a6ac6",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\architecture-intuition-rewire-20261003-144312\\candidate.json",
+  "output": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\architecture-intuition-rewire-20261003-144312\\intuition-rewire.html",
+  "specification": {
+    "sha256": "82f1d9cf91e7e417ee38c73d4d147e791a1ef2d3fb8827a322739788f1647489",
+    "bytes": 9437
+  },
+  "artifact": {
+    "sha256": "028ad06ba3a4cdfe75291a152a2f41798ec36dd1c3846689ed1a30c9ca352f98",
+    "bytes": 772811
+  }
+}

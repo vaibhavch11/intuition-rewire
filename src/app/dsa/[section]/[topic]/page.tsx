@@ -1,12 +1,22 @@
-import Link from "next/link";
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTopic } from "@/lib/dsa/curriculum";
+import { getSections, getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
-import { requireSignedIn } from "@/lib/auth/session";
+import { lessonPreview } from "@/lib/dsa/preview";
+import { relatedCourses } from "@/lib/dsa/related";
+import { isThinLesson, lessonDescription, lessonTitle } from "@/lib/dsa/seo";
+import { getSignedInUser } from "@/lib/auth/session";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { courseOgImage, lessonJsonLd, pageMetadata } from "@/lib/seo";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import DryRunPlayer from "@/components/DryRunPlayer";
+import JsonLd from "@/components/seo/JsonLd";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
+import LessonGate from "@/components/dsa/LessonGate";
 import LessonReactions from "@/components/dsa/LessonReactions";
+import RelatedCourses from "@/components/dsa/RelatedCourses";
 
 /**
  * Lesson content now lives in R2 once deployed, editable live via /admin —
@@ -15,6 +25,29 @@ import LessonReactions from "@/components/dsa/LessonReactions";
  */
 export const dynamic = "force-dynamic";
 
+// Read once per request, shared by the metadata and the page.
+const loadLesson = cache(getLessonContent);
+
+export async function generateMetadata(props: PageProps<"/dsa/[section]/[topic]">): Promise<Metadata> {
+  const { section: sectionSlug, topic: topicSlug } = await props.params;
+  const result = await getTopic(sectionSlug, topicSlug);
+  if (!result) return {};
+  const { section, topic } = result;
+  const content = await loadLesson(sectionSlug, topicSlug);
+  const sharedTitle = (await getSections()).some(
+    (s) => s.slug !== section.slug && s.topics.some((t) => t.title === topic.title)
+  );
+  return pageMetadata({
+    title: lessonTitle(section, topic, sharedTitle),
+    description: lessonDescription(section, topic, content),
+    path: `/dsa/${section.slug}/${topic.slug}`,
+    image: courseOgImage(section.slug, section.title),
+    // Placeholders, stubs and lessons with nothing written yet stay out of search.
+    noindex: topic.slug === "coming-soon" || (content ? isThinLesson(content) : !topic.explanation),
+    article: { modifiedTime: content?.updatedAt, section: section.title },
+  });
+}
+
 export default async function TopicPage(
   props: PageProps<"/dsa/[section]/[topic]">
 ) {
@@ -22,15 +55,19 @@ export default async function TopicPage(
   const result = await getTopic(sectionSlug, topicSlug);
   if (!result) notFound();
   const { section, topic } = result;
+  const path = `/dsa/${section.slug}/${topic.slug}`;
 
-  // Lessons need an account; see requiresSignIn() for what stays public.
-  await requireSignedIn(`/dsa/${section.slug}/${topic.slug}`);
-
-  const content = await getLessonContent(sectionSlug, topicSlug);
+  const content = await loadLesson(sectionSlug, topicSlug);
+  // Everyone — search engines included — reads the opening; the whole lesson
+  // needs a free account. While sign-in isn't set up, nothing is held back.
+  const signedIn = !isSupabaseConfigured() || (await getSignedInUser()) !== null;
+  const preview = content && !signedIn ? lessonPreview(content.blocks) : null;
+  const gated = preview !== null && preview.rest.blocks > 0;
 
   const topicIndex = section.topics.findIndex((t) => t.slug === topic.slug);
   const prevTopic = section.topics[topicIndex - 1];
   const nextTopic = section.topics[topicIndex + 1];
+  const related = relatedCourses(section.slug, await getSections());
 
   return (
     // Keyed by lesson so moving between lessons replays the entrance.
@@ -38,14 +75,14 @@ export default async function TopicPage(
       key={`${section.slug}/${topic.slug}`}
       className="mx-auto max-w-6xl px-gutter-mobile py-space-2xl motion-safe:animate-lesson-in lg:px-space-2xl"
     >
-          <div className="lg:hidden">
-            <Link
-              href={`/dsa/${section.slug}`}
-              className="font-label-md text-label-md text-on-surface-variant hover:text-primary"
-            >
-              ← {section.title}
-            </Link>
-          </div>
+          <Breadcrumbs
+            crumbs={[
+              { name: "Home", path: "/" },
+              { name: "Courses", path: "/dsa" },
+              { name: section.title, path: `/dsa/${section.slug}` },
+              { name: topic.title, path },
+            ]}
+          />
 
           <h1 className="font-headline-xl text-headline-xl-mobile mt-space-sm text-on-surface lg:text-headline-xl">
             {topic.title}
@@ -58,7 +95,7 @@ export default async function TopicPage(
           <hr className="mt-space-base mb-space-2xl border-outline-variant/50" />
 
           {content ? (
-            <LessonBody blocks={content.blocks} />
+            <LessonBody blocks={preview ? preview.shown : content.blocks} />
           ) : topic.explanation ? (
             <p className="font-body-lg text-body-lg text-on-surface-variant">
               {topic.explanation}
@@ -69,7 +106,9 @@ export default async function TopicPage(
             </p>
           )}
 
-          {topic.trace && (
+          {gated && <LessonGate path={path} rest={preview.rest} />}
+
+          {topic.trace && signedIn && (
             <section className="mt-space-2xl">
               <h2 className="font-headline-md text-headline-md mb-space-md text-on-surface">
                 Dry Run
@@ -106,6 +145,21 @@ export default async function TopicPage(
                 : null
             }
           />
+
+          <RelatedCourses courses={related} heading="Keep exploring" />
+
+          {content && (
+            <JsonLd
+              data={lessonJsonLd({
+                title: topic.title,
+                description: lessonDescription(section, topic, content),
+                path,
+                image: courseOgImage(section.slug, section.title),
+                courseName: section.title,
+                modifiedTime: content.updatedAt,
+              })}
+            />
+          )}
     </div>
   );
 }

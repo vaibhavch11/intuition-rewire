@@ -1453,7 +1453,7 @@
     },
     {
       "type": "paragraph",
-      "text": "That is **O(N)** in the worst case. There is a large exception: if the array is **sorted**, binary search finds any value in O(log N), which is dramatically faster. That technique gets its own chapter later in this course."
+      "text": "That is **O(N)** in the worst case. There is a large exception: if the array is **sorted**, binary search finds any value in O(log N), which is dramatically faster. You'll see binary search at work in **Find Peak Element**, later in this course."
     },
     {
       "type": "heading",

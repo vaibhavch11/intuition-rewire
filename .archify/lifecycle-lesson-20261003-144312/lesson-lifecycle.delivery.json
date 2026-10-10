@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "17d41c02-02fe-43fd-9136-6ecdc5e98b3e",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\lifecycle-lesson-20261003-144312\\candidate.json",
+  "output": "C:\\Users\\91805\\Desktop\\IntiutionRewire\\.archify\\lifecycle-lesson-20261003-144312\\lesson-lifecycle.html",
+  "specification": {
+    "sha256": "03295479b8a9f5ca9fa10739cefa166330067a714c23ceb9159862f7f757bdbe",
+    "bytes": 3722
+  },
+  "artifact": {
+    "sha256": "ea931216e58ebccdec896488abc559c90f4a1edda4ea8f40b8fc88ed104faa63",
+    "bytes": 757702
+  }
+}

@@ -149,6 +149,11 @@ export function isProblem(topic: Topic): boolean {
   return topic.kind === "problem";
 }
 
+/** A course that has no lessons yet — only its "coming soon" placeholder. Kept out of search until it's written. */
+export function isComingSoon(section: Section): boolean {
+  return section.topics.every((t) => t.slug === "coming-soon");
+}
+
 export function courseStats(section: Section): CourseStats {
   const problems = section.topics.filter(isProblem);
   const patternChapters = groupByChapter(section.topics).filter((c) =>

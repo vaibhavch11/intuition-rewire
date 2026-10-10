@@ -1,0 +1,450 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "IntuitionRewire system architecture",
+    "output": ".archify/architecture-intuition-rewire-20261003-144312/intuition-rewire.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/vaibhavch11/intuition-rewire.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9dcff90fa70dc4720d9e6073e48bd30ba2610e4f"
+    }
+  },
+  "components": [
+    {
+      "id": "learnerStorage",
+      "type": "database",
+      "label": "localStorage",
+      "sublabel": "progress · reactions",
+      "pos": [
+        40,
+        70
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/lib/progress.ts",
+          "line": 5,
+          "end_line": 39,
+          "label": "lesson progress"
+        },
+        {
+          "path": "src/components/dsa/LessonReactions.tsx",
+          "line": 5,
+          "label": "reactions"
+        }
+      ]
+    },
+    {
+      "id": "supabase",
+      "type": "security",
+      "label": "Supabase Auth",
+      "sublabel": "getClaims() JWT check",
+      "pos": [
+        300,
+        70
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/lib/supabase/proxy.ts",
+          "line": 50,
+          "end_line": 53,
+          "label": "verify session"
+        },
+        {
+          "path": "src/lib/auth/session.ts",
+          "line": 15,
+          "end_line": 27,
+          "label": "page backstop"
+        }
+      ]
+    },
+    {
+      "id": "learner",
+      "type": "external",
+      "label": "Learner",
+      "sublabel": "web browser",
+      "pos": [
+        40,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/lib/auth/paths.ts",
+          "line": 1,
+          "end_line": 9,
+          "label": "public vs signed-in"
+        }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "Session proxy",
+      "sublabel": "src/proxy.ts",
+      "tag": "lessons need sign-in",
+      "pos": [
+        300,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/proxy.ts",
+          "line": 4,
+          "end_line": 12,
+          "label": "proxy + matcher"
+        },
+        {
+          "path": "src/lib/supabase/proxy.ts",
+          "line": 22,
+          "end_line": 72,
+          "label": "redirect to /login"
+        }
+      ]
+    },
+    {
+      "id": "pages",
+      "type": "backend",
+      "label": "Lesson pages",
+      "sublabel": "Next.js server render",
+      "pos": [
+        560,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/app/dsa/[section]/[topic]/page.tsx",
+          "line": 16,
+          "end_line": 29,
+          "label": "force-dynamic page"
+        }
+      ]
+    },
+    {
+      "id": "loader",
+      "type": "backend",
+      "label": "Content loader",
+      "sublabel": "curriculum + lessons",
+      "pos": [
+        820,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/lib/dsa/curriculum.ts",
+          "line": 102,
+          "end_line": 111,
+          "label": "edits: disk, then R2"
+        },
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 174,
+          "end_line": 182,
+          "label": "lesson: disk, then R2"
+        }
+      ]
+    },
+    {
+      "id": "bucket",
+      "type": "database",
+      "label": "R2 bucket",
+      "sublabel": "intuition-rewire-storage",
+      "pos": [
+        1080,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "wrangler.jsonc",
+          "line": 11,
+          "end_line": 16,
+          "label": "CONTENT_BUCKET binding"
+        },
+        {
+          "path": "src/lib/admin/storage.ts",
+          "line": 9,
+          "end_line": 16,
+          "label": "getContentBucket"
+        }
+      ]
+    },
+    {
+      "id": "assets",
+      "type": "cloud",
+      "label": "Static assets",
+      "sublabel": "drawings · videos · JS",
+      "pos": [
+        300,
+        420
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "wrangler.jsonc",
+          "line": 7,
+          "end_line": 10,
+          "label": "ASSETS binding"
+        },
+        {
+          "path": "src/components/dsa/practice/loaders.ts",
+          "line": 8,
+          "label": "lazy simulator chunks"
+        }
+      ]
+    },
+    {
+      "id": "author",
+      "type": "external",
+      "label": "Admin author",
+      "sublabel": "password sign-in",
+      "pos": [
+        820,
+        590
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/app/api/admin/login/route.ts",
+          "line": 10,
+          "end_line": 31,
+          "label": "admin login"
+        }
+      ]
+    },
+    {
+      "id": "adminApi",
+      "type": "backend",
+      "label": "Admin API",
+      "sublabel": "/api/admin/*",
+      "tag": "ir_admin cookie",
+      "pos": [
+        820,
+        420
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "src/app/api/admin/content/[section]/[topic]/route.ts",
+          "line": 7,
+          "end_line": 43,
+          "label": "save lesson"
+        },
+        {
+          "path": "src/lib/dsa/content.ts",
+          "line": 191,
+          "end_line": 217,
+          "label": "R2 put + disk"
+        },
+        {
+          "path": "src/app/api/admin/drawing/route.ts",
+          "line": 17,
+          "end_line": 52,
+          "label": "save drawing"
+        }
+      ]
+    },
+    {
+      "id": "repo",
+      "type": "external",
+      "label": "Git repo + scripts",
+      "sublabel": "deploy · seed-content",
+      "pos": [
+        300,
+        590
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "package.json",
+          "line": 11,
+          "end_line": 13,
+          "label": "deploy + seed scripts"
+        },
+        {
+          "path": "scripts/seed-r2-content.mjs",
+          "line": 55,
+          "end_line": 72,
+          "label": "upload missing keys"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Cloudflare Worker: intuition-rewire (OpenNext)",
+      "wraps": [
+        "proxy",
+        "pages",
+        "loader",
+        "bucket",
+        "assets",
+        "adminApi"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Browser",
+      "wraps": [
+        "learner",
+        "learnerStorage"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "learner-to-proxy",
+      "from": "learner",
+      "to": "proxy",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-verifies",
+      "from": "proxy",
+      "to": "supabase",
+      "label": "verify JWT",
+      "variant": "security"
+    },
+    {
+      "id": "proxy-to-pages",
+      "from": "proxy",
+      "to": "pages",
+      "label": "signed in",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pages-to-loader",
+      "from": "pages",
+      "to": "loader",
+      "label": "load topic",
+      "variant": "emphasis"
+    },
+    {
+      "id": "loader-to-bucket",
+      "from": "loader",
+      "to": "bucket",
+      "label": "R2 get",
+      "variant": "emphasis"
+    },
+    {
+      "id": "learner-progress",
+      "from": "learner",
+      "to": "learnerStorage",
+      "label": "progress"
+    },
+    {
+      "id": "learner-assets",
+      "from": "learner",
+      "to": "assets",
+      "label": "drawings, chunks",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          115,
+          452
+        ]
+      ]
+    },
+    {
+      "id": "author-to-admin",
+      "from": "author",
+      "to": "adminApi",
+      "label": "save",
+      "variant": "security"
+    },
+    {
+      "id": "admin-to-bucket",
+      "from": "adminApi",
+      "to": "bucket",
+      "label": "R2 put"
+    },
+    {
+      "id": "repo-seeds-bucket",
+      "from": "repo",
+      "to": "bucket",
+      "label": "seed missing",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "repo-deploys-assets",
+      "from": "repo",
+      "to": "assets",
+      "label": "npm run deploy",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Public vs signed in",
+      "items": [
+        "Home, course list and course pages are public",
+        "Every /dsa/<course>/<lesson> page needs a Supabase session",
+        "The proxy redirects first; the page re-checks as a backstop"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Where lesson content lives",
+      "items": [
+        "R2 is the source of truth once deployed",
+        "Lessons and curriculum edits read disk first in next dev, then R2",
+        "Drawings ship as static assets; ones saved after a deploy are served from R2"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "In the browser",
+      "items": [
+        "Progress and reactions stay in localStorage, never on a server",
+        "Each dry-run simulator is its own lazy-loaded JS chunk"
+      ]
+    }
+  ]
+}

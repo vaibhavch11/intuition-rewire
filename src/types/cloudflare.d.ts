@@ -19,6 +19,8 @@ interface R2HTTPMetadata {
 interface R2Object {
   key: string;
   size: number;
+  /** When the object was written (uploaded or last overwritten). */
+  uploaded: Date;
   httpMetadata?: R2HTTPMetadata;
 }
 
