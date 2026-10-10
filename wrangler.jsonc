@@ -11,6 +11,12 @@
     // Google Search Console's verification file requires.
     "html_handling": "none"
   },
+  // The site's own domain (SITE_URL in src/lib/seo.ts); www and workers.dev
+  // redirect to it in src/proxy.ts.
+  "routes": [
+    { "pattern": "intuitionrewire.com", "custom_domain": true },
+    { "pattern": "www.intuitionrewire.com", "custom_domain": true }
+  ],
   "r2_buckets": [
     {
       "bucket_name": "intuition-rewire-storage",

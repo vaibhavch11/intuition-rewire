@@ -5,7 +5,7 @@ import { OG_COURSE_IMAGES } from "./og-images";
  * The site's public address — the one place to change when the domain changes.
  * Canonical URLs, the sitemap, robots.txt and link previews are all built from it.
  */
-export const SITE_URL = "https://intuition-rewire.intuition-rewire.workers.dev";
+export const SITE_URL = "https://intuitionrewire.com";
 export const SITE_NAME = "IntuitionRewire";
 
 const MAX_TITLE = 60;

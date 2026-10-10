@@ -2,7 +2,7 @@
 
 Learn DSA by watching it run. A data-structures-and-algorithms learning platform that rewires intuition for algorithms and memory physics through step-by-step visual dry-runs.
 
-**Live:** https://intuition-rewire.intuition-rewire.workers.dev
+**Live:** https://intuitionrewire.com
 
 ## Stack
 
