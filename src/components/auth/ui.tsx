@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import LogoMark from "@/components/LogoMark";
 
 /** Presentational pieces shared by the sign-in, sign-up and reset screens. */
 
@@ -17,9 +18,7 @@ export function AuthCard({
   return (
     <div className="rounded-2xl bg-surface-container-lowest p-space-lg shadow-md ring-1 ring-outline-variant/40 sm:p-space-xl motion-safe:animate-fade-up">
       <div className="mb-space-lg text-center">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-container text-lg text-on-primary">
-          ⌁
-        </span>
+        <LogoMark className="inline-block h-10 w-auto" />
         <h1 className="font-headline-lg text-headline-lg mt-space-md text-on-surface">
           {title}
         </h1>

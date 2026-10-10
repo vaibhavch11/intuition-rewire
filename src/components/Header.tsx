@@ -7,6 +7,7 @@ import { Route, Search } from "lucide-react";
 import HashLink from "@/components/HashLink";
 import SearchPalette, { OPEN_SEARCH_EVENT } from "@/components/SearchPalette";
 import UserMenu from "@/components/auth/UserMenu";
+import LogoMark, { Wordmark } from "@/components/LogoMark";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
@@ -91,11 +92,9 @@ export default function Header() {
       <div className="h-14 max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-lg">
         <div className="flex items-center gap-space-lg shrink-0">
           <Link href="/" className="flex items-center gap-space-sm">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-container text-on-primary text-base">
-              ⌁
-            </span>
+            <LogoMark className="h-8 w-auto" />
             <span className="whitespace-nowrap font-headline-md text-[18px] leading-[26px] text-on-surface tracking-tight font-semibold sm:text-headline-md">
-              Intuition Rewire
+              <Wordmark />
             </span>
           </Link>
 
