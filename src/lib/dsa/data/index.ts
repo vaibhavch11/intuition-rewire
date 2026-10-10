@@ -2,6 +2,7 @@ import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
 import { binaryTreeSection } from "./binary-tree";
 import { hashTableSection } from "./hash-table";
+import { heapSection } from "./heap";
 import { linkedListSection } from "./linked-list";
 import { queueSection } from "./queue";
 import { stackSection } from "./stack";
@@ -55,12 +56,7 @@ export const builtInSections: Section[] = [
     "A binary tree with an ordering invariant that makes search, insert, and delete O(log n).",
     "data-structure"
   ),
-  placeholderSection(
-    "heap",
-    "Heap",
-    "A tree-shaped priority queue that keeps the min or max element accessible in O(1).",
-    "data-structure"
-  ),
+  heapSection,
   placeholderSection(
     "graph",
     "Graph",

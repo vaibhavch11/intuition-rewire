@@ -116,16 +116,19 @@ export function parseField(field: Field, text: string): Parsed {
 
     case "pairs": {
       const pattern = /\[\s*(-?\d+)\s*,\s*(-?\d+)\s*\]/g;
+      // Intervals are [start,end]; points (ordered: false) are any [x,y].
+      const ordered = field.ordered ?? true;
+      const shape = ordered ? "[start,end], like [1,3] [2,6]" : "[x,y], like [1,3] [-2,2]";
       if (text.replace(pattern, "").replace(/[\s,;]/g, "") !== "") {
-        return { error: `${field.label}: write each one as [start,end], like [1,3] [2,6].` };
+        return { error: `${field.label}: write each one as ${shape}.` };
       }
       const pairs = [...text.matchAll(pattern)].map((m) => [Number(m[1]), Number(m[2])]);
-      if (pairs.length === 0) return { error: `${field.label}: enter at least one [start,end] pair.` };
+      if (pairs.length === 0) return { error: `${field.label}: enter at least one ${ordered ? "[start,end] pair" : "[x,y] point"}.` };
       if (pairs.length > limit) return { error: `${field.label}: use at most ${limit} pairs.` };
       const { min, max } = bounds(field);
       for (const [a, b] of pairs) {
-        if (a > b) return { error: `${field.label}: [${a},${b}] ends before it starts.` };
-        if (a < min || b > max) return { error: `${field.label}: keep values between ${min} and ${max}.` };
+        if (ordered && a > b) return { error: `${field.label}: [${a},${b}] ends before it starts.` };
+        if (Math.min(a, b) < min || Math.max(a, b) > max) return { error: `${field.label}: keep values between ${min} and ${max}.` };
       }
       return { value: pairs };
     }

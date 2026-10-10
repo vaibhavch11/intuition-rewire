@@ -126,6 +126,8 @@ export interface Field {
   max?: number;
   /** Text fields: what the input should look like, shown when it's rejected. */
   hint?: string;
+  /** Pairs fields: true (the default) for [start,end] intervals, false for free [x,y] points. */
+  ordered?: boolean;
 }
 
 /** A tree field holds level-order values with null for a missing child. */
