@@ -17,6 +17,10 @@
     { "pattern": "intuitionrewire.com", "custom_domain": true },
     { "pattern": "www.intuitionrewire.com", "custom_domain": true }
   ],
+  // Kept on so old workers.dev links (and its Search Console property) still
+  // resolve and redirect; listing routes would otherwise switch these off.
+  "workers_dev": true,
+  "preview_urls": true,
   "r2_buckets": [
     {
       "bucket_name": "intuition-rewire-storage",
