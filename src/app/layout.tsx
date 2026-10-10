@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { THEME_SCRIPT } from "@/lib/themeScript";
+import { POSTHOG_SCRIPT } from "@/lib/posthogScript";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const figtree = Figtree({
@@ -44,6 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* Analytics only on the built site, so local development sends nothing. */}
+        {process.env.NODE_ENV === "production" && (
+          <script dangerouslySetInnerHTML={{ __html: POSTHOG_SCRIPT }} />
+        )}
       </head>
       <body className="min-h-full flex flex-col bg-surface font-body-md text-on-surface">
         <Header />
