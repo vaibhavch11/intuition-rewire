@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { faqJsonLd, pageMetadata } from "@/lib/seo";
 import JsonLd from "@/components/seo/JsonLd";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { BookOpen, Heart, Sparkles } from "lucide-react";
 import SupportCheckout from "@/components/pricing/SupportCheckout";
 import { getSignedInUser } from "@/lib/auth/session";

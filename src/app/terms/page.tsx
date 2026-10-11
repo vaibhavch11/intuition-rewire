@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { CONTACT_EMAIL, LegalDocument, LegalSection } from "@/components/LegalDocument";
 
 export const metadata: Metadata = pageMetadata({

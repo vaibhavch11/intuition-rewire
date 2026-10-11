@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import type { CourseSummary } from "@/lib/dsa/types";
 import SectionHeader from "@/components/home/SectionHeader";

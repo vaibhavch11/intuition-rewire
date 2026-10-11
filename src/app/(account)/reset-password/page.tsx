@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 import { Alert, AuthCard } from "@/components/auth/ui";
 import { getSignedInUser } from "@/lib/auth/session";
