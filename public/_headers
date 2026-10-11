@@ -1,0 +1,24 @@
+# Cache headers for the static files Cloudflare serves straight from the
+# assets folder (pages rendered by the Worker are not affected).
+
+# Built scripts, styles and fonts: every filename is a content hash.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Lesson drawings: each saved drawing gets a new random filename.
+/drawings/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images and media that keep their names when replaced: a day.
+/og/*
+  Cache-Control: public, max-age=86400
+/lesson-assets/*
+  Cache-Control: public, max-age=86400
+/videos/*
+  Cache-Control: public, max-age=86400
+/favicon.ico
+  Cache-Control: public, max-age=86400
+/icon.png
+  Cache-Control: public, max-age=86400
+/apple-icon.png
+  Cache-Control: public, max-age=86400

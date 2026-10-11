@@ -21,7 +21,7 @@ function renderCode(block: CodeBlock, key: number) {
   );
 }
 
-function renderBlock(block: Exclude<LessonBlock, CodeBlock>, i: number) {
+function renderBlock(block: Exclude<LessonBlock, CodeBlock>, i: number, firstFigure: number) {
   switch (block.type) {
     case "heading":
       return (
@@ -78,6 +78,7 @@ function renderBlock(block: Exclude<LessonBlock, CodeBlock>, i: number) {
           caption={block.caption}
           width={block.width}
           height={block.height}
+          eager={i === firstFigure}
         />
       );
 
@@ -88,11 +89,14 @@ function renderBlock(block: Exclude<LessonBlock, CodeBlock>, i: number) {
 
 export default function LessonBody({ blocks }: { blocks: LessonBlock[] }) {
   const out: ReactNode[] = [];
+  // The first picture is usually the largest thing near the top (the page's
+  // LCP), so it loads straight away; the rest wait until they're scrolled near.
+  const firstFigure = blocks.findIndex((b) => b.type === "drawing" || b.type === "figure");
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
     if (block.type !== "code") {
-      out.push(renderBlock(block, i));
+      out.push(renderBlock(block, i, firstFigure));
       continue;
     }
 

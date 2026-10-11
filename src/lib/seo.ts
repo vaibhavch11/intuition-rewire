@@ -128,16 +128,53 @@ export function websiteJsonLd() {
   ];
 }
 
-export function courseJsonLd(course: { name: string; description: string; path: string }) {
+/** Hours as an ISO 8601 duration, e.g. 8 -> "PT8H". */
+const hours = (h: number) => `PT${Math.max(1, Math.round(h))}H`;
+
+/**
+ * A course, with every field Google's Course info result requires (provider,
+ * offers, hasCourseInstance) and the recommended ones it can fill in.
+ */
+export function courseJsonLd(course: {
+  name: string;
+  description: string;
+  path: string;
+  image: OgImage;
+  workloadHours: number;
+  chapters: { name: string; lessons: number; hours: number }[];
+  teaches?: string[];
+  prerequisites?: string[];
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "Course",
     name: course.name,
     description: course.description,
     url: absoluteUrl(course.path),
+    image: absoluteUrl(course.image.url),
     inLanguage: "en",
     isAccessibleForFree: true,
+    educationalLevel: "Beginner to intermediate",
     provider: ORGANIZATION,
+    offers: [{ "@type": "Offer", category: "Free" }],
+    hasCourseInstance: [{ "@type": "CourseInstance", courseMode: "Online", courseWorkload: hours(course.workloadHours) }],
+    syllabusSections: course.chapters.map((c) => ({
+      "@type": "Syllabus",
+      name: c.name,
+      description: `${c.lessons} ${c.lessons === 1 ? "lesson" : "lessons"}`,
+      timeRequired: hours(c.hours),
+    })),
+    ...(course.teaches?.length ? { teaches: course.teaches } : {}),
+    ...(course.prerequisites?.length ? { coursePrerequisites: course.prerequisites } : {}),
+  };
+}
+
+/** The course catalog as an ItemList of course pages: Google's course list markup. */
+export function courseListJsonLd(courses: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: courses.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: absoluteUrl(c.path), name: c.name })),
   };
 }
 
