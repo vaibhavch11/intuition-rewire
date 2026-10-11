@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import GoogleButton from "@/components/auth/GoogleButton";
 import LoginForm from "@/components/auth/LoginForm";
 import { LINK_ERRORS } from "@/components/auth/messages";

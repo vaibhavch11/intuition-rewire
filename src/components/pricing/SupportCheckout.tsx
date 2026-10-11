@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { CheckCircle2, Heart, Loader2, Lock } from "lucide-react";
 import {
   checkSupportAmount,

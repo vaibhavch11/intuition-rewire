@@ -29,6 +29,14 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     return NextResponse.next();
   }
 
+  // No Supabase cookie means no session to refresh or verify, so most readers
+  // skip building a client (CPU the Workers free plan counts per request).
+  if (!request.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", NO_STORE);
+    return response;
+  }
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {

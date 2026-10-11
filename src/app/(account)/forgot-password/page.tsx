@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import { AuthCard, AuthFields, NotConfigured } from "@/components/auth/ui";
 import { isSupabaseConfigured } from "@/lib/supabase/config";

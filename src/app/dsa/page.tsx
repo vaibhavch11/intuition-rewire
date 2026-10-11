@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { getSections } from "@/lib/dsa/curriculum";
 import { courseListJsonLd, fitDescription, pageMetadata } from "@/lib/seo";
 import { courseStats, isComingSoon } from "@/lib/dsa/types";

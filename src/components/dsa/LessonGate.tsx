@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { Lock } from "lucide-react";
 import type { LessonPreview } from "@/lib/dsa/preview";
 
