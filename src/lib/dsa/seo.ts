@@ -1,5 +1,12 @@
 import { fitDescription, fitTitle, SITE_NAME } from "@/lib/seo";
-import type { LessonContent, Section, Topic } from "./types";
+import { groupByChapter, isProblem, type LessonContent, type Section, type Topic } from "./types";
+
+/** Rough study time for the course schema: 15 minutes a lesson, 30 a problem. */
+export function courseWorkload(section: Section) {
+  const hoursFor = (topics: Topic[]) => topics.reduce((h, t) => h + (isProblem(t) ? 0.5 : 0.25), 0);
+  const chapters = groupByChapter(section.topics).map((c) => ({ name: c.title, lessons: c.topics.length, hours: hoursFor(c.topics) }));
+  return { hours: hoursFor(section.topics), chapters };
+}
 
 const BRAND = ` | ${SITE_NAME}`;
 

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getSections } from "@/lib/dsa/curriculum";
-import { fitDescription, pageMetadata } from "@/lib/seo";
-import { courseStats } from "@/lib/dsa/types";
+import { courseListJsonLd, fitDescription, pageMetadata } from "@/lib/seo";
+import { courseStats, isComingSoon } from "@/lib/dsa/types";
 import type { Section } from "@/lib/dsa/types";
 import LargeScreenLattice from "@/components/dsa/LargeScreenLattice";
+import JsonLd from "@/components/seo/JsonLd";
 
 function CourseCard({ section }: { section: Section }) {
   const stats = courseStats(section);
@@ -145,6 +146,13 @@ export default async function DsaIndexPage() {
           items={sections.filter((s) => s.category === "algorithm")}
         />
       </div>
+
+      {/* The courses with lessons, as a list Google can show as course results. */}
+      <JsonLd
+        data={courseListJsonLd(
+          sections.filter((s) => !isComingSoon(s)).map((s) => ({ name: s.title, path: `/dsa/${s.slug}` }))
+        )}
+      />
     </main>
   );
 }

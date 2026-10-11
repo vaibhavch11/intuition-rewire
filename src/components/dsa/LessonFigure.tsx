@@ -10,12 +10,15 @@ export default function LessonFigure({
   caption,
   width,
   height,
+  eager = false,
 }: {
   src: string;
   alt: string;
   caption?: string;
   width: number;
   height: number;
+  /** Load now, at high priority: the lesson's first picture. */
+  eager?: boolean;
 }) {
   const [zoomed, setZoomed] = useState(false);
   // Excalidraw drawings get flipped for dark mode; photos and uploads don't.
@@ -34,7 +37,7 @@ export default function LessonFigure({
     <figure className="my-space-2xl">
       {/* render-lazy sits on the image box, not the figure: the full-screen
           view below is position: fixed and must not be contained by it. */}
-      <div className="render-lazy [--lazy-size:200px] relative rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-space-lg py-space-2xl">
+      <div className={`${eager ? "" : "render-lazy [--lazy-size:200px] "}relative rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-space-lg py-space-2xl`}>
         <button
           type="button"
           onClick={() => setZoomed(true)}
@@ -49,6 +52,8 @@ export default function LessonFigure({
           width={width}
           height={height}
           unoptimized={src.endsWith(".svg")}
+          loading={eager ? "eager" : "lazy"}
+          fetchPriority={eager ? "high" : undefined}
           className={`mx-auto h-auto w-full max-w-3xl${art}`}
         />
       </div>

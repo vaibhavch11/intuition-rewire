@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { getSection, getSections } from "@/lib/dsa/curriculum";
 import { relatedCourses } from "@/lib/dsa/related";
-import { courseDescription, courseTitle } from "@/lib/dsa/seo";
+import { courseDescription, courseTitle, courseWorkload } from "@/lib/dsa/seo";
 import { courseStats, groupByChapter, isComingSoon } from "@/lib/dsa/types";
 import { courseJsonLd, courseOgImage, pageMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -314,6 +314,11 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
               name: section.title,
               description: courseDescription(section),
               path: `/dsa/${section.slug}`,
+              image: courseOgImage(section.slug, section.title),
+              workloadHours: courseWorkload(section).hours,
+              chapters: courseWorkload(section).chapters,
+              teaches: section.outcomes,
+              prerequisites: section.requirements,
             })}
           />
         )}

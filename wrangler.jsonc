@@ -1,7 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "intuition-rewire",
-  "main": ".open-next/worker.js",
+  // edge-worker.js wraps OpenNext's .open-next/worker.js with an edge cache.
+  "main": "edge-worker.js",
   "compatibility_date": "2026-09-22",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -27,6 +28,8 @@
       "binding": "CONTENT_BUCKET"
     }
   ],
+  // The deployment id, so edge-cached pages never outlive the scripts they load.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "observability": {
     "enabled": true
   }
