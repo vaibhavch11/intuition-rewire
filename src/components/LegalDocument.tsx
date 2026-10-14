@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-/** The inbox for privacy, deletion and terms questions; also Google's consent-screen support email. */
-export const CONTACT_EMAIL = "chauhanvaibhav1105@gmail.com";
+/** The inbox for payment, refund, privacy, deletion and terms questions. */
+export const CONTACT_EMAIL = "intuitionrewire@gmail.com";
 
 export function LegalDocument({
   title,

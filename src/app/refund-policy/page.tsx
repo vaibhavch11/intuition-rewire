@@ -11,7 +11,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function RefundPolicyPage() {
   return (
-    <LegalDocument title="Refund & Cancellation Policy" updated="3 October 2026">
+    <LegalDocument title="Refund & Cancellation Policy" updated="15 October 2026">
       <LegalSection heading="What you pay for">
         <p>
           IntuitionRewire is free to use. Payments on the Pricing page are optional, one-time support payments. They

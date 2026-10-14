@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function TermsPage() {
   return (
-    <LegalDocument title="Terms of Service" updated="26 September 2026">
+    <LegalDocument title="Terms of Service" updated="15 October 2026">
       <LegalSection heading="Using IntuitionRewire">
         <p>
           IntuitionRewire is a learning site for data structures and
