@@ -15,7 +15,7 @@ import { CELL_TONES, PointerTags } from "@/components/dsa/simulator/visuals";
 import { isPracticeProgram, PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import { PROGRAM_LOADERS } from "./loaders";
 import { formatField, parseField } from "./parseInput";
-import { ListDiagram, StackColumn, TreeDiagram } from "./StructureViews";
+import { GraphDiagram, ListDiagram, StackColumn, TreeDiagram } from "./StructureViews";
 import {
   cell,
   formatValue,
@@ -399,6 +399,15 @@ export default function PracticeSimulator({
                   ))}
                 </div>
               )}
+              {frame.graphs.length > 0 && (
+                <div className="flex flex-wrap items-end gap-space-xl">
+                  {frame.graphs.map((graph) => (
+                    <GraphDiagram key={graph.name} view={graph} />
+                  ))}
+                  {frame.trees.length === 0 &&
+                    frame.stacks.map((stack) => <StackColumn key={stack.name} view={stack} />)}
+                </div>
+              )}
               {frame.lists.map((list) => (
                 <ListDiagram key={list.name} view={list} />
               ))}
@@ -419,7 +428,7 @@ export default function PracticeSimulator({
                   ))}
                 </div>
               )}
-              {frame.trees.length === 0 && frame.stacks.length > 0 && (
+              {frame.trees.length === 0 && frame.graphs.length === 0 && frame.stacks.length > 0 && (
                 <div className="flex flex-wrap items-end gap-space-xl">
                   {frame.stacks.map((stack) => (
                     <StackColumn key={stack.name} view={stack} />

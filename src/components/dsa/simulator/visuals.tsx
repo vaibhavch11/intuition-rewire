@@ -49,7 +49,7 @@ export function PointerTags({ pointers }: { pointers?: Pointer[] }) {
 }
 
 /** A white outline behind SVG text so labels stay legible where they cross lines. */
-const HALO =
+export const HALO =
   "stroke-surface-container-lowest [paint-order:stroke] [stroke-linejoin:round] [stroke-width:3px]";
 
 /** SVG counterpart of `PointerTags`, centred on `x` with its baseline at `y`. */

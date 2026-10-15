@@ -118,12 +118,15 @@ export function parseField(field: Field, text: string): Parsed {
       const pattern = /\[\s*(-?\d+)\s*,\s*(-?\d+)\s*\]/g;
       // Intervals are [start,end]; points (ordered: false) are any [x,y].
       const ordered = field.ordered ?? true;
-      const shape = ordered ? "[start,end], like [1,3] [2,6]" : "[x,y], like [1,3] [-2,2]";
+      // A hint (e.g. edges as "[u,v] pairs") replaces the interval / point wording.
+      const shape = field.hint ?? (ordered ? "[start,end], like [1,3] [2,6]" : "[x,y], like [1,3] [-2,2]");
       if (text.replace(pattern, "").replace(/[\s,;]/g, "") !== "") {
         return { error: `${field.label}: write each one as ${shape}.` };
       }
       const pairs = [...text.matchAll(pattern)].map((m) => [Number(m[1]), Number(m[2])]);
-      if (pairs.length === 0) return { error: `${field.label}: enter at least one ${ordered ? "[start,end] pair" : "[x,y] point"}.` };
+      if (pairs.length === 0) {
+        return { error: field.hint ? `${field.label}: enter at least one, as ${field.hint}.` : `${field.label}: enter at least one ${ordered ? "[start,end] pair" : "[x,y] point"}.` };
+      }
       if (pairs.length > limit) return { error: `${field.label}: use at most ${limit} pairs.` };
       const { min, max } = bounds(field);
       for (const [a, b] of pairs) {

@@ -88,6 +88,35 @@ export interface TreeView {
   captions?: Record<number, string>;
 }
 
+/** One vertex of a graph, drawn with its centre at (x, y). */
+export interface GraphNodeView {
+  id: number;
+  x: number;
+  y: number;
+  /** Text inside the circle; defaults to the id. */
+  label?: Scalar;
+}
+
+/** An edge between two vertices, with an optional weight drawn at its middle. */
+export interface GraphEdgeView {
+  from: number;
+  to: number;
+  weight?: Scalar;
+  tone?: EdgeTone;
+}
+
+/** Vertices joined by edges (arrows when directed), each where the program placed it. */
+export interface GraphView {
+  name: string;
+  nodes: GraphNodeView[];
+  edges: GraphEdgeView[];
+  directed?: boolean;
+  tones?: Record<number, CellTone>;
+  pointers?: Record<number, Pointer[]>;
+  /** Small text under a vertex, e.g. its distance or colour. */
+  captions?: Record<number, string>;
+}
+
 /** A vertical stack, bottom first: the call stack, an operator stack. */
 export interface StackView {
   name: string;
@@ -107,6 +136,7 @@ export interface Frame {
   grids: GridView[];
   lists: ListView[];
   trees: TreeView[];
+  graphs: GraphView[];
   stacks: StackView[];
   maps: MapView[];
   vars: [string, string][];
@@ -124,7 +154,7 @@ export interface Field {
   /** Bounds for every number entered. */
   min?: number;
   max?: number;
-  /** Text fields: what the input should look like, shown when it's rejected. */
+  /** Text and pairs fields: what the input should look like, shown when it's rejected. */
   hint?: string;
   /** Pairs fields: true (the default) for [start,end] intervals, false for free [x,y] points. */
   ordered?: boolean;
@@ -160,6 +190,7 @@ interface FrameParts {
   grids?: GridView[];
   lists?: ListView[];
   trees?: TreeView[];
+  graphs?: GraphView[];
   stacks?: StackView[];
   maps?: MapView[];
   vars?: Record<string, unknown>;
@@ -202,6 +233,14 @@ export function recorder() {
           pointers: { ...t.pointers },
           edgeTones: { ...t.edgeTones },
           captions: { ...t.captions },
+        })),
+        graphs: (parts.graphs ?? []).map((g) => ({
+          ...g,
+          nodes: g.nodes.map((n) => ({ ...n })),
+          edges: g.edges.map((e) => ({ ...e })),
+          tones: { ...g.tones },
+          pointers: { ...g.pointers },
+          captions: { ...g.captions },
         })),
         stacks: (parts.stacks ?? []).map((st) => ({ ...st, values: [...st.values], tones: { ...st.tones } })),
         maps: (parts.maps ?? []).map((m) => ({

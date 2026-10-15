@@ -1,6 +1,7 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
 import { binaryTreeSection } from "./binary-tree";
+import { graphSection } from "./graph";
 import { hashTableSection } from "./hash-table";
 import { heapSection } from "./heap";
 import { linkedListSection } from "./linked-list";
@@ -57,12 +58,7 @@ export const builtInSections: Section[] = [
     "data-structure"
   ),
   heapSection,
-  placeholderSection(
-    "graph",
-    "Graph",
-    "Nodes and edges for modeling networks, dependencies, and paths between things.",
-    "data-structure"
-  ),
+  graphSection,
   placeholderSection(
     "trie",
     "Trie (Prefix Tree)",

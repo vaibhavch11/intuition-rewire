@@ -5,13 +5,23 @@ import {
   CurvedArrow,
   DiagramLayer,
   EDGE_TEXT,
+  EDGE_TONES,
+  HALO,
   NODE_TONES,
   SvgTags,
   type DiagramEdge,
   type DiagramNode,
   type NodeTone,
 } from "@/components/dsa/simulator/visuals";
-import { formatValue, type CellTone, type ListNodeView, type ListView, type StackView, type TreeView } from "./types";
+import {
+  formatValue,
+  type CellTone,
+  type GraphView,
+  type ListNodeView,
+  type ListView,
+  type StackView,
+  type TreeView,
+} from "./types";
 
 const round = (n: number) => Math.round(n * 10) / 10;
 
@@ -242,6 +252,105 @@ export function TreeDiagram({ view }: { view: TreeView }) {
       <Name>{view.name}</Name>
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block">
         <DiagramLayer nodes={nodes} edges={edges} radius={R} />
+      </svg>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Graphs: vertices where the program placed them, edges as lines or arrows
+// ---------------------------------------------------------------------------
+
+const G_R = 17;
+const G_PAD = 30;
+const G_TOP = 34;
+
+export function GraphDiagram({ view }: { view: GraphView }) {
+  if (view.nodes.length === 0) {
+    return (
+      <div>
+        <Name>{view.name}</Name>
+        <Empty />
+      </div>
+    );
+  }
+  const minX = Math.min(...view.nodes.map((n) => n.x));
+  const minY = Math.min(...view.nodes.map((n) => n.y));
+  const x = (v: number) => G_PAD + G_R + v - minX;
+  const y = (v: number) => G_TOP + G_R + v - minY;
+  const byId = new Map(view.nodes.map((n) => [n.id, { x: x(n.x), y: y(n.y) }]));
+  const captions = view.captions && Object.keys(view.captions).length > 0;
+  const width = Math.max(...view.nodes.map((n) => x(n.x))) + G_R + G_PAD;
+  const height = Math.max(...view.nodes.map((n) => y(n.y))) + G_R + (captions ? 26 : 12);
+  // A directed pair u→v and v→u bows apart so the two arrows don't overlap.
+  const pairs = new Set(view.edges.map((e) => `${e.from}>${e.to}`));
+
+  const nodes: DiagramNode[] = view.nodes.map((n) => ({
+    id: String(n.id),
+    x: byId.get(n.id)!.x,
+    y: byId.get(n.id)!.y,
+    label: formatValue(n.label ?? n.id),
+    tone: nodeTone(view.tones?.[n.id]),
+    ghost: view.tones?.[n.id] === "empty",
+    caption: view.captions?.[n.id],
+    tags: view.pointers?.[n.id],
+  }));
+
+  return (
+    <div>
+      <Name>{view.name}</Name>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block">
+        {view.edges.map((edge, i) => {
+          const a = byId.get(edge.from);
+          const b = byId.get(edge.to);
+          if (!a || !b || edge.from === edge.to) return null;
+          const tone = edge.tone ?? "idle";
+          const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+          const ux = (b.x - a.x) / len;
+          const uy = (b.y - a.y) / len;
+          // Start and end on the circles' rims, not their centres.
+          const x1 = round(a.x + ux * G_R);
+          const y1 = round(a.y + uy * G_R);
+          const x2 = round(b.x - ux * (G_R + 2));
+          const y2 = round(b.y - uy * (G_R + 2));
+          const both = view.directed && pairs.has(`${edge.to}>${edge.from}`);
+          const bend = both ? 14 : 0;
+          // The weight sits beside the middle of the edge (or of its curve).
+          const mx = (a.x + b.x) / 2 - uy * (bend + 9);
+          const my = (a.y + b.y) / 2 + ux * (bend + 9);
+          return (
+            <g key={`${edge.from}-${edge.to}-${i}`}>
+              {view.directed ? (
+                bend ? (
+                  <CurvedArrow x1={x1} y1={y1} x2={x2} y2={y2} bend={bend} className={EDGE_TEXT[tone]} />
+                ) : (
+                  <Arrow x1={x1} y1={y1} x2={x2} y2={y2} className={EDGE_TEXT[tone]} />
+                )
+              ) : (
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={round(b.x - ux * G_R)}
+                  y2={round(b.y - uy * G_R)}
+                  strokeWidth={tone === "active" || tone === "write" ? 2.5 : 1.5}
+                  className={`transition-colors duration-300 ${EDGE_TONES[tone]}`}
+                />
+              )}
+              {edge.weight !== undefined && edge.weight !== null && (
+                <text
+                  x={round(mx)}
+                  y={round(my)}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className={`fill-on-surface-variant font-code-sm text-[11px] font-semibold ${HALO}`}
+                >
+                  {formatValue(edge.weight)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        <DiagramLayer nodes={nodes} edges={[]} radius={G_R} />
       </svg>
     </div>
   );
