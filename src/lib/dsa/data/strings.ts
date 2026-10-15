@@ -1,24 +1,5 @@
-import type { Difficulty, Section, Topic } from "../types";
-
-type TopicSeed = Omit<Topic, "chapter">;
-
-const lesson = (slug: string, title: string): TopicSeed => ({ slug, title });
-
-const problem = (
-  slug: string,
-  title: string,
-  difficulty: Difficulty
-): TopicSeed => ({
-  slug,
-  title,
-  kind: "problem",
-  difficulty,
-  hasCodeSolution: true,
-});
-
-function chapterTopics(chapter: string, seeds: TopicSeed[]): Topic[] {
-  return seeds.map((seed) => ({ ...seed, chapter }));
-}
+import type { Section } from "../types";
+import { chapterTopics, lesson, problem } from "./seeds";
 
 export const stringsSection: Section = {
   slug: "strings",
@@ -27,84 +8,86 @@ export const stringsSection: Section = {
   description:
     "Character arrays with their own set of classic patterns — two pointers, sliding window, and more.",
   tagline:
-    "Continue with the data structure you use every day but rarely look inside.",
-  illustrationCount: 76,
-  slideCount: 38,
+    "Learn what a string really is in memory and what each operation costs, then master the 9 string patterns — from two pointers to dynamic programming — through the interview questions asked most.",
+  illustrationCount: 60,
   outcomes: [
-    "How characters become bytes, and why length and index can disagree",
-    "What immutability costs you, and when to reach for a builder instead",
-    "The two pointer pattern applied to reversal, palindromes, and partitioning",
-    "Sliding windows over character frequency maps",
-    "Anagram and grouping problems solved by canonical signatures",
-    "How substring search moves from O(N·M) brute force to O(N + M)",
+    "What a string is, how characters become bytes, and why length means different things in different languages",
+    "Why strings are immutable in most languages, what s += c in a loop really costs, and how to build strings fast",
+    "The everyday string operations in JavaScript, Python, Java and C++, and the time each one takes",
+    "How to read a string question and pick the pattern that solves it",
+    "9 patterns from easiest to hardest: two pointers, frequency counting, scan and build, stack, sliding window, expand around the centre, backtracking, string matching and dynamic programming",
+    "The string questions interviews ask most, each with a dry-run simulator",
   ],
   overview: [
-    "A string looks like the easiest data structure in the language until a problem asks you to reverse it in place, and you discover `str[i] = 'a'` silently does nothing. Strings are arrays with extra rules — an encoding underneath, and in most languages immutability on top — and both rules change which solutions are even available to you.",
-    "This course starts at the byte level, shows you what your language actually allocates when you concatenate in a loop, then works through the five patterns that cover nearly every string question in an interview. Each pattern is introduced on a small example before you apply it to progressively harder problems.",
+    "Strings are the data you handle most: names, messages, URLs, code, DNA. They look simple until a question asks you to reverse one in place, count letters in a window, or match a pattern in linear time — and then the details matter.",
+    "The introduction is short but complete: **what** a string is, **how** it is stored as bytes, **why** most languages make it immutable, and **what** every common operation costs. Every later lesson builds on those details.",
+    "Then come **9 patterns, from easiest to hardest** — each taught through the interview questions that use it, with code in four languages, the complexity of every approach and a simulator you can step through.",
   ],
   requirements: [
-    "Comfort writing loops, conditionals, and functions in at least one language",
-    "The Arrays course, or equivalent familiarity with indexing and two pointers",
-    "No prior knowledge of character encodings — they are introduced from scratch",
+    "Comfort writing loops, conditionals and functions in at least one language",
+    "The Arrays course helps: a string is an array of characters with a few extra rules",
+    "The Hash Map and Stack courses help for the frequency-counting and stack patterns",
   ],
   topics: [
     ...chapterTopics("Introduction to strings", [
-      lesson("intro-characters-and-bytes", "Understanding characters and bytes"),
-      lesson("intro-understanding-the-problem", "Understanding the problem"),
-      lesson("intro-encodings", "How encodings change what length means"),
-      lesson("intro-supported-operations", "Overview of supported operations"),
-      lesson("intro-internal-mechanics", "Internal mechanics of strings"),
-      lesson("intro-working-example", "Working example"),
+      lesson("what-is-a-string", "What is a string, and why does it matter?"),
+      lesson("intro-characters-and-bytes", "Characters, bytes and encodings: how strings live in memory"),
+      lesson("immutability-and-building", "Immutable strings and the cost of building them"),
+      lesson("string-operations", "Everyday string operations and what they cost"),
+      lesson("how-to-spot-a-string-pattern", "How to spot the string pattern"),
     ]),
 
-    ...chapterTopics("Immutability and building", [
-      lesson("im-understanding-the-problem", "Understanding the problem"),
-      lesson("im-cost-of-concatenation", "The hidden cost of concatenation"),
-      lesson("im-string-builders", "How string builders avoid the cost"),
-      problem("im-repeat-a-string", "Repeat a string n times", "Fundamental"),
-      problem("im-run-length-encoding", "Run length encoding", "Easy"),
+    ...chapterTopics("Pattern 1 · Two pointers", [
+      problem("reverse-string", "Reverse String", "Easy"),
+      problem("valid-palindrome", "Valid Palindrome", "Easy"),
+      problem("valid-palindrome-ii", "Valid Palindrome II", "Easy"),
+      problem("reverse-words-in-a-string", "Reverse Words in a String", "Medium"),
     ]),
 
-    ...chapterTopics("Pattern: Two pointers", [
-      lesson("tp-understanding", "Understanding the two pointer pattern"),
-      lesson("tp-direct-application", "Identifying direct application"),
-      problem("tp-reverse-in-place", "Reverse a string in place", "Easy"),
-      problem("tp-palindrome-checker", "Palindrome checker", "Easy"),
-      problem("tp-vowel-exchange", "Vowel exchange", "Easy"),
-      problem("tp-reverse-words", "Reverse words", "Medium"),
-      problem("tp-valid-palindrome-ii", "Palindrome after one deletion", "Medium"),
+    ...chapterTopics("Pattern 2 · Frequency counting", [
+      problem("valid-anagram", "Valid Anagram", "Easy"),
+      problem("first-unique-character", "First Unique Character in a String", "Easy"),
+      problem("group-anagrams", "Group Anagrams", "Medium"),
     ]),
 
-    ...chapterTopics("Pattern: Sliding window", [
-      lesson("sw-understanding", "Understanding the sliding window pattern"),
-      lesson("sw-window-as-frequency-map", "Carrying a frequency map in the window"),
-      problem("sw-longest-unique", "Longest substring without repeats", "Medium"),
-      problem("sw-longest-k-distinct", "Longest substring with k distinct characters", "Medium"),
-      problem("sw-permutation-in-string", "Permutation in a string", "Medium"),
-      problem("sw-minimum-window", "Minimum window substring", "Hard"),
+    ...chapterTopics("Pattern 3 · Scan and build", [
+      problem("longest-common-prefix", "Longest Common Prefix", "Easy"),
+      problem("string-compression", "String Compression", "Medium"),
+      problem("string-to-integer-atoi", "String to Integer (atoi)", "Medium"),
     ]),
 
-    ...chapterTopics("Pattern: Frequency counting", [
-      lesson("fc-understanding", "Understanding frequency counting"),
-      lesson("fc-canonical-signature", "Choosing a canonical signature"),
-      problem("fc-valid-anagram", "Valid anagram", "Easy"),
-      problem("fc-group-anagrams", "Group anagrams", "Medium"),
-      problem("fc-first-unique-character", "First unique character", "Easy"),
+    ...chapterTopics("Pattern 4 · Stack", [
+      problem("backspace-string-compare", "Backspace String Compare", "Easy"),
+      problem("remove-adjacent-duplicates-ii", "Remove All Adjacent Duplicates in String II", "Medium"),
+      problem("minimum-remove-to-make-valid-parentheses", "Minimum Remove to Make Valid Parentheses", "Medium"),
     ]),
 
-    ...chapterTopics("Pattern: Substring search", [
-      lesson("ss-understanding", "Understanding substring search"),
-      lesson("ss-brute-force-cost", "Why brute force degrades to O(N·M)"),
-      lesson("ss-prefix-function", "Building the prefix function"),
-      problem("ss-find-first-occurrence", "Find the first occurrence", "Medium"),
-      problem("ss-repeated-pattern", "Detect a repeated pattern", "Medium"),
+    ...chapterTopics("Pattern 5 · Sliding window", [
+      problem("find-all-anagrams", "Find All Anagrams in a String", "Medium"),
+      problem("longest-repeating-character-replacement", "Longest Repeating Character Replacement", "Medium"),
+      problem("minimum-window-substring", "Minimum Window Substring", "Hard"),
     ]),
 
-    ...chapterTopics("Pattern: Parsing and partitioning", [
-      lesson("pp-understanding", "Understanding parse-as-you-scan"),
-      problem("pp-valid-number", "Validate a number", "Medium"),
-      problem("pp-partition-labels", "Partition labels", "Medium"),
-      problem("pp-decode-string", "Decode a nested string", "Medium"),
+    ...chapterTopics("Pattern 6 · Expand around the centre", [
+      problem("palindromic-substrings", "Palindromic Substrings", "Medium"),
+      problem("longest-palindromic-substring", "Longest Palindromic Substring", "Medium"),
+    ]),
+
+    ...chapterTopics("Pattern 7 · Backtracking", [
+      problem("letter-combinations-of-a-phone-number", "Letter Combinations of a Phone Number", "Medium"),
+      problem("generate-parentheses", "Generate Parentheses", "Medium"),
+    ]),
+
+    ...chapterTopics("Pattern 8 · String matching", [
+      problem("find-the-first-occurrence", "Find the Index of the First Occurrence in a String", "Easy"),
+      problem("repeated-substring-pattern", "Repeated Substring Pattern", "Easy"),
+      problem("shortest-palindrome", "Shortest Palindrome", "Hard"),
+    ]),
+
+    ...chapterTopics("Pattern 9 · Dynamic programming on strings", [
+      problem("longest-common-subsequence", "Longest Common Subsequence", "Medium"),
+      problem("word-break", "Word Break", "Medium"),
+      problem("edit-distance", "Edit Distance", "Medium"),
     ]),
   ],
 };
