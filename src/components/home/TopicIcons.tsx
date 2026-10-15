@@ -93,17 +93,6 @@ const ICONS: Record<string, ReactNode> = {
       <Node cx={26} cy={24} r={3.2} fill={C.blue} />
     </>
   ),
-  "doubly-linked-list": (
-    <>
-      {[C.red, C.aqua, C.yellow].map((fill, i) => (
-        <rect key={i} x={1.5 + i * 10.75} y="9" width="7.5" height="14" rx="1.6" fill={fill} />
-      ))}
-      <Arrow x1={9.4} y1={13.5} x2={12} y2={13.5} />
-      <Arrow x1={12} y1={18.5} x2={9.4} y2={18.5} />
-      <Arrow x1={20.15} y1={13.5} x2={22.75} y2={13.5} />
-      <Arrow x1={22.75} y1={18.5} x2={20.15} y2={18.5} />
-    </>
-  ),
   "hash-table": (
     <>
       {[C.sky, C.red, C.sky, C.blue].map((fill, i) => (

@@ -19,7 +19,6 @@ const DS_ORDER = [
   "arrays",
   "strings",
   "singly-linked-list",
-  "doubly-linked-list",
   "hash-table",
   "stack",
   "queue",

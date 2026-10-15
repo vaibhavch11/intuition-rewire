@@ -99,6 +99,114 @@ export function chain(
   return { name, nodes, links, pointers };
 }
 
+/**
+ * A doubly linked list: node i has id i and sits in column i + 1, with a null
+ * box on each side (the head's prev and the tail's next). Forward links take
+ * `linkTones[i]`, backward links `backTones[i]` (keyed by the node they leave).
+ */
+export function dchain(
+  name: string,
+  values: Scalar[],
+  {
+    tones = {},
+    pointers = {},
+    linkTones = {},
+    backTones = {},
+    nullEnds = true,
+  }: {
+    tones?: Record<number, CellTone>;
+    pointers?: Record<number, Pointer[]>;
+    linkTones?: Record<number, EdgeTone>;
+    backTones?: Record<number, EdgeTone>;
+    nullEnds?: boolean;
+  } = {}
+): ListView {
+  const nodes: ListNodeView[] = values.map((value, i) => ({ id: i, value, col: i + 1, tone: tones[i] }));
+  const links: ListLink[] = [];
+  for (let i = 0; i + 1 < values.length; i++) {
+    links.push({ from: i, to: i + 1, tone: linkTones[i] });
+    links.push({ from: i + 1, to: i, tone: backTones[i + 1], kind: "prev" });
+  }
+  if (nullEnds && values.length > 0) {
+    nodes.unshift({ id: NULL_ID, value: null, col: 0 });
+    nodes.push({ id: NULL_ID - 1, value: null, col: values.length + 1 });
+    links.push({ from: 0, to: NULL_ID, tone: backTones[0], kind: "prev" }, { from: values.length - 1, to: NULL_ID - 1, tone: linkTones[values.length - 1] });
+  }
+  return { name, nodes, links, pointers, doubly: true };
+}
+
+/** One node of a doubly linked list as a program holds it: ids of its neighbours, or null. */
+export interface DNodeState {
+  id: number;
+  value: Scalar;
+  prev: number | null;
+  next: number | null;
+}
+
+/**
+ * Doubly linked nodes drawn in the given order (column 1, 2, …) with a null
+ * box at each end, using each node's real prev / next — so a half-rewired list
+ * shows exactly as it is. `hidden` leaves out pointers not set yet
+ * ("7.next", "7.prev"); `hot` highlights the ones that just changed.
+ */
+export function dlinked(
+  name: string,
+  order: DNodeState[],
+  {
+    tones = {},
+    pointers = {},
+    hot = [],
+    hidden = [],
+    ends = true,
+  }: {
+    tones?: Record<number, CellTone>;
+    pointers?: Record<number, Pointer[]>;
+    hot?: string[];
+    hidden?: string[];
+    /** Draw the null boxes (false for lists bounded by sentinel nodes). */
+    ends?: boolean;
+  } = {}
+): ListView {
+  const start = NULL_ID;
+  const end = NULL_ID - 1;
+  const shift = ends ? 1 : 0;
+  const nodes: ListNodeView[] = order.map((n, i) => ({ id: n.id, value: n.value, col: i + shift, tone: tones[n.id] }));
+  if (ends) {
+    nodes.unshift({ id: start, value: null, col: 0 });
+    nodes.push({ id: end, value: null, col: order.length + 1 });
+  }
+  const links: ListLink[] = [];
+  for (const n of order) {
+    const next = n.next ?? (ends ? end : null);
+    const prev = n.prev ?? (ends ? start : null);
+    if (next !== null && !hidden.includes(`${n.id}.next`)) links.push({ from: n.id, to: next, tone: hot.includes(`${n.id}.next`) ? "active" : undefined });
+    if (prev !== null && !hidden.includes(`${n.id}.prev`)) links.push({ from: n.id, to: prev, tone: hot.includes(`${n.id}.prev`) ? "active" : undefined, kind: "prev" });
+  }
+  return { name, nodes, links, pointers, doubly: true };
+}
+
+/**
+ * A circular singly linked list: node i has id i in column i, and the last
+ * node links back to the first (`closeTone` colours that link).
+ */
+export function ring(
+  name: string,
+  values: Scalar[],
+  {
+    tones = {},
+    pointers = {},
+    linkTones = {},
+  }: {
+    tones?: Record<number, CellTone>;
+    pointers?: Record<number, Pointer[]>;
+    linkTones?: Record<number, EdgeTone>;
+  } = {}
+): ListView {
+  const nodes: ListNodeView[] = values.map((value, i) => ({ id: i, value, col: i, tone: tones[i] }));
+  const links: ListLink[] = values.map((_, i) => ({ from: i, to: (i + 1) % values.length, tone: linkTones[i] }));
+  return { name, nodes, links, pointers };
+}
+
 // ---------------------------------------------------------------------------
 // Trees
 // ---------------------------------------------------------------------------

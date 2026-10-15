@@ -191,6 +191,19 @@ export const PRACTICE_PROGRAMS = [
   { id: "lcs-table", title: "Longest common subsequence (DP table)" },
   { id: "word-break", title: "Word break (DP over prefixes)" },
   { id: "edit-distance", title: "Edit distance (DP table)" },
+  { id: "dll-traverse", title: "Walk a doubly linked list both ways" },
+  { id: "cll-traverse", title: "Walk a circular linked list" },
+  { id: "dll-insert", title: "Insert into a doubly linked list" },
+  { id: "dll-delete", title: "Delete from a doubly linked list" },
+  { id: "cll-insert", title: "Insert at the end of a circular list" },
+  { id: "reverse-dll", title: "Reverse a doubly linked list (swap prev and next)" },
+  { id: "browser-history", title: "Browser history on a doubly linked list" },
+  { id: "flatten-multilevel", title: "Flatten a multilevel doubly linked list (splice in place)" },
+  { id: "lru-cache", title: "LRU cache: hash map + doubly linked list" },
+  { id: "check-circular", title: "Is the linked list circular?" },
+  { id: "rotate-list", title: "Rotate a list right by k (close it into a ring, then cut)" },
+  { id: "insert-sorted-circular", title: "Insert into a sorted circular list" },
+  { id: "josephus-ring", title: "The circular game on a circular linked list" },
 ] as const;
 
 export type PracticeProgramId = (typeof PRACTICE_PROGRAMS)[number]["id"];

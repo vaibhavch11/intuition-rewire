@@ -41,33 +41,43 @@ function Empty() {
 const nodeTone = (tone?: CellTone): NodeTone => (!tone || tone === "empty" ? "idle" : tone);
 
 // ---------------------------------------------------------------------------
-// Linked lists: [value | •]──▶ boxes on a grid of columns and rows
+// Linked lists: [value | •]──▶ boxes on a grid of columns and rows. A doubly
+// linked view draws [• | value | •]: next arrows run along the top lane and
+// prev arrows along the bottom one, so the two directions never overlap.
 // ---------------------------------------------------------------------------
 
 const PAD = 34;
 const TOP = 34;
 const NODE_W = 66;
 const VALUE_W = 44;
+const SIDE_W = 22;
 const NODE_H = 40;
 const NULL_W = 46;
 const GAP = 34;
 const ROW_H = 104;
+const LANE = 7;
 
-const colX = (col: number) => PAD + col * (NODE_W + GAP);
 const rowY = (row = 0) => TOP + row * ROW_H;
-const widthOf = (node: ListNodeView) => (node.value === null ? NULL_W : NODE_W);
 
 export function ListDiagram({ view }: { view: ListView }) {
+  const doubly = view.doubly ?? false;
+  const nodeW = doubly ? NODE_W + SIDE_W : NODE_W;
+  const valueX = doubly ? SIDE_W : 0;
+  const nextDotX = valueX + VALUE_W + 11;
+  const nextLane = doubly ? -LANE : 0;
+  const prevLane = doubly ? LANE : 0;
+  const colX = (col: number) => PAD + col * (nodeW + GAP);
+  const widthOf = (node: ListNodeView) => (node.value === null ? NULL_W : nodeW);
   const byId = new Map(view.nodes.map((n) => [n.id, n]));
   const maxCol = Math.max(0, ...view.nodes.map((n) => n.col));
   const maxRow = Math.max(0, ...view.nodes.map((n) => n.row ?? 0));
   const curves = view.links.some((link) => {
     const a = byId.get(link.from);
     const b = byId.get(link.to);
-    return a && b && (a.row ?? 0) === (b.row ?? 0) && Math.abs(a.col - b.col) > 1;
+    return a && b && link.kind !== "child" && (a.row ?? 0) === (b.row ?? 0) && (a.id === b.id || Math.abs(a.col - b.col) > 1);
   });
-  const width = colX(maxCol) + NODE_W + PAD;
-  const height = rowY(maxRow) + NODE_H + (curves ? 58 : 14);
+  const width = colX(maxCol) + nodeW + PAD;
+  const height = rowY(maxRow) + NODE_H + (curves ? 62 : 14);
 
   return (
     <div>
@@ -79,7 +89,7 @@ export function ListDiagram({ view }: { view: ListView }) {
           {view.links.map((link) => {
             const a = byId.get(link.from);
             const b = byId.get(link.to);
-            if (!a || !b || a.id === b.id) return null;
+            if (!a || !b) return null;
             const className = EDGE_TEXT[link.tone ?? "idle"];
             const ar = a.row ?? 0;
             const br = b.row ?? 0;
@@ -88,30 +98,47 @@ export function ListDiagram({ view }: { view: ListView }) {
             const ay = rowY(ar) + NODE_H / 2;
             const key = `${link.from}-${link.to}`;
 
+            if (a.id === b.id) {
+              // A one-node circular list: the node's next loops back to itself.
+              const bottom = rowY(ar) + NODE_H;
+              return <CurvedArrow key={key} x1={ax + nextDotX} y1={bottom} x2={ax + valueX + 12} y2={bottom + 3} bend={30} className={className} />;
+            }
+
+            if (link.kind === "child") {
+              // A child pointer drops from the bottom of the node to the top of the child.
+              return <Arrow key={key} x1={ax + valueX + VALUE_W / 2} y1={rowY(ar) + NODE_H + 1} x2={bx + valueX + VALUE_W / 2} y2={rowY(br) - 2} className={className} />;
+            }
+            // In a doubly view a prev pointer leaves from its own dot and runs along the bottom lane.
+            const isPrev = doubly && link.kind === "prev";
+            const lane = isPrev ? prevLane : nextLane;
             if (ar === br) {
               const dist = b.col - a.col;
               if (dist === 1) {
-                return <Arrow key={key} x1={ax + VALUE_W + 11} y1={ay} x2={bx - 2} y2={ay} className={className} />;
+                const x1 = isPrev ? ax + nodeW - 2 : ax + nextDotX;
+                return <Arrow key={key} x1={x1} y1={ay + lane} x2={bx - 2} y2={ay + lane} className={className} />;
               }
               if (dist === -1) {
-                return <Arrow key={key} x1={ax - 1} y1={ay} x2={bx + widthOf(b) + 2} y2={ay} className={className} />;
+                const x1 = isPrev ? ax + SIDE_W / 2 : doubly ? ax + 2 : ax - 1;
+                return <Arrow key={key} x1={x1} y1={ay + lane} x2={bx + widthOf(b) + 2} y2={ay + lane} className={className} />;
               }
-              // Skips and back-links bow underneath the row.
+              // Skips and back-links bow underneath the row; prev skips bow deeper and land further right.
               const bottom = rowY(ar) + NODE_H;
+              const x2 = b.value === null ? bx + widthOf(b) / 2 : isPrev ? bx + valueX + VALUE_W - 8 : doubly ? bx + valueX + 10 : bx + widthOf(b) / 2;
               return (
                 <CurvedArrow
                   key={key}
-                  x1={round(ax + (dist > 0 ? VALUE_W + 11 : NODE_W / 2))}
+                  x1={round(ax + (isPrev ? SIDE_W / 2 : dist > 0 ? nextDotX : nodeW / 2))}
                   y1={bottom}
-                  x2={round(bx + widthOf(b) / 2)}
+                  x2={round(x2)}
                   y2={bottom + 3}
-                  bend={round(30 + Math.abs(dist) * 6)}
+                  bend={round((isPrev ? 44 : 30) + Math.abs(dist) * 6)}
                   className={className}
                 />
               );
             }
             const endY = br < ar ? rowY(br) + NODE_H + 2 : rowY(br) - 2;
-            return <Arrow key={key} x1={ax + VALUE_W + 11} y1={ay} x2={round(bx + widthOf(b) / 2)} y2={endY} className={className} />;
+            const x1 = isPrev ? ax + SIDE_W / 2 : ax + nextDotX;
+            return <Arrow key={key} x1={x1} y1={ay + lane} x2={round(bx + widthOf(b) / 2)} y2={endY} className={className} />;
           })}
 
           {view.nodes.map((node) => {
@@ -147,21 +174,27 @@ export function ListDiagram({ view }: { view: ListView }) {
             const tone = NODE_TONES[nodeTone(node.tone)];
             return (
               <g key={node.id}>
-                <SvgTags x={x + VALUE_W / 2} y={y - 9} tags={tags} />
-                <rect x={x} y={y} width={NODE_W} height={NODE_H} rx={8} className="fill-surface-container-lowest" />
+                <SvgTags x={x + valueX + VALUE_W / 2} y={y - 9} tags={tags} />
+                <rect x={x} y={y} width={nodeW} height={NODE_H} rx={8} className="fill-surface-container-lowest" />
                 <rect
                   x={x}
                   y={y}
-                  width={NODE_W}
+                  width={nodeW}
                   height={NODE_H}
                   rx={8}
                   strokeWidth={1.5}
                   className={`transition-colors duration-300 ${tone.shape}`}
                 />
-                <line x1={x + VALUE_W} y1={y + 6} x2={x + VALUE_W} y2={y + NODE_H - 6} strokeWidth={1} className="stroke-outline-variant" />
-                <circle cx={x + VALUE_W + 11} cy={y + NODE_H / 2} r={3.5} className="fill-on-surface-variant" />
+                {doubly && (
+                  <>
+                    <line x1={x + SIDE_W} y1={y + 6} x2={x + SIDE_W} y2={y + NODE_H - 6} strokeWidth={1} className="stroke-outline-variant" />
+                    <circle cx={x + SIDE_W / 2} cy={y + NODE_H / 2 + prevLane} r={3.5} className="fill-on-surface-variant" />
+                  </>
+                )}
+                <line x1={x + valueX + VALUE_W} y1={y + 6} x2={x + valueX + VALUE_W} y2={y + NODE_H - 6} strokeWidth={1} className="stroke-outline-variant" />
+                <circle cx={x + nextDotX} cy={y + NODE_H / 2 + nextLane} r={3.5} className="fill-on-surface-variant" />
                 <text
-                  x={x + VALUE_W / 2}
+                  x={x + valueX + VALUE_W / 2}
                   y={y + NODE_H / 2}
                   textAnchor="middle"
                   dominantBaseline="central"

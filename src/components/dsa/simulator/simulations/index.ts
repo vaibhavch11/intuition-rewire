@@ -2,7 +2,6 @@ import type { Simulation } from "../types";
 import { arraysSimulation } from "./arrays";
 import { binarySearchTreeSimulation } from "./binary-search-tree";
 import { binaryTreeSimulation } from "./binary-tree";
-import { doublyLinkedListSimulation } from "./doubly-linked-list";
 import { dynamicProgrammingSimulation } from "./dynamic-programming";
 import { graphSimulation } from "./graph";
 import { hashTableSimulation } from "./hash-table";
@@ -21,7 +20,6 @@ const SIMULATIONS: Record<string, Simulation> = {
   arrays: arraysSimulation,
   strings: stringsSimulation,
   "singly-linked-list": singlyLinkedListSimulation,
-  "doubly-linked-list": doublyLinkedListSimulation,
   "hash-table": hashTableSimulation,
   stack: stackSimulation,
   queue: queueSimulation,

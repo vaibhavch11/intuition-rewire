@@ -57,6 +57,11 @@ export interface ListLink {
   from: number;
   to: number;
   tone?: EdgeTone;
+  /**
+   * In a doubly linked view, links are `next` pointers unless marked "prev";
+   * a "child" pointer (multilevel lists) drops from the node to the row below.
+   */
+  kind?: "prev" | "child";
 }
 
 /** Nodes joined by `next` arrows: reversal, cycles, two lists meeting. */
@@ -66,6 +71,8 @@ export interface ListView {
   links: ListLink[];
   /** Pointer tags above nodes, keyed by node id. */
   pointers?: Record<number, Pointer[]>;
+  /** Draw [• | value | •] nodes with a prev pointer as well as next. */
+  doubly?: boolean;
 }
 
 export interface TreeNodeView {

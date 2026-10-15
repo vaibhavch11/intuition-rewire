@@ -5,22 +5,22 @@ export const linkedListSection: Section = {
   slug: "singly-linked-list",
   title: "Linked List",
   category: "data-structure",
-  description: "Nodes linked one direction by pointers instead of contiguous memory.",
+  description: "Singly, doubly and circular linked lists: nodes joined by pointers instead of contiguous memory.",
   tagline:
-    "Learn what a linked list really is — boxes joined by arrows — then solve the 12 linked list questions interviews ask most.",
-  illustrationCount: 51,
+    "Learn all three types of linked list — singly, doubly and circular — then solve the interview questions asked most for each.",
+  illustrationCount: 74,
   outcomes: [
-    "What a linked list is, and how nodes and next pointers sit in memory",
+    "What a linked list is, and how nodes and pointers sit in memory",
+    "The three types — singly, doubly and circular — and what each one is good at",
     "Why linked lists exist, and what they do better and worse than arrays",
-    "When to reach for a linked list, and when an array is the better choice",
-    "How to create, traverse, insert into and delete from a list in four languages",
-    "The 12 most asked linked list interview questions, from reversal to cycle detection",
+    "How to build, traverse, insert into and delete from every type, in four languages",
+    "The most asked interview questions for singly, doubly and circular lists, from reversal to LRU Cache",
     "Brute force, optimal and best solutions for every problem, with a dry-run simulator",
   ],
   overview: [
     "Linked lists are where pointer thinking starts. Most mistakes in linked list problems aren't about algorithms at all — they're a lost `next` pointer, a missing null check, or a head that should have moved. This course is built to make those mistakes visible.",
-    "It starts with **what** a linked list is, **why** it exists, **when** to use one and **how** to use one in real code — every idea drawn as boxes and arrows, with a simulator for the basic operations.",
-    "Then you solve the **12 most asked linked list interview questions**. Every problem is solved the interview way: first the **brute force**, then an **optimal** improvement, then the **best solution**, each with code in four languages, its time and space cost, and a simulator that shows every pointer move.",
+    "It starts with **what** a linked list is and its **three types**: **singly** (one `next` pointer), **doubly** (`prev` and `next`) and **circular** (the last node points back to the first). You'll see **why** each exists, **when** to use it, and **how** to build, **traverse**, insert and delete in every type — each idea drawn as boxes and arrows, with a simulator that shows every pointer move.",
+    "Then come the interview questions, grouped by type: the **singly linked list** classics, the **doubly linked list** questions behind browser history and LRU caches, and the **circular linked list** questions from rotation to the Josephus game. Every problem is solved the interview way — brute force first, then the best solution — with code in four languages, its time and space cost, and a simulator.",
   ],
   requirements: [
     "Comfort writing loops, conditionals and functions in at least one language",
@@ -30,12 +30,15 @@ export const linkedListSection: Section = {
   topics: [
     ...chapterTopics("Introduction to linked lists", [
       lesson("what-is-a-linked-list", "What is a linked list?"),
+      lesson("types-of-linked-lists", "The three types: singly, doubly and circular"),
       lesson("why-linked-lists", "Why do we use a linked list?"),
       lesson("when-to-use-a-linked-list", "When should you use a linked list?"),
-      lesson("how-to-use-a-linked-list", "How do we use a linked list?"),
+      lesson("how-to-use-a-linked-list", "How do we use a singly linked list?"),
+      lesson("traversing-linked-lists", "Traversal: walking singly, doubly and circular lists"),
+      lesson("doubly-and-circular-operations", "Insert and delete in doubly and circular lists"),
     ]),
 
-    ...chapterTopics("Most asked interview questions", [
+    ...chapterTopics("Singly linked list · interview questions", [
       problem("reverse-linked-list", "Reverse a Linked List", "Easy"),
       problem("middle-of-linked-list", "Middle of the Linked List", "Easy"),
       problem("merge-two-sorted-lists", "Merge Two Sorted Lists", "Easy"),
@@ -48,6 +51,20 @@ export const linkedListSection: Section = {
       problem("linked-list-cycle-ii", "Linked List Cycle II", "Medium"),
       problem("add-two-numbers", "Add Two Numbers", "Medium"),
       problem("reorder-list", "Reorder List", "Medium"),
+    ]),
+
+    ...chapterTopics("Doubly linked list · interview questions", [
+      problem("reverse-doubly-linked-list", "Reverse a Doubly Linked List", "Easy"),
+      problem("design-browser-history", "Design Browser History", "Medium"),
+      problem("flatten-multilevel-doubly-linked-list", "Flatten a Multilevel Doubly Linked List", "Medium"),
+      problem("lru-cache", "LRU Cache", "Medium"),
+    ]),
+
+    ...chapterTopics("Circular linked list · interview questions", [
+      problem("check-circular-linked-list", "Check if a Linked List is Circular", "Easy"),
+      problem("rotate-list", "Rotate List", "Medium"),
+      problem("insert-into-sorted-circular-list", "Insert into a Sorted Circular Linked List", "Medium"),
+      problem("find-the-winner-of-the-circular-game", "Find the Winner of the Circular Game", "Medium"),
     ]),
   ],
 };

@@ -41,12 +41,6 @@ export const builtInSections: Section[] = [
   arraysSection,
   stringsSection,
   linkedListSection,
-  placeholderSection(
-    "doubly-linked-list",
-    "Doubly Linked List",
-    "Nodes linked in both directions, trading extra memory for O(1) backward traversal.",
-    "data-structure"
-  ),
   hashTableSection,
   stackSection,
   queueSection,

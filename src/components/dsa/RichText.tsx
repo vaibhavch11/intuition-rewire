@@ -1,9 +1,31 @@
-const TOKEN = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+const TOKEN = /\*\*[^*]+\*\*|`[^`]+`|\*[^*\s](?:[^*\n]*[^*\s])?\*/g;
+const WORD = /\w/;
+
+/**
+ * Splits text into plain runs (even indexes) and **bold**, `code` and *italic*
+ * tokens (odd indexes). Single asterisks only count as italics between
+ * non-word characters, so `2*3*4` or `a*b*c` stay as typed.
+ */
+function tokens(text: string): string[] {
+  const out: string[] = [];
+  let last = 0;
+  for (const match of text.matchAll(TOKEN)) {
+    const token = match[0];
+    const at = match.index ?? 0;
+    const italic = token[1] !== "*" && token[0] === "*";
+    if (italic && (WORD.test(text[at - 1] ?? "") || WORD.test(text[at + token.length] ?? ""))) continue;
+    out.push(text.slice(last, at), token);
+    last = at + token.length;
+  }
+  out.push(text.slice(last));
+  return out;
+}
 
 export default function RichText({ text }: { text: string }) {
   return (
     <>
-      {text.split(TOKEN).map((part, i) => {
+      {tokens(text).map((part, i) => {
+        if (i % 2 === 0) return part;
         if (part.startsWith("**")) {
           return (
             <strong key={i} className="font-semibold text-on-surface">
@@ -21,7 +43,7 @@ export default function RichText({ text }: { text: string }) {
             </code>
           );
         }
-        return part;
+        return <em key={i}>{part.slice(1, -1)}</em>;
       })}
     </>
   );
