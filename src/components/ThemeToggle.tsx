@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { THEME_KEY } from "@/lib/themeScript";
 
@@ -19,41 +19,23 @@ export function useIsDark() {
   );
 }
 
-function applyTheme(dark: boolean, remember: boolean) {
+/** Switches the theme and remembers the choice; without a saved choice the site is light. */
+function applyTheme(dark: boolean) {
   const root = document.documentElement;
   root.classList.add("theme-switching");
   root.classList.toggle("dark", dark);
   root.style.colorScheme = dark ? "dark" : "light";
-  if (remember) {
-    try {
-      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
-    } catch {
-      // Storage blocked: the choice lasts for this page only.
-    }
+  try {
+    localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+  } catch {
+    // Storage blocked: the choice lasts for this page only.
   }
   window.setTimeout(() => root.classList.remove("theme-switching"), 300);
-}
-
-/** Follows the system setting until the visitor picks a theme themselves. */
-function useSystemTheme() {
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => {
-      let saved: string | null = null;
-      try {
-        saved = localStorage.getItem(THEME_KEY);
-      } catch {}
-      if (!saved) applyTheme(query.matches, false);
-    };
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
 }
 
 /** Sun/moon button for the header, or a labelled row for the phone menu. */
 export default function ThemeToggle({ variant = "icon", className = "" }: { variant?: "icon" | "row"; className?: string }) {
   const dark = useIsDark();
-  useSystemTheme();
   const label = dark ? "Switch to light mode" : "Switch to dark mode";
   const icons = (
     <span className="relative inline-flex h-[18px] w-[18px] items-center justify-center">
@@ -78,7 +60,7 @@ export default function ThemeToggle({ variant = "icon", className = "" }: { vari
         type="button"
         role="switch"
         aria-checked={dark}
-        onClick={() => applyTheme(!dark, true)}
+        onClick={() => applyTheme(!dark)}
         className={`flex items-center justify-between gap-space-sm rounded-lg px-space-sm py-space-sm text-left font-label-md text-label-md text-on-surface-variant ${className}`}
       >
         <span className="inline-flex items-center gap-space-sm">
@@ -102,7 +84,7 @@ export default function ThemeToggle({ variant = "icon", className = "" }: { vari
   return (
     <button
       type="button"
-      onClick={() => applyTheme(!dark, true)}
+      onClick={() => applyTheme(!dark)}
       aria-label={label}
       title={label}
       className={`h-9 w-9 shrink-0 items-center justify-center rounded-lg text-on-surface-variant ring-1 ring-inset ring-outline-variant/70 transition-colors hover:bg-surface-container hover:text-on-surface ${className}`}
