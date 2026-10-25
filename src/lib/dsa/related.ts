@@ -17,6 +17,8 @@ const RELATED: Record<string, string[]> = {
   "binary-tree": ["heap", "queue", "stack"],
   heap: ["binary-tree", "queue", "graph"],
   graph: ["queue", "heap", "binary-tree"],
+  sorting: ["searching", "arrays", "heap"],
+  searching: ["sorting", "arrays", "binary-tree"],
 };
 
 /** Up to three courses with real lessons to read next, topped up in catalog order. */

@@ -6,6 +6,8 @@ import { hashTableSection } from "./hash-table";
 import { heapSection } from "./heap";
 import { linkedListSection } from "./linked-list";
 import { queueSection } from "./queue";
+import { searchingSection } from "./searching";
+import { sortingSection } from "./sorting";
 import { stackSection } from "./stack";
 import { stringsSection } from "./strings";
 
@@ -59,18 +61,8 @@ export const builtInSections: Section[] = [
     "A tree specialized for prefix search over strings — autocomplete's favorite data structure.",
     "data-structure"
   ),
-  placeholderSection(
-    "sorting",
-    "Sorting",
-    "Comparison and non-comparison based sorting — from bubble sort intuition to quicksort partitioning.",
-    "algorithm"
-  ),
-  placeholderSection(
-    "searching",
-    "Searching",
-    "Binary search and its many disguises across sorted and rotated structures.",
-    "algorithm"
-  ),
+  sortingSection,
+  searchingSection,
   placeholderSection(
     "recursion",
     "Recursion & Backtracking",
