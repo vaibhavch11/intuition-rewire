@@ -1,11 +1,13 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
 import { binaryTreeSection } from "./binary-tree";
+import { dynamicProgrammingSection } from "./dynamic-programming";
 import { graphSection } from "./graph";
 import { hashTableSection } from "./hash-table";
 import { heapSection } from "./heap";
 import { linkedListSection } from "./linked-list";
 import { queueSection } from "./queue";
+import { recursionSection } from "./recursion";
 import { searchingSection } from "./searching";
 import { sortingSection } from "./sorting";
 import { stackSection } from "./stack";
@@ -63,16 +65,6 @@ export const builtInSections: Section[] = [
   ),
   sortingSection,
   searchingSection,
-  placeholderSection(
-    "recursion",
-    "Recursion & Backtracking",
-    "Breaking problems into smaller versions of themselves, and undoing choices that don't work out.",
-    "algorithm"
-  ),
-  placeholderSection(
-    "dynamic-programming",
-    "Dynamic Programming",
-    "Turning exponential brute force into polynomial time by remembering what you've already solved.",
-    "algorithm"
-  ),
+  recursionSection,
+  dynamicProgrammingSection,
 ];

@@ -19,6 +19,8 @@ const RELATED: Record<string, string[]> = {
   graph: ["queue", "heap", "binary-tree"],
   sorting: ["searching", "arrays", "heap"],
   searching: ["sorting", "arrays", "binary-tree"],
+  recursion: ["dynamic-programming", "binary-tree", "stack"],
+  "dynamic-programming": ["recursion", "arrays", "strings"],
 };
 
 /** Up to three courses with real lessons to read next, topped up in catalog order. */
