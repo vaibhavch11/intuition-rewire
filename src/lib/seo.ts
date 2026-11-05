@@ -10,7 +10,7 @@ export const SITE_NAME = "IntuitionRewire";
 
 const MAX_TITLE = 60;
 const MIN_DESCRIPTION = 140;
-const MAX_DESCRIPTION = 160;
+export const MAX_DESCRIPTION = 160;
 
 /** Turns a path like "/dsa/queue" into an absolute URL on SITE_URL. */
 export const absoluteUrl = (path: string) => new URL(path, SITE_URL).toString();

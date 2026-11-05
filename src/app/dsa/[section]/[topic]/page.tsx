@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getSections, getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
@@ -7,6 +8,7 @@ import { lessonPreview } from "@/lib/dsa/preview";
 import { relatedCourses } from "@/lib/dsa/related";
 import { isThinLesson, lessonDescription, lessonTitle } from "@/lib/dsa/seo";
 import { getSignedInUser } from "@/lib/auth/session";
+import { isVerifiedSearchCrawler } from "@/lib/crawler";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { courseOgImage, lessonJsonLd, pageMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -58,11 +60,15 @@ export default async function TopicPage(
   const path = `/dsa/${section.slug}/${topic.slug}`;
 
   const content = await loadLesson(sectionSlug, topicSlug);
-  // Everyone — search engines included — reads the opening; the whole lesson
-  // needs a free account. While sign-in isn't set up, nothing is held back.
+  // Everyone reads the opening; the whole lesson needs a free account. While sign-in isn't set up, nothing is held back.
   const signedIn = !isSupabaseConfigured() || (await getSignedInUser()) !== null;
   const preview = content && !signedIn ? lessonPreview(content.blocks) : null;
   const gated = preview !== null && preview.rest.blocks > 0;
+  // Verified Google and Bing crawlers read the whole lesson, with the part a
+  // visitor signs up for inside `.lesson-locked` — the gated part named in the
+  // lesson's structured data (Google's flexible sampling for registration
+  // walls), so search indexes the full lesson without it being cloaking.
+  const crawler = gated && (await isVerifiedSearchCrawler(await headers()));
 
   const topicIndex = section.topics.findIndex((t) => t.slug === topic.slug);
   const prevTopic = section.topics[topicIndex - 1];
@@ -95,7 +101,14 @@ export default async function TopicPage(
           <hr className="mt-space-base mb-space-2xl border-outline-variant/50" />
 
           {content ? (
-            <LessonBody blocks={preview ? preview.shown : content.blocks} />
+            <>
+              <LessonBody blocks={preview ? preview.shown : content.blocks} />
+              {crawler && preview && (
+                <div className="lesson-locked">
+                  <LessonBody blocks={content.blocks.slice(preview.shown.length)} />
+                </div>
+              )}
+            </>
           ) : topic.explanation ? (
             <p className="font-body-lg text-body-lg text-on-surface-variant">
               {topic.explanation}
@@ -106,7 +119,7 @@ export default async function TopicPage(
             </p>
           )}
 
-          {gated && <LessonGate path={path} rest={preview.rest} />}
+          {gated && !crawler && <LessonGate path={path} rest={preview.rest} />}
 
           {topic.trace && signedIn && (
             <section className="mt-space-2xl">

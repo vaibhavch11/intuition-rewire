@@ -1,4 +1,4 @@
-import { fitDescription, fitTitle, SITE_NAME } from "@/lib/seo";
+import { fitDescription, fitTitle, MAX_DESCRIPTION, plainText, SITE_NAME } from "@/lib/seo";
 import { groupByChapter, isProblem, type LessonContent, type Section, type Topic } from "./types";
 
 /** Rough study time for the course schema: 15 minutes a lesson, 30 a problem. */
@@ -34,7 +34,16 @@ export function lessonTitle(section: Section, topic: Topic, sharedTitle = false)
     return fitTitle(`${t} – ${section.title}${BRAND}`, `${t} – ${section.title}`, `${t} (${section.title})`);
   }
   if (topic.kind === "problem") {
-    return fitTitle(`${t}: Visual Solution${BRAND}`, `${t}: Visual Solution`, `${t}${BRAND}`, t);
+    // Searchers look for a solution in their language, so name the languages when they fit.
+    return fitTitle(
+      `${t}: Solution in Python, Java & C++${BRAND}`,
+      `${t}: Solution in Python, Java & C++`,
+      `${t}: Python, Java & C++ Solution`,
+      `${t}: Visual Solution${BRAND}`,
+      `${t}: Visual Solution`,
+      `${t}${BRAND}`,
+      t
+    );
   }
   const courseWord = section.title.split(" ")[0].toLowerCase();
   const namesCourse = t.toLowerCase().includes(courseWord.replace(/s$/, ""));
@@ -55,8 +64,47 @@ export function isThinLesson(content: LessonContent): boolean {
   return words < 60;
 }
 
-/** Built from the lesson's own opening paragraph, so every lesson's description is different. */
+/**
+ * The approaches a problem lesson teaches, from its numbered headings
+ * ("2. Bottom-up table" → "bottom-up table").
+ */
+function approachNames(content: LessonContent): string[] {
+  return content.blocks.flatMap((b) => {
+    const m = b.type === "heading" ? plainText(b.text).match(/^\d+\.\s+(.+)$/) : null;
+    if (!m) return [];
+    // "Plain recursion: take it or skip it" → "plain recursion", unless that leaves one word.
+    const [before, after] = m[1].split(/:\s+/, 2);
+    const name = after !== undefined && before.includes(" ") ? before : m[1];
+    // Lower-case the first letter, but not an acronym ("BFS over amounts") or a
+    // name ("Kahn's algorithm", "Dijkstra").
+    const first = name.split(" ")[0];
+    const keep = first.includes("'") || /-[A-Z]/.test(first) || /^(Dijkstra|Floyd|Bellman|Prim|Kruskal|Kadane|Morris|Manacher|Boyer|Hoare|Lomuto|Euclid|Tarjan|Kosaraju)/.test(first);
+    return [!keep && /^[A-Z](?=[a-z\s])/.test(name) ? name[0].toLowerCase() + name.slice(1) : name];
+  });
+}
+
+/**
+ * A problem's description names its approaches and languages — what a searcher
+ * wants to know before clicking. Other lessons (and problems with a single
+ * approach) use their own opening paragraph, so every description is different.
+ */
 export function lessonDescription(section: Section, topic: Topic, content: LessonContent | null): string {
+  const ways = topic.kind === "problem" && content ? approachNames(content) : [];
+  if (ways.length >= 2) {
+    const title = plainText(topic.title);
+    const solved = `${title} solved ${ways.length} ways in Python, Java, C++ and JavaScript`;
+    // Name the approaches only when every name is short; a heading that is a
+    // sentence ("optimal: sort, then walk…") or holds its own "and" would garble the list.
+    const tidy = ways.every((w) => !/[,:;]| and /.test(w) && w.split(" ").length <= 5);
+    const list = `${ways.slice(0, -1).join(", ")}${ways.length > 2 ? "," : ""} and ${ways[ways.length - 1]}`;
+    const candidates = [
+      ...(tidy ? [`${solved}: ${list}. Each with its time and space complexity.`, `${solved}: ${list}.`] : []),
+      `${solved}, with the time and space complexity of each and a step-by-step visual dry run.`,
+      `${solved}, with the time and space complexity of each.`,
+    ];
+    const text = candidates.find((c) => c.length <= MAX_DESCRIPTION && c.length >= 100);
+    if (text) return text;
+  }
   const first = content?.blocks.find((b) => b.type === "paragraph");
   const opening = (first?.type === "paragraph" ? first.text : topic.summary ?? topic.explanation ?? section.description)
     .replace(/^\*\*The problem\.\*\*\s*/i, "");
