@@ -1,7 +1,9 @@
 import { Clapperboard } from "lucide-react";
+import Link from "@/components/Link";
 import SectionHeader from "@/components/home/SectionHeader";
+import TourVideo from "@/components/TourVideo";
 
-/** The 22-second product tour: real dry-run, lessons and race footage. */
+/** The 23-second product tour: real dry-run, lessons and race footage. Its watch page is /tour. */
 export default function ProductTourSection() {
   return (
     <section
@@ -20,20 +22,13 @@ export default function ProductTourSection() {
       />
 
       <div className="mx-auto mt-space-xl max-w-5xl overflow-hidden rounded-3xl bg-surface-container-lowest shadow-[0_1px_2px_rgba(19,27,46,0.04),0_28px_56px_-32px_rgba(19,27,46,0.35)] ring-1 ring-outline-variant/70">
-        <video
-          className="block aspect-video w-full bg-surface-container-low"
-          controls
-          playsInline
-          preload="metadata"
-          poster="/videos/intuition-rewire-tour-v3.jpg"
-          aria-label="IntuitionRewire product tour: the homepage in light and dark mode, a lesson walkthrough, the Container With Most Water challenge, a BST insert dry run and the 3D memory board"
-        >
-          <source src="/videos/intuition-rewire-tour-v3.mp4" type="video/mp4" />
-          <a href="/videos/intuition-rewire-tour-v3.mp4" className="text-primary underline">
-            Download the tour video
-          </a>
-        </video>
+        <TourVideo deferred />
       </div>
+      <p className="mt-space-md text-center font-body-sm text-body-sm text-on-surface-variant">
+        <Link href="/tour" className="text-primary underline-offset-4 hover:underline">
+          Open the tour on its own page
+        </Link>
+      </p>
     </section>
   );
 }

@@ -9,7 +9,7 @@ import { absoluteUrl } from "@/lib/seo";
 // including one added from /admin — appears without a redeploy.
 export const dynamic = "force-dynamic";
 
-const OTHER_PAGES = ["/pricing", "/contact", "/privacy", "/terms", "/refund-policy"];
+const OTHER_PAGES = ["/tour", "/pricing", "/contact", "/privacy", "/terms", "/refund-policy"];
 
 // Lessons committed with the site (listed at build time) are always included,
 // even when the storage listing (used for last-modified dates) fails or is short.

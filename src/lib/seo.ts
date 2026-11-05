@@ -128,6 +128,31 @@ export function websiteJsonLd() {
   ];
 }
 
+/** A video on its watch page: the fields Google's video results require, and the recommended ones. */
+export function videoJsonLd(video: {
+  name: string;
+  description: string;
+  path: string;
+  contentUrl: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  seconds: number;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: video.name,
+    description: video.description,
+    url: absoluteUrl(video.path),
+    contentUrl: absoluteUrl(video.contentUrl),
+    thumbnailUrl: [absoluteUrl(video.thumbnailUrl)],
+    uploadDate: video.uploadDate,
+    duration: `PT${video.seconds}S`,
+    inLanguage: "en",
+    publisher: ORGANIZATION,
+  };
+}
+
 /** Hours as an ISO 8601 duration, e.g. 8 -> "PT8H". */
 const hours = (h: number) => `PT${Math.max(1, Math.round(h))}H`;
 
