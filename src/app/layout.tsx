@@ -3,6 +3,7 @@ import { Figtree, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NavigationProgress from "@/components/NavigationProgress";
 import { THEME_SCRIPT } from "@/lib/themeScript";
 import { POSTHOG_SCRIPT } from "@/lib/posthogScript";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         )}
       </head>
       <body className="min-h-full flex flex-col bg-surface font-body-md text-on-surface">
+        <NavigationProgress />
         <Header />
         <div className="flex flex-col flex-1 pt-header-height">{children}</div>
         <Footer />
