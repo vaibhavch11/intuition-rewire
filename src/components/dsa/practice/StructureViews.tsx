@@ -16,6 +16,7 @@ import {
 import {
   formatValue,
   type CellTone,
+  type Frame,
   type GraphView,
   type ListNodeView,
   type ListView,
@@ -221,7 +222,7 @@ const Y_GAP = 62;
 const TREE_PAD = 34;
 const TREE_TOP = 30;
 
-export function TreeDiagram({ view }: { view: TreeView }) {
+function layoutTree(view: TreeView) {
   const byId = new Map(view.nodes.map((n) => [n.id, n]));
   const order = new Map<number, number>();
   const depth = new Map<number, number>();
@@ -245,18 +246,31 @@ export function TreeDiagram({ view }: { view: TreeView }) {
     d = level + 1;
   }
 
+  const maxDepth = order.size ? Math.max(...depth.values()) : 0;
+  return {
+    byId,
+    order,
+    depth,
+    width: order.size ? TREE_PAD * 2 + R * 2 + (order.size - 1) * X_GAP : 0,
+    height: order.size ? TREE_TOP + R * 2 + maxDepth * Y_GAP + 20 : 0,
+  };
+}
+
+export function TreeDiagram({ view, reserve }: { view: TreeView; reserve?: TreeSize }) {
+  const { byId, order, depth, ...own } = layoutTree(view);
+  // The largest size this run reaches, so the tree's box doesn't grow step by step.
+  const width = Math.max(own.width, reserve?.width ?? 0);
+  const height = Math.max(own.height, reserve?.height ?? 0);
+
   if (order.size === 0) {
     return (
-      <div>
+      <div style={{ minWidth: width, minHeight: height }}>
         <Name>{view.name}</Name>
         <Empty />
       </div>
     );
   }
 
-  const maxDepth = Math.max(...depth.values());
-  const width = TREE_PAD * 2 + R * 2 + (order.size - 1) * X_GAP;
-  const height = TREE_TOP + R * 2 + maxDepth * Y_GAP + 20;
   const x = (id: number) => TREE_PAD + R + order.get(id)! * X_GAP;
   const y = (id: number) => TREE_TOP + R + depth.get(id)! * Y_GAP;
 
@@ -298,8 +312,24 @@ const G_R = 17;
 const G_PAD = 30;
 const G_TOP = 34;
 
-export function GraphDiagram({ view }: { view: GraphView }) {
-  if (view.nodes.length === 0) {
+function graphBounds(view: GraphView): GraphBounds | null {
+  if (view.nodes.length === 0) return null;
+  const xs = view.nodes.map((n) => n.x);
+  const ys = view.nodes.map((n) => n.y);
+  return {
+    minX: Math.min(...xs),
+    minY: Math.min(...ys),
+    maxX: Math.max(...xs),
+    maxY: Math.max(...ys),
+    captions: Boolean(view.captions && Object.keys(view.captions).length > 0),
+  };
+}
+
+export function GraphDiagram({ view, reserve }: { view: GraphView; reserve?: GraphBounds }) {
+  // The whole run's bounds, not this step's: measuring only the nodes drawn so
+  // far would slide a growing tree sideways every time a node appeared.
+  const bounds = reserve ?? graphBounds(view);
+  if (!bounds) {
     return (
       <div>
         <Name>{view.name}</Name>
@@ -307,14 +337,12 @@ export function GraphDiagram({ view }: { view: GraphView }) {
       </div>
     );
   }
-  const minX = Math.min(...view.nodes.map((n) => n.x));
-  const minY = Math.min(...view.nodes.map((n) => n.y));
+  const { minX, minY, maxX, maxY, captions } = bounds;
   const x = (v: number) => G_PAD + G_R + v - minX;
   const y = (v: number) => G_TOP + G_R + v - minY;
   const byId = new Map(view.nodes.map((n) => [n.id, { x: x(n.x), y: y(n.y) }]));
-  const captions = view.captions && Object.keys(view.captions).length > 0;
-  const width = Math.max(...view.nodes.map((n) => x(n.x))) + G_R + G_PAD;
-  const height = Math.max(...view.nodes.map((n) => y(n.y))) + G_R + (captions ? 26 : 12);
+  const width = x(maxX) + G_R + G_PAD;
+  const height = y(maxY) + G_R + (captions ? 26 : 12);
   // A directed pair u→v and v→u bows apart so the two arrows don't overlap.
   const pairs = new Set(view.edges.map((e) => `${e.from}>${e.to}`));
 
@@ -393,24 +421,43 @@ export function GraphDiagram({ view }: { view: GraphView }) {
 // Stacks: a column, top first
 // ---------------------------------------------------------------------------
 
-export function StackColumn({ view }: { view: StackView }) {
+export function StackColumn({ view, reserve = 0 }: { view: StackView; reserve?: number }) {
   const top = view.values.length - 1;
+  // Empty rows above the top, up to the tallest this run gets, so the base
+  // stays put and the stack grows upward inside a box that doesn't change size.
+  const spare = Math.max(0, reserve - Math.max(view.values.length, 1));
+  const spareRows = Array.from({ length: spare }, (_, i) => (
+    <Fragment key={`spare${i}`}>
+      <div className="h-9 min-w-14 sm:h-10" />
+      <span />
+    </Fragment>
+  ));
   return (
     <div>
       <Name>{view.name}</Name>
       {view.values.length === 0 ? (
-        <Empty />
+        spare === 0 ? (
+          <Empty />
+        ) : (
+          <div className="inline-grid grid-cols-[auto_auto] items-center gap-x-space-xs gap-y-1 pb-1">
+            {spareRows}
+            <div className="col-span-2 flex h-9 min-w-14 items-center justify-center rounded-lg border border-dashed border-outline-variant px-2 font-body-sm text-body-sm text-on-surface-variant/70 sm:h-10">
+              empty
+            </div>
+          </div>
+        )
       ) : (
         // A two-column grid, so every cell takes the width of the widest one,
         // like a real stack of equal boxes, with the top label beside it.
         <div className="inline-grid grid-cols-[auto_auto] items-center gap-x-space-xs gap-y-1 border-b-2 border-outline-variant pb-1">
+          {spareRows}
           {view.values
             .map((value, i) => ({ value, i }))
             .reverse()
             .map(({ value, i }) => (
               <Fragment key={i}>
                 <div
-                  className={`flex h-9 min-w-14 items-center justify-center rounded-lg px-2 font-code-md text-code-md font-semibold transition-all duration-300 motion-reduce:transition-none sm:h-10 ${
+                  className={`flex h-9 min-w-14 items-center justify-center rounded-lg px-2 font-code-md text-code-md font-semibold transition-all duration-300 motion-safe:animate-fade-in motion-reduce:transition-none sm:h-10 ${
                     CELL_TONES[view.tones?.[i] ?? "idle"]
                   }`}
                 >
@@ -425,4 +472,55 @@ export function StackColumn({ view }: { view: StackView }) {
       )}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// How much room each structure needs over a whole run
+// ---------------------------------------------------------------------------
+
+export interface TreeSize {
+  width: number;
+  height: number;
+}
+
+export interface GraphBounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  captions: boolean;
+}
+
+export interface StageReserve {
+  trees: Map<string, TreeSize>;
+  graphs: Map<string, GraphBounds>;
+  stacks: Map<string, number>;
+}
+
+/** The largest each tree, graph and stack gets in a run, so the picture can hold still between steps. */
+export function stageReserve(frames: Frame[]): StageReserve {
+  const reserve: StageReserve = { trees: new Map(), graphs: new Map(), stacks: new Map() };
+  for (const frame of frames) {
+    for (const tree of frame.trees) {
+      const { width, height } = layoutTree(tree);
+      const seen = reserve.trees.get(tree.name);
+      reserve.trees.set(tree.name, { width: Math.max(width, seen?.width ?? 0), height: Math.max(height, seen?.height ?? 0) });
+    }
+    for (const graph of frame.graphs) {
+      const b = graphBounds(graph);
+      if (!b) continue;
+      const seen = reserve.graphs.get(graph.name) ?? b;
+      reserve.graphs.set(graph.name, {
+        minX: Math.min(seen.minX, b.minX),
+        minY: Math.min(seen.minY, b.minY),
+        maxX: Math.max(seen.maxX, b.maxX),
+        maxY: Math.max(seen.maxY, b.maxY),
+        captions: seen.captions || b.captions,
+      });
+    }
+    for (const stack of frame.stacks) {
+      reserve.stacks.set(stack.name, Math.max(stack.values.length, reserve.stacks.get(stack.name) ?? 0));
+    }
+  }
+  return reserve;
 }

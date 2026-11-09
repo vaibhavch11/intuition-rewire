@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import {
   Pause,
   Play,
@@ -15,7 +15,7 @@ import { CELL_TONES, PointerTags } from "@/components/dsa/simulator/visuals";
 import { isPracticeProgram, PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
 import { PROGRAM_LOADERS } from "./loaders";
 import { formatField, parseField } from "./parseInput";
-import { GraphDiagram, ListDiagram, StackColumn, TreeDiagram } from "./StructureViews";
+import { GraphDiagram, ListDiagram, StackColumn, stageReserve, TreeDiagram, type StageReserve } from "./StructureViews";
 import {
   cell,
   formatValue,
@@ -28,7 +28,8 @@ import {
   type Program,
 } from "./types";
 
-const PLAY_MS = 1200;
+/** Long enough to read the note and watch the picture settle before the next step. */
+const PLAY_MS = 2000;
 
 const BAR_TONES: Record<CellTone, string> = {
   idle: "bg-outline-variant",
@@ -47,8 +48,11 @@ const cellBox =
 function Cell({ value, tone }: { value: unknown; tone?: CellTone }) {
   const empty = value === null;
   return (
-    <div className={`${cellBox} ${CELL_TONES[empty ? "empty" : tone ?? "idle"]}`}>
-      {empty ? "" : formatValue(value)}
+    <div className={`${cellBox} motion-safe:animate-fade-in ${CELL_TONES[empty ? "empty" : tone ?? "idle"]}`}>
+      {/* Keyed by value, so a changed value fades in rather than snapping. */}
+      <span key={String(value)} className="motion-safe:animate-fade-in">
+        {empty ? "" : formatValue(value)}
+      </span>
     </div>
   );
 }
@@ -70,7 +74,14 @@ function ArrayRow({ view }: { view: ArrayView }) {
     <div>
       <p className="mb-1 font-code-sm text-code-sm font-semibold text-on-surface-variant">{view.name}</p>
       <div className="flex w-max items-end gap-1.5">
-        {view.values.length === 0 && <Empty />}
+        {view.values.length === 0 && (
+          // The same height as a filled row (pointer tags above, index below).
+          <div className="flex flex-col">
+            <span className="h-6" />
+            <Empty />
+            <span className="mt-1 h-4" />
+          </div>
+        )}
         {view.values.map((value, i) => {
           const tone = view.tones?.[i];
           return (
@@ -167,6 +178,140 @@ function MapTable({ view }: { view: MapView }) {
   );
 }
 
+/** Everything one step draws. */
+function StageContent({ frame, reserve, full }: { frame: Frame; reserve: StageReserve; full?: boolean }) {
+  const stackOf = (name: string) => reserve.stacks.get(name);
+  return (
+    <div className={`flex w-max flex-col gap-space-lg ${full ? "min-w-full" : ""}`}>
+      {/* A stack sits beside a tree (a traversal's work list); otherwise it
+          goes below the arrays, so the input stays put as the stack grows. */}
+      {frame.trees.length > 0 && (
+        <div className="flex flex-wrap items-end gap-space-xl">
+          {frame.trees.map((tree) => (
+            <TreeDiagram key={tree.name} view={tree} reserve={reserve.trees.get(tree.name)} />
+          ))}
+          {frame.stacks.map((stack) => (
+            <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />
+          ))}
+        </div>
+      )}
+      {frame.graphs.length > 0 && (
+        <div className="flex flex-wrap items-end gap-space-xl">
+          {frame.graphs.map((graph) => (
+            <GraphDiagram key={graph.name} view={graph} reserve={reserve.graphs.get(graph.name)} />
+          ))}
+          {frame.trees.length === 0 &&
+            frame.stacks.map((stack) => <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />)}
+        </div>
+      )}
+      {frame.lists.map((list) => (
+        <ListDiagram key={list.name} view={list} />
+      ))}
+      {frame.grids.length > 0 && (
+        <div className="flex flex-wrap items-start gap-space-xl">
+          {frame.grids.map((grid) => (
+            <GridBox key={grid.name} view={grid} />
+          ))}
+        </div>
+      )}
+      {frame.arrays.map((array) => (
+        <ArrayRow key={array.name} view={array} />
+      ))}
+      {frame.maps.length > 0 && (
+        <div className="flex flex-wrap items-start gap-space-xl">
+          {frame.maps.map((map) => (
+            <MapTable key={map.name} view={map} />
+          ))}
+        </div>
+      )}
+      {frame.trees.length === 0 && frame.graphs.length === 0 && frame.stacks.length > 0 && (
+        <div className="flex flex-wrap items-end gap-space-xl">
+          {frame.stacks.map((stack) => (
+            <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A run longer than this is measured on evenly spaced steps. */
+const MEASURE_LIMIT = 300;
+
+function framesToMeasure(frames: Frame[]): Frame[] {
+  if (frames.length <= MEASURE_LIMIT) return frames;
+  return Array.from({ length: MEASURE_LIMIT }, (_, i) => frames[Math.round((i * (frames.length - 1)) / (MEASURE_LIMIT - 1))]);
+}
+
+/**
+ * The dry-run picture. Every step of the run is measured once, off screen, and
+ * the picture keeps the size of the largest from the first step to the last,
+ * so stepping through never resizes it or moves what's below it.
+ */
+function DryRunPicture({ frames, frame }: { frames: Frame[]; frame: Frame }) {
+  const reserve = useMemo(() => stageReserve(frames), [frames]);
+  const box = useRef<HTMLDivElement>(null);
+  const probes = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<{ frames: Frame[]; width: number; height: number } | null>(null);
+  const measured = size?.frames === frames;
+
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el || measured) return;
+    const measure = () => {
+      const kids = Array.from(probes.current?.children ?? []) as HTMLElement[];
+      const width = Math.max(0, ...kids.map((k) => k.offsetWidth));
+      const height = Math.max(0, ...kids.map((k) => k.offsetHeight));
+      // Zero means the simulator is off screen and not laid out yet: try again when it is.
+      if (width > 0) setSize({ frames, width, height });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [frames, measured]);
+
+  // Cells are a little larger from the sm breakpoint up, so crossing it re-measures.
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 640px)");
+    const remeasure = () => setSize(null);
+    query.addEventListener("change", remeasure);
+    return () => query.removeEventListener("change", remeasure);
+  }, []);
+
+  return (
+    // The explanation below narrates this picture for screen readers.
+    <div ref={box} aria-hidden className="dry-run-smooth relative overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
+      <div style={measured ? { minWidth: size.width, minHeight: size.height } : undefined}>
+        <StageContent frame={frame} reserve={reserve} full />
+      </div>
+      {!measured && (
+        <div ref={probes} className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden">
+          {framesToMeasure(frames).map((f, i) => (
+            <div key={i} className="w-max">
+              <StageContent frame={f} reserve={reserve} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** One step's variables. */
+function VarChips({ vars }: { vars: Frame["vars"] }) {
+  return (
+    <div className="flex flex-wrap gap-space-xs [grid-area:1/1]">
+      {vars.map(([name, value]) => (
+        <span key={name} className="rounded-md bg-surface-container px-space-sm py-0.5 font-code-sm text-code-sm">
+          <span className="text-on-surface-variant">{name} = </span>
+          <span className="font-semibold text-on-surface">{value}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 const controlButton =
   "inline-flex h-10 items-center justify-center rounded-lg bg-surface-container-high px-space-md text-on-surface transition-colors hover:bg-surface-variant disabled:cursor-not-allowed disabled:opacity-40";
 
@@ -211,6 +356,11 @@ export default function PracticeSimulator({
   }, [id]);
 
   const last = frames.length - 1;
+  const allNotes = useMemo(() => [...new Set(frames.map((f) => f.note))], [frames]);
+  const allVars = useMemo(
+    () => [...new Map(frames.map((f) => [JSON.stringify(f.vars), f.vars])).values()],
+    [frames]
+  );
 
   useEffect(() => {
     if (!playing) return;
@@ -384,71 +534,18 @@ export default function PracticeSimulator({
             )}
           </form>
 
-          {/* The explanation below narrates this picture for screen readers. */}
-          <div aria-hidden className="overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
-            <div className="flex w-max min-w-full flex-col gap-space-lg">
-              {/* A stack sits beside a tree (a traversal's work list); otherwise it
-                  goes below the arrays, so the input stays put as the stack grows. */}
-              {frame.trees.length > 0 && (
-                <div className="flex flex-wrap items-end gap-space-xl">
-                  {frame.trees.map((tree) => (
-                    <TreeDiagram key={tree.name} view={tree} />
-                  ))}
-                  {frame.stacks.map((stack) => (
-                    <StackColumn key={stack.name} view={stack} />
-                  ))}
-                </div>
-              )}
-              {frame.graphs.length > 0 && (
-                <div className="flex flex-wrap items-end gap-space-xl">
-                  {frame.graphs.map((graph) => (
-                    <GraphDiagram key={graph.name} view={graph} />
-                  ))}
-                  {frame.trees.length === 0 &&
-                    frame.stacks.map((stack) => <StackColumn key={stack.name} view={stack} />)}
-                </div>
-              )}
-              {frame.lists.map((list) => (
-                <ListDiagram key={list.name} view={list} />
-              ))}
-              {frame.grids.length > 0 && (
-                <div className="flex flex-wrap items-start gap-space-xl">
-                  {frame.grids.map((grid) => (
-                    <GridBox key={grid.name} view={grid} />
-                  ))}
-                </div>
-              )}
-              {frame.arrays.map((array) => (
-                <ArrayRow key={array.name} view={array} />
-              ))}
-              {frame.maps.length > 0 && (
-                <div className="flex flex-wrap items-start gap-space-xl">
-                  {frame.maps.map((map) => (
-                    <MapTable key={map.name} view={map} />
-                  ))}
-                </div>
-              )}
-              {frame.trees.length === 0 && frame.graphs.length === 0 && frame.stacks.length > 0 && (
-                <div className="flex flex-wrap items-end gap-space-xl">
-                  {frame.stacks.map((stack) => (
-                    <StackColumn key={stack.name} view={stack} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <DryRunPicture frames={frames} frame={frame} />
 
-          {frame.vars.length > 0 && (
-            <div className="flex flex-wrap gap-space-xs px-space-md pb-space-md sm:px-space-lg">
-              {frame.vars.map(([name, value]) => (
-                <span
-                  key={name}
-                  className="rounded-md bg-surface-container px-space-sm py-0.5 font-code-sm text-code-sm"
-                >
-                  <span className="text-on-surface-variant">{name} = </span>
-                  <span className="font-semibold text-on-surface">{value}</span>
-                </span>
+          {/* Every step's variables share one grid cell, hidden but for this
+              step's, so the strip is always as tall as its tallest step. */}
+          {frames.some((f) => f.vars.length > 0) && (
+            <div className="grid px-space-md pb-space-md sm:px-space-lg">
+              {allVars.map((vars, i) => (
+                <div key={i} aria-hidden className="invisible [grid-area:1/1]">
+                  <VarChips vars={vars} />
+                </div>
               ))}
+              <VarChips vars={frame.vars} />
             </div>
           )}
 
@@ -478,11 +575,19 @@ export default function PracticeSimulator({
                   Step {step + 1} / {frames.length}
                 </span>
               </div>
-              <p aria-live="polite" className="font-body-md text-body-md text-on-surface-variant">
-                <span key={`${step}-${frames.length}`} className="block motion-safe:animate-fade-in">
-                  <RichText text={frame.note} />
-                </span>
-              </p>
+              {/* Likewise for the notes: the panel is as tall as the longest one. */}
+              <div className="grid">
+                {allNotes.map((note) => (
+                  <p key={note} aria-hidden className="font-body-md text-body-md invisible [grid-area:1/1]">
+                    <RichText text={note} />
+                  </p>
+                ))}
+                <p aria-live="polite" className="font-body-md text-body-md text-on-surface-variant [grid-area:1/1]">
+                  <span key={`${step}-${frames.length}`} className="block motion-safe:animate-fade-in">
+                    <RichText text={frame.note} />
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
 

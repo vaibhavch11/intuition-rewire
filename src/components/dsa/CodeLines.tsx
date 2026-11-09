@@ -46,7 +46,7 @@ export default function CodeLines({
               key={i}
               data-line={n}
               data-active={active ? "true" : undefined}
-              className={`flex border-l-2 pr-space-lg transition-colors duration-150 ${
+              className={`flex border-l-2 pr-space-lg transition-colors duration-300 ${
                 active ? "border-[var(--editor-active-edge)] bg-[var(--editor-active)]" : "border-transparent"
               }`}
             >

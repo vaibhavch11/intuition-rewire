@@ -380,6 +380,39 @@
   }
 }
 
+/* The practice simulators' picture: unhurried colour changes, and whatever
+   appears in a step eases in instead of popping. */
+.dry-run-smooth [class*="transition-"] {
+  transition-duration: 500ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dry-run-smooth svg [data-node] {
+    animation: dry-run-node-in 450ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .dry-run-smooth svg line,
+  .dry-run-smooth svg path {
+    animation: dry-run-edge-in 450ms ease-out backwards;
+  }
+}
+
+@keyframes dry-run-node-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes dry-run-edge-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Long pages: a block far off screen skips layout and paint until it comes
    near, so phones don't lay out a whole lesson at once. --lazy-size is the
    stand-in height until the block has rendered once; after that the browser

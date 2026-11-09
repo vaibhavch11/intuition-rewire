@@ -327,7 +327,7 @@ export function DiagramLayer({
       {nodes.map((node) => {
         const tone = NODE_TONES[node.tone ?? "idle"];
         return (
-          <g key={node.id}>
+          <g key={node.id} data-node="">
             {node.ring && (
               <circle
                 cx={node.x}
