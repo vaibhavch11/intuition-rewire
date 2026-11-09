@@ -1,7 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import {
+  ChevronDown,
   Pause,
   Play,
   RotateCcw,
@@ -28,8 +29,12 @@ import {
   type Program,
 } from "./types";
 
-/** Long enough to read the note and watch the picture settle before the next step. */
-const PLAY_MS = 2000;
+/** Autoplay's time per step. Normal is long enough to read the note and watch the picture settle. */
+const SPEEDS = [
+  { label: "Slow", ms: 3200 },
+  { label: "Normal", ms: 2000 },
+  { label: "Fast", ms: 1000 },
+];
 
 const BAR_TONES: Record<CellTone, string> = {
   idle: "bg-outline-variant",
@@ -48,7 +53,7 @@ const cellBox =
 function Cell({ value, tone }: { value: unknown; tone?: CellTone }) {
   const empty = value === null;
   return (
-    <div className={`${cellBox} motion-safe:animate-fade-in ${CELL_TONES[empty ? "empty" : tone ?? "idle"]}`}>
+    <div data-tone={tone} className={`${cellBox} motion-safe:animate-fade-in ${CELL_TONES[empty ? "empty" : tone ?? "idle"]}`}>
       {/* Keyed by value, so a changed value fades in rather than snapping. */}
       <span key={String(value)} className="motion-safe:animate-fade-in">
         {empty ? "" : formatValue(value)}
@@ -178,61 +183,24 @@ function MapTable({ view }: { view: MapView }) {
   );
 }
 
-/** Everything one step draws. */
-function StageContent({ frame, reserve, full }: { frame: Frame; reserve: StageReserve; full?: boolean }) {
-  const stackOf = (name: string) => reserve.stacks.get(name);
-  return (
-    <div className={`flex w-max flex-col gap-space-lg ${full ? "min-w-full" : ""}`}>
-      {/* A stack sits beside a tree (a traversal's work list); otherwise it
-          goes below the arrays, so the input stays put as the stack grows. */}
-      {frame.trees.length > 0 && (
-        <div className="flex flex-wrap items-end gap-space-xl">
-          {frame.trees.map((tree) => (
-            <TreeDiagram key={tree.name} view={tree} reserve={reserve.trees.get(tree.name)} />
-          ))}
-          {frame.stacks.map((stack) => (
-            <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />
-          ))}
-        </div>
-      )}
-      {frame.graphs.length > 0 && (
-        <div className="flex flex-wrap items-end gap-space-xl">
-          {frame.graphs.map((graph) => (
-            <GraphDiagram key={graph.name} view={graph} reserve={reserve.graphs.get(graph.name)} />
-          ))}
-          {frame.trees.length === 0 &&
-            frame.stacks.map((stack) => <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />)}
-        </div>
-      )}
-      {frame.lists.map((list) => (
-        <ListDiagram key={list.name} view={list} />
-      ))}
-      {frame.grids.length > 0 && (
-        <div className="flex flex-wrap items-start gap-space-xl">
-          {frame.grids.map((grid) => (
-            <GridBox key={grid.name} view={grid} />
-          ))}
-        </div>
-      )}
-      {frame.arrays.map((array) => (
-        <ArrayRow key={array.name} view={array} />
-      ))}
-      {frame.maps.length > 0 && (
-        <div className="flex flex-wrap items-start gap-space-xl">
-          {frame.maps.map((map) => (
-            <MapTable key={map.name} view={map} />
-          ))}
-        </div>
-      )}
-      {frame.trees.length === 0 && frame.graphs.length === 0 && frame.stacks.length > 0 && (
-        <div className="flex flex-wrap items-end gap-space-xl">
-          {frame.stacks.map((stack) => (
-            <StackColumn key={stack.name} view={stack} reserve={stackOf(stack.name)} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+/** One step's drawing as separate blocks, keyed by kind and position so a block keeps its slot from step to step. */
+function stageBlocks(frame: Frame, reserve: StageReserve): Map<string, ReactNode> {
+  const blocks = new Map<string, ReactNode>();
+  frame.trees.forEach((v, i) => blocks.set(`tree:${i}`, <TreeDiagram view={v} reserve={reserve.trees.get(v.name)} />));
+  frame.graphs.forEach((v, i) => blocks.set(`graph:${i}`, <GraphDiagram view={v} reserve={reserve.graphs.get(v.name)} />));
+  frame.stacks.forEach((v, i) => blocks.set(`stack:${i}`, <StackColumn view={v} reserve={reserve.stacks.get(v.name)} />));
+  frame.lists.forEach((v, i) => blocks.set(`list:${i}`, <ListDiagram view={v} />));
+  frame.grids.forEach((v, i) => blocks.set(`grid:${i}`, <GridBox view={v} />));
+  frame.arrays.forEach((v, i) => blocks.set(`array:${i}`, <ArrayRow view={v} />));
+  frame.maps.forEach((v, i) => blocks.set(`map:${i}`, <MapTable view={v} />));
+  return blocks;
+}
+
+/** A stack sits beside a tree or graph (a traversal's work list); otherwise it comes last. */
+function slotRank(key: string, hasDiagram: boolean): number {
+  const kind = key.split(":")[0];
+  if (kind === "stack") return hasDiagram ? 2 : 7;
+  return { tree: 0, graph: 1, list: 3, grid: 4, array: 5, map: 6 }[kind] ?? 8;
 }
 
 /** A run longer than this is measured on evenly spaced steps. */
@@ -243,27 +211,142 @@ function framesToMeasure(frames: Frame[]): Frame[] {
   return Array.from({ length: MEASURE_LIMIT }, (_, i) => frames[Math.round((i * (frames.length - 1)) / (MEASURE_LIMIT - 1))]);
 }
 
+interface Slot {
+  key: string;
+  width: number;
+  height: number;
+}
+
+const STAGE_PAD = 16;
+const GAP_X = 32;
+const GAP_Y = 20;
+/** Smaller than this and labels stop being readable, so the box scrolls instead. */
+const MIN_ZOOM = 0.65;
+/** Enough height for the note beside a short picture. */
+const MIN_STAGE = 176;
+
+interface Packed {
+  width: number;
+  height: number;
+  at: Map<string, { x: number; y: number }>;
+}
+
+/** Fills columns left to right, each up to `limit` tall. Null if that runs past `width`. */
+function fillColumns(slots: Slot[], width: number, limit: number): Packed | null {
+  const at = new Map<string, { x: number; y: number }>();
+  let x = 0;
+  let y = 0;
+  let columnWidth = 0;
+  let height = 0;
+  for (const slot of slots) {
+    if (y > 0 && y + slot.height > limit) {
+      x += columnWidth + GAP_X;
+      y = 0;
+      columnWidth = 0;
+    }
+    if (x + slot.width > width) return null;
+    at.set(slot.key, { x, y });
+    columnWidth = Math.max(columnWidth, slot.width);
+    height = Math.max(height, y + slot.height);
+    y += slot.height + GAP_Y;
+  }
+  return { width: x + columnWidth, height, at };
+}
+
+/** Fills rows top to bottom, wrapping at `width`. */
+function fillRows(slots: Slot[], width: number): Packed {
+  const at = new Map<string, { x: number; y: number }>();
+  let x = 0;
+  let y = 0;
+  let row = 0;
+  let widest = 0;
+  for (const slot of slots) {
+    if (x > 0 && x + slot.width > width) {
+      y += row + GAP_Y;
+      x = 0;
+      row = 0;
+    }
+    at.set(slot.key, { x, y });
+    widest = Math.max(widest, x + slot.width);
+    row = Math.max(row, slot.height);
+    x += slot.width + GAP_X;
+  }
+  return { width: widest, height: y + row, at };
+}
+
+/**
+ * Places the slots in as little height as `width` allows, using whichever is
+ * shorter: rows of blocks, or columns where small blocks stack beside a taller
+ * one. A block wider than `width` scrolls inside the box.
+ */
+function packSlots(slots: Slot[], width: number): Packed {
+  const rows = fillRows(slots, width);
+  const columns = fillBestColumns(slots, width);
+  return !columns || (rows.width <= width && rows.height <= columns.height) ? rows : columns;
+}
+
+/** Columns as short as `width` allows, or null if no column height fits. */
+function fillBestColumns(slots: Slot[], width: number): Packed | null {
+  // The column heights worth trying: every run of consecutive blocks stacked.
+  const limits = new Set<number>();
+  slots.forEach((_, from) => {
+    let total = -GAP_Y;
+    for (let to = from; to < slots.length; to++) {
+      total += slots[to].height + GAP_Y;
+      limits.add(total);
+    }
+  });
+  const tallest = Math.max(...slots.map((slot) => slot.height));
+  for (const limit of [...limits].filter((l) => l >= tallest).sort((a, b) => a - b)) {
+    const packed = fillColumns(slots, width, limit);
+    if (packed) return packed;
+  }
+  return null;
+}
+
+/** The largest zoom at which the slots fit `width` by `height`. */
+function bestZoom(slots: Slot[], width: number, height: number): number {
+  for (let zoom = 1; zoom > MIN_ZOOM; zoom -= 0.05) {
+    const size = packSlots(slots, width / zoom);
+    if (size.width * zoom <= width && size.height * zoom <= height) return zoom;
+  }
+  return MIN_ZOOM;
+}
+
 /**
  * The dry-run picture. Every step of the run is measured once, off screen, and
- * the picture keeps the size of the largest from the first step to the last,
- * so stepping through never resizes it or moves what's below it.
+ * each block gets a slot the size of its largest step. The slots are placed
+ * to use the free width, and because they never change size neither does the
+ * picture: stepping through can't resize it or move anything around it.
+ * The whole picture scales down to fit its box when it has to, and scrolls
+ * inside the box only below the smallest readable size.
  */
-function DryRunPicture({ frames, frame }: { frames: Frame[]; frame: Frame }) {
+function DryRunPicture({ frames, frame, onHeight }: { frames: Frame[]; frame: Frame; onHeight: (height: number) => void }) {
   const reserve = useMemo(() => stageReserve(frames), [frames]);
   const box = useRef<HTMLDivElement>(null);
   const probes = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<{ frames: Frame[]; width: number; height: number } | null>(null);
-  const measured = size?.frames === frames;
+  const [run, setRun] = useState<{ frames: Frame[]; slots: Slot[] } | null>(null);
+  const [fit, setFit] = useState<{ zoom: number; packed: Packed } | null>(null);
+  const measured = run?.frames === frames;
 
   useLayoutEffect(() => {
     const el = box.current;
     if (!el || measured) return;
     const measure = () => {
-      const kids = Array.from(probes.current?.children ?? []) as HTMLElement[];
-      const width = Math.max(0, ...kids.map((k) => k.offsetWidth));
-      const height = Math.max(0, ...kids.map((k) => k.offsetHeight));
+      const sizes = new Map<string, { width: number; height: number }>();
+      probes.current?.querySelectorAll<HTMLElement>("[data-slot]").forEach((node) => {
+        const key = node.dataset.slot as string;
+        const seen = sizes.get(key);
+        // Rounded up: a slot a fraction too narrow would wrap its label onto a second line.
+        const { width, height } = node.getBoundingClientRect();
+        sizes.set(key, { width: Math.max(Math.ceil(width), seen?.width ?? 0), height: Math.max(Math.ceil(height), seen?.height ?? 0) });
+      });
       // Zero means the simulator is off screen and not laid out yet: try again when it is.
-      if (width > 0) setSize({ frames, width, height });
+      if (![...sizes.values()].some((size) => size.width > 0)) return;
+      const hasDiagram = [...sizes.keys()].some((key) => key.startsWith("tree:") || key.startsWith("graph:"));
+      const slots = [...sizes].map(([key, size]) => ({ key, ...size }));
+      slots.sort((a, b) => slotRank(a.key, hasDiagram) - slotRank(b.key, hasDiagram) || Number(a.key.split(":")[1]) - Number(b.key.split(":")[1]));
+      setRun({ frames, slots });
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -271,27 +354,78 @@ function DryRunPicture({ frames, frame }: { frames: Frame[]; frame: Frame }) {
     return () => observer.disconnect();
   }, [frames, measured]);
 
+  // Fit the slots to the box, now and whenever the box changes size.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el || !run) return;
+    const fit = () => {
+      const width = el.clientWidth - STAGE_PAD * 2;
+      const height = el.clientHeight - STAGE_PAD * 2;
+      if (width <= 0) return;
+      // The height the picture would like: as large as its width allows.
+      const widthZoom = bestZoom(run.slots, width, Infinity);
+      onHeight(Math.max(MIN_STAGE, Math.ceil(packSlots(run.slots, width / widthZoom).height * widthZoom) + STAGE_PAD * 2));
+      const zoom = bestZoom(run.slots, width, height);
+      setFit({ zoom, packed: packSlots(run.slots, width / zoom) });
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [run, onHeight]);
+
+  // When the picture has to scroll, keep the current step in view (never scrolls the page).
+  useEffect(() => {
+    const el = box.current;
+    if (!el || (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight)) return;
+    const target = el.querySelector('[data-tone="write"]') ?? el.querySelector('[data-tone="primary"]');
+    if (!target) return;
+    const outer = el.getBoundingClientRect();
+    const inner = target.getBoundingClientRect();
+    const across = inner.left < outer.left + STAGE_PAD || inner.right > outer.right - STAGE_PAD;
+    const down = inner.top < outer.top + STAGE_PAD || inner.bottom > outer.bottom - STAGE_PAD;
+    if (!across && !down) return;
+    el.scrollBy({
+      left: across ? inner.left - outer.left - outer.width / 2 + inner.width / 2 : 0,
+      top: down ? inner.top - outer.top - outer.height / 2 + inner.height / 2 : 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }, [frame, fit]);
+
   // Cells are a little larger from the sm breakpoint up, so crossing it re-measures.
   useEffect(() => {
     const query = window.matchMedia("(min-width: 640px)");
-    const remeasure = () => setSize(null);
+    const remeasure = () => setRun(null);
     query.addEventListener("change", remeasure);
     return () => query.removeEventListener("change", remeasure);
   }, []);
 
+  const blocks = stageBlocks(frame, reserve);
+
   return (
-    // The explanation below narrates this picture for screen readers.
-    <div ref={box} aria-hidden className="dry-run-smooth relative overflow-x-auto px-space-md py-space-lg sm:px-space-lg">
-      <div style={measured ? { minWidth: size.width, minHeight: size.height } : undefined}>
-        <StageContent frame={frame} reserve={reserve} full />
-      </div>
+    // The note beside it narrates this picture for screen readers.
+    <div ref={box} aria-hidden className="dry-run-smooth relative min-h-0 min-w-0 flex-1 overflow-auto" style={{ padding: STAGE_PAD }}>
+      {measured && fit && (
+        <div className="relative" style={{ zoom: fit.zoom, width: fit.packed.width, height: fit.packed.height }}>
+          {run.slots.map((slot) => {
+            const at = fit.packed.at.get(slot.key);
+            return (
+              <div key={slot.key} className="absolute" style={{ left: at?.x, top: at?.y, width: slot.width, height: slot.height }}>
+                {blocks.get(slot.key)}
+              </div>
+            );
+          })}
+        </div>
+      )}
       {!measured && (
         <div ref={probes} className="pointer-events-none invisible absolute left-0 top-0 h-0 w-0 overflow-hidden">
-          {framesToMeasure(frames).map((f, i) => (
-            <div key={i} className="w-max">
-              <StageContent frame={f} reserve={reserve} />
-            </div>
-          ))}
+          {framesToMeasure(frames).flatMap((f, i) =>
+            [...stageBlocks(f, reserve)].map(([key, node]) => (
+              <div key={`${i}-${key}`} data-slot={key} className="w-max">
+                {node}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
@@ -301,7 +435,7 @@ function DryRunPicture({ frames, frame }: { frames: Frame[]; frame: Frame }) {
 /** One step's variables. */
 function VarChips({ vars }: { vars: Frame["vars"] }) {
   return (
-    <div className="flex flex-wrap gap-space-xs [grid-area:1/1]">
+    <div className="flex flex-wrap content-start gap-space-xs [grid-area:1/1]">
       {vars.map(([name, value]) => (
         <span key={name} className="rounded-md bg-surface-container px-space-sm py-0.5 font-code-sm text-code-sm">
           <span className="text-on-surface-variant">{name} = </span>
@@ -335,6 +469,8 @@ export default function PracticeSimulator({
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [example, setExample] = useState(0);
+  const [speed, setSpeed] = useState(1);
+  const [stageHeight, setStageHeight] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isPracticeProgram(id)) return;
@@ -368,9 +504,9 @@ export default function PracticeSimulator({
       const next = Math.min(step + 1, last);
       setStep(next);
       if (next >= last) setPlaying(false);
-    }, PLAY_MS);
+    }, SPEEDS[speed].ms);
     return () => clearTimeout(timer);
-  }, [playing, step, last]);
+  }, [playing, step, last, speed]);
 
   // Keep the executing line in view inside the code panel (never scrolls the page).
   const codeBox = useRef<HTMLDivElement>(null);
@@ -443,15 +579,19 @@ export default function PracticeSimulator({
     <section
       aria-label={`Dry-run simulator: ${title}`}
       onKeyDown={onKeyDown}
-      className="render-lazy [--lazy-size:1280px] my-space-2xl overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
+      className="@container render-lazy [--lazy-size:800px] my-space-2xl overflow-clip rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
     >
-      <header className="border-b border-outline-variant/40 bg-surface-container-low px-space-md py-space-md sm:px-space-lg">
-        <span className="inline-flex items-center gap-space-xs rounded-full bg-secondary-container/40 px-space-sm py-0.5 font-label-tag text-label-tag uppercase text-on-secondary-container">
-          <SlidersHorizontal size={13} />
-          Dry-run simulator
-        </span>
-        <h3 className="font-headline-md text-headline-md mt-space-xs text-on-surface">{title}</h3>
-        <p className="font-body-sm text-body-sm mt-space-2xs text-on-surface-variant">
+      {/* On a wide card everything fits one screen: the picture gives way first. */}
+      <div className="flex flex-col @3xl:max-h-[calc(100dvh-var(--spacing-header-height)-1.5rem)]">
+      <header className="shrink-0 border-b border-outline-variant/40 bg-surface-container-low px-space-md py-space-sm sm:px-space-lg">
+        <div className="flex flex-wrap items-center gap-x-space-sm gap-y-space-2xs">
+          <span className="inline-flex items-center gap-space-xs rounded-full bg-secondary-container/40 px-space-sm py-0.5 font-label-tag text-label-tag uppercase text-on-secondary-container">
+            <SlidersHorizontal size={13} />
+            Dry-run simulator
+          </span>
+          <h3 className="font-headline-md text-[18px] leading-6 text-on-surface">{title}</h3>
+        </div>
+        <p className="font-body-sm text-body-sm mt-space-2xs truncate text-on-surface-variant">
           {caption ?? "Change the input, press Run, then step through the code one move at a time."}
         </p>
       </header>
@@ -476,7 +616,7 @@ export default function PracticeSimulator({
               event.preventDefault();
               run(texts, -1);
             }}
-            className="border-b border-outline-variant/40 px-space-md py-space-md sm:px-space-lg"
+            className="shrink-0 border-b border-outline-variant/40 px-space-md py-space-sm sm:px-space-lg"
           >
             <div className="flex flex-wrap items-end gap-space-md">
               {program.fields.map((field) => (
@@ -485,7 +625,7 @@ export default function PracticeSimulator({
                   {field.kind === "grid" ? (
                     <textarea
                       value={texts[field.key] ?? ""}
-                      rows={Math.min(5, (texts[field.key] ?? "").split("\n").length + 1)}
+                      rows={Math.min(3, (texts[field.key] ?? "").split("\n").length)}
                       spellCheck={false}
                       onChange={(e) => setTexts((t) => ({ ...t, [field.key]: e.target.value }))}
                       className="rounded-lg border border-outline-variant bg-surface-container-lowest px-space-sm py-space-xs font-code-md text-code-md text-on-surface outline-none focus:border-primary"
@@ -509,23 +649,23 @@ export default function PracticeSimulator({
                 <Play size={15} />
                 Run
               </button>
-            </div>
-            <div className="mt-space-sm flex flex-wrap items-center gap-space-xs">
-              <span className="font-label-md text-label-md text-on-surface-variant">Try:</span>
-              {program.examples.map((ex, i) => (
-                <button
-                  key={ex.label}
-                  type="button"
-                  onClick={() => loadExample(i)}
-                  className={`rounded-full border px-space-sm py-0.5 font-label-md text-label-md transition-colors ${
-                    i === example
-                      ? "border-primary bg-primary-fixed text-primary"
-                      : "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary"
-                  }`}
-                >
-                  {ex.label}
-                </button>
-              ))}
+              <div className="flex flex-wrap items-center gap-space-xs pb-1.5">
+                <span className="font-label-md text-label-md text-on-surface-variant">Try:</span>
+                {program.examples.map((ex, i) => (
+                  <button
+                    key={ex.label}
+                    type="button"
+                    onClick={() => loadExample(i)}
+                    className={`rounded-full border px-space-sm py-0.5 font-label-md text-label-md transition-colors ${
+                      i === example
+                        ? "border-primary bg-primary-fixed text-primary"
+                        : "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    {ex.label}
+                  </button>
+                ))}
+              </div>
             </div>
             {error && (
               <p role="alert" className="font-body-sm text-body-sm mt-space-sm text-error">
@@ -534,35 +674,16 @@ export default function PracticeSimulator({
             )}
           </form>
 
-          <DryRunPicture frames={frames} frame={frame} />
-
-          {/* Every step's variables share one grid cell, hidden but for this
-              step's, so the strip is always as tall as its tallest step. */}
-          {frames.some((f) => f.vars.length > 0) && (
-            <div className="grid px-space-md pb-space-md sm:px-space-lg">
-              {allVars.map((vars, i) => (
-                <div key={i} aria-hidden className="invisible [grid-area:1/1]">
-                  <VarChips vars={vars} />
-                </div>
-              ))}
-              <VarChips vars={frame.vars} />
+          {/* The picture, with what's happening beside it. */}
+          <div
+            className="flex min-h-0 flex-col @3xl:flex-row @3xl:[flex:0_1_var(--stage-h)]"
+            style={{ "--stage-h": `${stageHeight ?? MIN_STAGE}px` } as CSSProperties}
+          >
+            <div className="flex h-[var(--stage-h)] min-h-0 min-w-0 flex-1 @3xl:h-auto">
+              <DryRunPicture frames={frames} frame={frame} onHeight={setStageHeight} />
             </div>
-          )}
 
-          <div className="grid border-t border-outline-variant/40 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-            <div className="code-editor flex min-w-0 flex-col">
-              <div className="flex items-center justify-between gap-space-sm border-b border-white/10 bg-black/20 px-space-md py-1.5 font-label-md text-[12px] text-[var(--editor-muted)]">
-                <span className="inline-flex items-center gap-space-xs">
-                  <span aria-hidden className="h-2 w-2 rounded-full bg-[#f7df1e]" />
-                  JavaScript
-                </span>
-                <span className="font-code-sm tabular-nums">line {frame.line}</span>
-              </div>
-              <div ref={codeBox} className="max-h-80 overflow-y-auto">
-                <CodeLines code={program.code} language="javascript" activeLine={frame.line} size="sm" />
-              </div>
-            </div>
-            <div className="flex flex-col gap-space-xs p-space-md">
+            <div className="flex shrink-0 flex-col gap-space-sm overflow-y-auto border-t border-outline-variant/40 p-space-md @3xl:w-60 @3xl:border-l @3xl:border-t-0">
               <div className="flex items-center justify-between gap-space-sm">
                 <span
                   className={`font-label-md text-label-md font-semibold ${
@@ -571,11 +692,13 @@ export default function PracticeSimulator({
                 >
                   {frame.done ? "Result" : "What just happened"}
                 </span>
-                <span className="font-code-sm text-code-sm text-on-surface-variant">
-                  Step {step + 1} / {frames.length}
+                <span className="font-code-sm text-code-sm whitespace-nowrap text-on-surface-variant">
+                  {step + 1} / {frames.length}
                 </span>
               </div>
-              {/* Likewise for the notes: the panel is as tall as the longest one. */}
+
+              {/* Every step's note shares one grid cell, hidden but for this
+                  step's, so this is always as tall as the longest note. */}
               <div className="grid">
                 {allNotes.map((note) => (
                   <p key={note} aria-hidden className="font-body-md text-body-md invisible [grid-area:1/1]">
@@ -588,10 +711,35 @@ export default function PracticeSimulator({
                   </span>
                 </p>
               </div>
+
+              {/* Likewise for the variables. */}
+              {frames.some((f) => f.vars.length > 0) && (
+                <div className="grid">
+                  {allVars.map((vars, i) => (
+                    <div key={i} aria-hidden className="invisible [grid-area:1/1]">
+                      <VarChips vars={vars} />
+                    </div>
+                  ))}
+                  <VarChips vars={frame.vars} />
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-space-sm border-t border-outline-variant/40 px-space-md py-space-md sm:px-space-lg">
+          {/* The code, which can be folded away. */}
+          <details className="group shrink-0 border-t border-outline-variant/40" open>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-space-sm px-space-md py-space-xs font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:text-on-surface sm:px-space-lg [&::-webkit-details-marker]:hidden">
+              <span>
+                The code <span className="font-normal">· JavaScript · line {frame.line}</span>
+              </span>
+              <ChevronDown size={16} className="transition-transform duration-200 group-open:rotate-180" />
+            </summary>
+            <div ref={codeBox} className="code-editor max-h-48 overflow-y-auto">
+              <CodeLines code={program.code} language="javascript" activeLine={frame.line} size="sm" />
+            </div>
+          </details>
+
+          <div className="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center gap-space-sm border-t border-outline-variant/40 bg-surface-container-lowest px-space-md py-space-sm sm:px-space-lg">
             <button
               type="button"
               aria-label="Back to the first step"
@@ -643,6 +791,21 @@ export default function PracticeSimulator({
             >
               <SkipForward size={17} />
             </button>
+            <div role="group" aria-label="Playback speed" className="flex items-center gap-0.5 rounded-lg bg-surface-container-high p-0.5">
+              {SPEEDS.map((s, i) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  aria-pressed={speed === i}
+                  onClick={() => setSpeed(i)}
+                  className={`rounded-md px-space-sm py-1 font-label-md text-label-md transition-colors ${
+                    speed === i ? "bg-surface-container-lowest font-semibold text-on-surface shadow-sm" : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
             <input
               type="range"
               min={0}
@@ -658,6 +821,7 @@ export default function PracticeSimulator({
           </div>
         </>
       )}
+      </div>
     </section>
   );
 }
