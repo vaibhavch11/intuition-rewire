@@ -203,11 +203,7 @@ export function courseListJsonLd(courses: { name: string; path: string }[]) {
   };
 }
 
-/**
- * A lesson. The full text needs a free account, so it is marked as not freely
- * accessible, with the sign-in prompt (`.lesson-locked`) as the gated part —
- * Google's markup for registration walls.
- */
+/** A lesson. Every lesson is free to read in full, no account needed. */
 export function lessonJsonLd(lesson: {
   title: string;
   description: string;
@@ -229,8 +225,7 @@ export function lessonJsonLd(lesson: {
     ...(lesson.modifiedTime ? { dateModified: lesson.modifiedTime } : {}),
     author: ORGANIZATION,
     publisher: ORGANIZATION,
-    isAccessibleForFree: false,
-    hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".lesson-locked" },
+    isAccessibleForFree: true,
   };
 }
 

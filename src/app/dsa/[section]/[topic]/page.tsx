@@ -1,22 +1,16 @@
 import { cache } from "react";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getSections, getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
-import { lessonPreview } from "@/lib/dsa/preview";
 import { relatedCourses } from "@/lib/dsa/related";
 import { isThinLesson, lessonDescription, lessonTitle } from "@/lib/dsa/seo";
-import { getSignedInUser } from "@/lib/auth/session";
-import { isVerifiedSearchCrawler } from "@/lib/crawler";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { courseOgImage, lessonJsonLd, pageMetadata } from "@/lib/seo";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import DryRunPlayer from "@/components/DryRunPlayer";
 import JsonLd from "@/components/seo/JsonLd";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
-import LessonGate from "@/components/dsa/LessonGate";
 import LessonReactions from "@/components/dsa/LessonReactions";
 import RelatedCourses from "@/components/dsa/RelatedCourses";
 
@@ -59,16 +53,8 @@ export default async function TopicPage(
   const { section, topic } = result;
   const path = `/dsa/${section.slug}/${topic.slug}`;
 
+  // Every lesson is open to everyone; an account only adds progress tracking.
   const content = await loadLesson(sectionSlug, topicSlug);
-  // Everyone reads the opening; the whole lesson needs a free account. While sign-in isn't set up, nothing is held back.
-  const signedIn = !isSupabaseConfigured() || (await getSignedInUser()) !== null;
-  const preview = content && !signedIn ? lessonPreview(content.blocks) : null;
-  const gated = preview !== null && preview.rest.blocks > 0;
-  // Verified Google and Bing crawlers read the whole lesson, with the part a
-  // visitor signs up for inside `.lesson-locked` — the gated part named in the
-  // lesson's structured data (Google's flexible sampling for registration
-  // walls), so search indexes the full lesson without it being cloaking.
-  const crawler = gated && (await isVerifiedSearchCrawler(await headers()));
 
   const topicIndex = section.topics.findIndex((t) => t.slug === topic.slug);
   const prevTopic = section.topics[topicIndex - 1];
@@ -101,14 +87,7 @@ export default async function TopicPage(
           <hr className="mt-space-base mb-space-2xl border-outline-variant/50" />
 
           {content ? (
-            <>
-              <LessonBody blocks={preview ? preview.shown : content.blocks} />
-              {crawler && preview && (
-                <div className="lesson-locked">
-                  <LessonBody blocks={content.blocks.slice(preview.shown.length)} />
-                </div>
-              )}
-            </>
+            <LessonBody blocks={content.blocks} />
           ) : topic.explanation ? (
             <p className="font-body-lg text-body-lg text-on-surface-variant">
               {topic.explanation}
@@ -119,9 +98,7 @@ export default async function TopicPage(
             </p>
           )}
 
-          {gated && !crawler && <LessonGate path={path} rest={preview.rest} />}
-
-          {topic.trace && signedIn && (
+          {topic.trace && (
             <section className="mt-space-2xl">
               <h2 className="font-headline-md text-headline-md mb-space-md text-on-surface">
                 Dry Run

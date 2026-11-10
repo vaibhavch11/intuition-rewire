@@ -18,13 +18,13 @@ export const metadata: Metadata = pageMetadata({
 export const dynamic = "force-dynamic";
 
 const PERKS = [
-  { icon: BookOpen, title: "Every lesson stays free", text: "All courses, drawings and simulators are open to anyone with a free account." },
+  { icon: BookOpen, title: "Every lesson stays free", text: "All courses, drawings and simulators are open to everyone. A free account saves your progress." },
   { icon: Heart, title: "Pay what it's worth to you", text: "Support with any amount you choose — once, no subscription." },
   { icon: Sparkles, title: "Fund the next courses", text: "Your support pays for new courses like stacks, queues and trees." },
 ];
 
 const FAQ = [
-  { q: "Do I need to pay to use the site?", a: "No. Every lesson is free with an account. Paying is an optional way to support the project." },
+  { q: "Do I need to pay to use the site?", a: "No. Every lesson is free to read, with or without an account. An account only saves your progress, and paying is an optional way to support the project." },
   { q: "How do I pay?", a: "Checkout is handled by Razorpay. Amounts are in US dollars: pay by international card, or from India by UPI, Indian card or netbanking. Your payment details go to Razorpay, never to us." },
   { q: "Is it a subscription?", a: "No. It's a single payment, charged once. Nothing renews." },
   { q: "Can I get a refund?", a: "Yes, if something went wrong. See the refund policy for how and when." },

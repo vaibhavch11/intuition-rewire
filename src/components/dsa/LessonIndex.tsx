@@ -3,10 +3,10 @@
 import Link from "@/components/Link";
 import { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
-import { useStoredString } from "@/lib/browserStore";
-import { completedFrom, PROGRESS_KEY } from "@/lib/progress";
+import TrackProgressInvite from "@/components/dsa/TrackProgressInvite";
+import { useProgress } from "@/lib/progress";
 
 /** A small pulsing dot on the lesson being opened, until it arrives. */
 function PendingDot() {
@@ -43,7 +43,7 @@ export default function LessonIndex({
   totalTopics: number;
 }) {
   const [hidden, setHidden] = useState(false);
-  const raw = useStoredString(PROGRESS_KEY);
+  const { status, done } = useProgress(sectionSlug);
   const navRef = useRef<HTMLElement>(null);
 
   // Read from the URL rather than a prop, so switching lessons updates the
@@ -63,10 +63,6 @@ export default function LessonIndex({
     nav.scrollTop += box.top - navTop - (nav.clientHeight - box.height) / 2;
   }, []);
 
-  const done = useMemo(
-    () => new Set(completedFrom(raw, sectionSlug)),
-    [raw, sectionSlug]
-  );
   // Saved progress can still list lessons since removed in /admin, so only
   // lessons that are in the course now count.
   const finished = chapters.reduce(
@@ -115,21 +111,28 @@ export default function LessonIndex({
           >
             {sectionTitle}
           </Link>
-          <p className="font-body-sm text-body-sm mt-space-sm text-on-surface-variant">
-            {percent}% completed
-          </p>
-          <div
-            className="mt-space-xs h-1 overflow-hidden rounded-full bg-surface-container-highest"
-            role="progressbar"
-            aria-valuenow={percent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${sectionTitle} course progress`}
-          >
-            <div
-              className="h-full rounded-full bg-primary transition-[width]"
-              style={{ width: `${percent}%` }}
-            />
+          {/* Tracking is for signed-in readers; everyone else gets an invitation.
+              The same height either way, so the list below doesn't jump. */}
+          <div className="mt-space-sm min-h-[2.125rem]">
+            {status === "ready" && (
+              <>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">{percent}% completed</p>
+                <div
+                  className="mt-space-xs h-1 overflow-hidden rounded-full bg-surface-container-highest"
+                  role="progressbar"
+                  aria-valuenow={percent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${sectionTitle} course progress`}
+                >
+                  <div
+                    className="h-full rounded-full bg-primary transition-[width]"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </>
+            )}
+            {status === "signed-out" && <TrackProgressInvite text="to track your progress through this course." />}
           </div>
         </div>
 

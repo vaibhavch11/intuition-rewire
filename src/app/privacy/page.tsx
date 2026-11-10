@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <LegalDocument title="Privacy Policy" updated="15 October 2026">
+    <LegalDocument title="Privacy Policy" updated="10 November 2026">
       <LegalSection heading="The short version">
         <p>
           We collect what we need to sign you in, see how the site is used
@@ -42,8 +42,11 @@ export default function PrivacyPage() {
             this is linked to your account ID, never to your email or name.
           </li>
           <li>
-            <strong>Your learning progress and reactions</strong>, which stay
-            in your own browser&apos;s storage and are never sent to us.
+            <strong>Your learning progress</strong>, if you sign in: which
+            lessons you have marked complete, saved to your account so it
+            follows you between devices. Without an account nothing is
+            tracked. <strong>Reactions</strong> to lessons stay in your own
+            browser&apos;s storage and are never sent to us.
           </li>
           <li>
             <strong>Technical logs.</strong> Our hosting provider processes IP
@@ -54,8 +57,8 @@ export default function PrivacyPage() {
 
       <LegalSection heading="How we use it">
         <p>
-          To create and sign in to your account, give you access to lessons,
-          see which lessons help and where the site needs work, and protect
+          To create and sign in to your account, save your progress through
+          the courses, see which lessons help and where the site needs work, and protect
           the service against misuse. Nothing else.
         </p>
       </LegalSection>

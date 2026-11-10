@@ -19,6 +19,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import RelatedCourses from "@/components/dsa/RelatedCourses";
 import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
+import CourseProgressInvite from "@/components/dsa/CourseProgressInvite";
 import ExpandableIntro from "@/components/dsa/ExpandableIntro";
 import RichText from "@/components/dsa/RichText";
 import DryRunEngine from "@/components/dsa/simulator/DryRunEngine";
@@ -267,6 +268,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
           <h2 className="font-headline-md text-headline-md text-on-surface">
             Course Contents
           </h2>
+          <CourseProgressInvite />
 
           {chapters.length === 0 && (
             <p className="font-body-md text-body-md mt-space-base text-on-surface-variant">

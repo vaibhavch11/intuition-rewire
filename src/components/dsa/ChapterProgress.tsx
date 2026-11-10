@@ -1,8 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useStoredString } from "@/lib/browserStore";
-import { completedFrom, PROGRESS_KEY } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
 
 export default function ChapterProgress({
   sectionSlug,
@@ -11,11 +9,9 @@ export default function ChapterProgress({
   sectionSlug: string;
   topicSlugs: string[];
 }) {
-  const raw = useStoredString(PROGRESS_KEY);
-  const done = useMemo(
-    () => new Set(completedFrom(raw, sectionSlug)),
-    [raw, sectionSlug]
-  );
+  const { status, done } = useProgress(sectionSlug);
+  // Only signed-in readers track progress.
+  if (status !== "ready") return null;
 
   const finished = topicSlugs.filter((slug) => done.has(slug)).length;
   const percent =

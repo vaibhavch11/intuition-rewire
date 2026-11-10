@@ -1,11 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  handlesAuth,
-  isLessonPath,
-  safeNextPath,
-  SIGNED_OUT_ONLY,
-} from "@/lib/auth/paths";
+import { handlesAuth, safeNextPath, SIGNED_OUT_ONLY } from "@/lib/auth/paths";
 import {
   isSupabaseConfigured,
   SUPABASE_PUBLISHABLE_KEY,
@@ -22,10 +17,7 @@ const NO_STORE = "private, no-store";
  */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
-  if (
-    !isSupabaseConfigured() ||
-    !(isLessonPath(pathname) || handlesAuth(pathname))
-  ) {
+  if (!isSupabaseConfigured() || !handlesAuth(pathname)) {
     return NextResponse.next();
   }
 

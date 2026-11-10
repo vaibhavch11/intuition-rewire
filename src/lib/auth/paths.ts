@@ -1,8 +1,4 @@
-/**
- * Lessons (`/dsa/<course>/<lesson>`). Everyone — search engines included —
- * sees a lesson's opening; the rest needs a free account. The homepage, the
- * course list and each course page stay fully public.
- */
+/** Lessons (`/dsa/<course>/<lesson>`): open to everyone; signing in adds progress tracking. */
 export function isLessonPath(pathname: string): boolean {
   return /^\/dsa\/[^/]+\/[^/]+/.test(pathname);
 }

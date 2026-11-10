@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import TrackProgressInvite from "@/components/dsa/TrackProgressInvite";
 import { useStoredString, writeStored } from "@/lib/browserStore";
-import { completedFrom, PROGRESS_KEY, setTopicComplete } from "@/lib/progress";
+import { setTopicComplete, useProgress } from "@/lib/progress";
 
 const RATINGS = [
   { value: 1, face: "😞", label: "Not helpful" },
@@ -29,11 +29,8 @@ export default function LessonFooter({
   prev: Neighbour | null;
   next: Neighbour | null;
 }) {
-  const progressRaw = useStoredString(PROGRESS_KEY);
-  const completed = useMemo(
-    () => completedFrom(progressRaw, sectionSlug).includes(topicSlug),
-    [progressRaw, sectionSlug, topicSlug]
-  );
+  const { status, done } = useProgress(sectionSlug);
+  const completed = done.has(topicSlug);
 
   const ratingKey = `ir:rating:${sectionSlug}/${topicSlug}`;
   const ratingRaw = useStoredString(ratingKey);
@@ -63,18 +60,21 @@ export default function LessonFooter({
         )}
       </div>
 
-      <div className="mt-space-lg flex justify-end">
-        <label className="font-body-md text-body-md flex cursor-pointer items-center gap-space-sm text-on-surface-variant">
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={(e) =>
-              setTopicComplete(sectionSlug, topicSlug, e.target.checked)
-            }
-            className="h-4 w-4 accent-primary"
-          />
-          Mark completed
-        </label>
+      <div className="mt-space-lg flex min-h-6 justify-end">
+        {status === "ready" && (
+          <label className="font-body-md text-body-md flex cursor-pointer items-center gap-space-sm text-on-surface-variant">
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={(e) =>
+                setTopicComplete(sectionSlug, topicSlug, e.target.checked)
+              }
+              className="h-4 w-4 accent-primary"
+            />
+            Mark completed
+          </label>
+        )}
+        {status === "signed-out" && <TrackProgressInvite text="to mark lessons complete and track your progress." />}
       </div>
 
       <div className="mt-space-xl border-t border-outline-variant/50 pt-space-lg text-center">
