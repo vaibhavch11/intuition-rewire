@@ -14,14 +14,14 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/#learning-path", label: "Roadmap" },
   { href: "/dsa", label: "Visualizer & Lessons" },
-  { href: "/dsa/arrays#dry-run-engine", label: "Dry-Run Engine" },
+  { href: "/#water-challenge", label: "Dry-Run Engine" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 const LEARNING_PATH = "/#learning-path";
 
 /** Page sections that light up their own nav link while you're reading them. */
-const SPIED_SECTIONS = ["learning-path", "dry-run-engine"];
+const SPIED_SECTIONS = ["learning-path", "water-challenge"];
 
 /**
  * Which spied sections cross a thin band near the top of the screen — where
@@ -62,9 +62,10 @@ function useSectionsInView(pathname: string): Set<string> {
 }
 
 function activeHref(pathname: string, inView: Set<string>): string | null {
-  if (pathname === "/") return inView.has("learning-path") ? "/#learning-path" : "/";
-  if (/^\/dsa\/[^/]+$/.test(pathname) && inView.has("dry-run-engine")) {
-    return "/dsa/arrays#dry-run-engine";
+  if (pathname === "/") {
+    // The Dry-Run Engine link is the homepage's water container challenge.
+    if (inView.has("water-challenge")) return "/#water-challenge";
+    return inView.has("learning-path") ? "/#learning-path" : "/";
   }
   if (pathname === "/dsa" || pathname.startsWith("/dsa/")) return "/dsa";
   if (pathname.startsWith("/pricing")) return "/pricing";
