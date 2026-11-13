@@ -1,5 +1,6 @@
 import type { Section, SectionCategory } from "../types";
 import { arraysSection } from "./arrays";
+import { binarySearchTreeSection } from "./binary-search-tree";
 import { binaryTreeSection } from "./binary-tree";
 import { dynamicProgrammingSection } from "./dynamic-programming";
 import { graphSection } from "./graph";
@@ -49,12 +50,7 @@ export const builtInSections: Section[] = [
   stackSection,
   queueSection,
   binaryTreeSection,
-  placeholderSection(
-    "binary-search-tree",
-    "Binary Search Tree",
-    "A binary tree with an ordering invariant that makes search, insert, and delete O(log n).",
-    "data-structure"
-  ),
+  binarySearchTreeSection,
   heapSection,
   graphSection,
   placeholderSection(
