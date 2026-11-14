@@ -57,8 +57,8 @@ export interface OgImage {
   alt: string;
 }
 export const DEFAULT_OG_IMAGE: OgImage = {
-  url: "/og/default.png",
-  alt: "IntuitionRewire — learn DSA by watching it run",
+  url: "/og/default.png?v=2",
+  alt: "IntuitionRewire — master DSA by watching it run: visual lessons, dry-run simulators and interview questions",
 };
 /** A course's own preview image (its name on the brand background), or the default. */
 export function courseOgImage(sectionSlug: string, sectionTitle: string): OgImage {
