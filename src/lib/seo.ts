@@ -63,7 +63,7 @@ export const DEFAULT_OG_IMAGE: OgImage = {
 /** A course's own preview image (its name on the brand background), or the default. */
 export function courseOgImage(sectionSlug: string, sectionTitle: string): OgImage {
   return OG_COURSE_IMAGES.has(sectionSlug)
-    ? { url: `/og/${sectionSlug}.png`, alt: `${sectionTitle} — DSA patterns and interview questions on IntuitionRewire` }
+    ? { url: `/og/${sectionSlug}.png?v=2`, alt: `${sectionTitle} — DSA patterns and interview questions on IntuitionRewire` }
     : DEFAULT_OG_IMAGE;
 }
 
