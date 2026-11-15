@@ -1,8 +1,7 @@
-import { ArrowDown, Play, SquareTerminal, Cpu, Brain } from "lucide-react";
+import { ArrowDown, Play } from "lucide-react";
 import HeroParticles from "@/components/home/HeroParticles";
 import LearningPathSection from "@/components/home/LearningPathSection";
 import WaterContainerSimulator from "@/components/home/WaterContainerSimulator";
-import ComparisonSection from "@/components/home/ComparisonSection";
 import HardwareTeaserSection from "@/components/home/HardwareTeaserSection";
 import FinalCTA from "@/components/home/FinalCTA";
 import ProductTourSection from "@/components/home/ProductTourSection";
@@ -17,12 +16,6 @@ export const metadata = pageMetadata({
     "Learn data structures and algorithms by watching them run: hand-drawn lessons, step-by-step dry-run simulators and interview problems in four languages.",
   path: "/",
 });
-
-const HIGHLIGHTS = [
-  { icon: SquareTerminal, value: "100%", label: "Visual dry-runs" },
-  { icon: Cpu, value: "RAM-level", label: "Hardware intuition" },
-  { icon: Brain, value: "Zero", label: "Templates to memorize" },
-];
 
 export default async function Home() {
   // Counts only, so the full curriculum never reaches the browser bundle.
@@ -61,27 +54,18 @@ export default async function Home() {
             <HeroParticles />
           </div>
 
-          <section className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop pt-space-2xl pb-space-xl flex flex-col items-center text-center">
-            <div className="inline-flex items-center gap-space-xs px-space-md py-space-2xs rounded-full border border-primary/15 bg-primary-fixed/50 mb-space-lg motion-safe:animate-fade-up">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-label-tag text-label-tag text-primary uppercase tracking-wider">
-                Intuition Over Rote Memorization
-              </span>
-            </div>
-
-            <h1 className="font-headline-xl text-headline-xl text-on-surface max-w-4xl tracking-tight motion-safe:animate-fade-up [animation-delay:80ms]">
-              Rewire Your Intuition for{" "}
-              <span className="text-primary-container">Algorithms</span> &amp;
-              Memory Physics
+          <section className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop pt-space-2xl pb-space-2xl flex flex-col items-center text-center">
+            <h1 className="font-headline-xl text-headline-xl text-on-surface max-w-4xl tracking-tight motion-safe:animate-fade-up">
+              Learn DSA by{" "}
+              <span className="text-primary-container">Watching It Run</span>
             </h1>
 
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-space-md mb-space-xl motion-safe:animate-fade-up [animation-delay:160ms]">
-              Stop blindly memorizing LeetCode templates. Build visceral
-              hardware-level intuition through step-by-step problem dry-runs, RAM
-              spatial locality, and interactive data structure anatomy.
+            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-space-md mb-space-xl motion-safe:animate-fade-up [animation-delay:80ms]">
+              Step-by-step dry runs, hand-drawn lessons and real interview
+              questions, so you understand algorithms instead of memorizing them.
             </p>
 
-            <div className="mb-space-2xl flex w-full flex-col items-stretch justify-center gap-space-sm sm:w-auto sm:flex-row sm:items-center sm:gap-space-md motion-safe:animate-fade-up [animation-delay:240ms]">
+            <div className="flex w-full flex-col items-stretch justify-center gap-space-sm sm:w-auto sm:flex-row sm:items-center sm:gap-space-md motion-safe:animate-fade-up [animation-delay:160ms]">
               <HashLink
                 href="#learning-path"
                 className="group inline-flex h-12 items-center justify-center gap-space-sm rounded-xl bg-primary-container px-space-lg font-label-md text-[15px] font-semibold text-on-primary shadow-[0_10px_24px_-10px_rgba(79,70,229,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[0_14px_28px_-10px_rgba(53,37,205,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -99,20 +83,6 @@ export default async function Home() {
                 Try the Water Challenge
               </HashLink>
             </div>
-
-            <dl className="grid w-full max-w-4xl grid-cols-1 divide-y divide-outline-variant/60 overflow-hidden rounded-2xl border border-outline-variant/70 bg-surface-container-lowest/95 text-left shadow-[0_1px_2px_rgba(19,27,46,0.04),0_18px_40px_-24px_rgba(19,27,46,0.25)] lg:bg-surface-container-lowest/85 lg:backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0 motion-safe:animate-fade-up [animation-delay:320ms]">
-              {HIGHLIGHTS.map(({ icon: Icon, value, label }) => (
-                <div key={label} className="flex items-center gap-space-md px-space-lg py-space-md sm:py-space-lg">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-fixed/60 text-primary ring-1 ring-inset ring-primary/10">
-                    <Icon size={20} strokeWidth={1.8} />
-                  </span>
-                  <div className="flex min-w-0 flex-col-reverse">
-                    <dt className="font-body-sm text-body-sm text-on-surface-variant">{label}</dt>
-                    <dd className="text-[22px] font-semibold leading-7 tracking-tight text-on-surface">{value}</dd>
-                  </div>
-                </div>
-              ))}
-            </dl>
           </section>
         </div>
 
@@ -125,9 +95,6 @@ export default async function Home() {
         </div>
         <div className="reveal">
           <WaterContainerSimulator />
-        </div>
-        <div className="reveal">
-          <ComparisonSection />
         </div>
         <div className="reveal">
           <HardwareTeaserSection />
