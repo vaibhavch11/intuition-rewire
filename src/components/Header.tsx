@@ -11,9 +11,7 @@ import LogoMark, { Wordmark } from "@/components/LogoMark";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
   { href: "/#learning-path", label: "Roadmap" },
-  { href: "/dsa", label: "Visualizer & Lessons" },
   { href: "/#water-challenge", label: "Dry-Run Engine" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -98,8 +96,10 @@ export default function Header() {
               <Wordmark />
             </span>
           </Link>
+        </div>
 
-          <nav className="hidden lg:flex items-center gap-space-xs">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-space-md">
+          <nav className="hidden lg:flex shrink-0 items-center gap-space-xs">
             {NAV_LINKS.map((link) => {
               const active = link.href === current;
               return (
@@ -118,9 +118,7 @@ export default function Header() {
               );
             })}
           </nav>
-        </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-space-md">
           <SearchPalette />
 
           <div className="flex shrink-0 items-center gap-space-sm pl-space-xs">

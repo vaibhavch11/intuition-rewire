@@ -9,7 +9,7 @@ export default function SectionHeader({
   lead,
   align = "center",
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   icon?: LucideIcon;
   title: ReactNode;
   lead?: ReactNode;
@@ -17,11 +17,13 @@ export default function SectionHeader({
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-xl"}>
-      <span className="inline-flex items-center gap-space-xs rounded-full border border-primary/15 bg-primary-fixed/50 px-space-md py-1 font-label-tag text-label-tag uppercase tracking-wider text-primary">
-        {Icon && <Icon size={14} aria-hidden />}
-        {eyebrow}
-      </span>
-      <h2 className="mt-space-md font-headline-xl text-headline-xl-mobile tracking-tight text-on-surface lg:text-headline-xl">
+      {eyebrow && (
+        <span className="inline-flex items-center gap-space-xs rounded-full border border-primary/15 bg-primary-fixed/50 px-space-md py-1 font-label-tag text-label-tag uppercase tracking-wider text-primary">
+          {Icon && <Icon size={14} aria-hidden />}
+          {eyebrow}
+        </span>
+      )}
+      <h2 className={`${eyebrow ? "mt-space-md " : ""}font-headline-xl text-headline-xl-mobile tracking-tight text-on-surface lg:text-headline-xl`}>
         {title}
       </h2>
       {lead && (

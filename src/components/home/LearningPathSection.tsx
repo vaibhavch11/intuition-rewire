@@ -103,11 +103,10 @@ export default function LearningPathSection({
   ).filter((s): s is NonNullable<typeof s> => Boolean(s));
 
   return (
-    <section className="w-full bg-surface-container-low/60 py-space-2xl" id="learning-path">
+    <section className="home-band w-full py-space-2xl" id="learning-path">
       <div className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop">
         <div className="text-center max-w-3xl mx-auto mb-space-xl">
           <SectionHeader
-            eyebrow="The ultimate DSA roadmap"
             title={
               <>
                 Structured <span className="text-primary-container">Learning Path</span>
