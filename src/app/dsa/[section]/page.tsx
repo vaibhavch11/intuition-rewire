@@ -20,10 +20,7 @@ import RelatedCourses from "@/components/dsa/RelatedCourses";
 import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
 import CourseProgressInvite from "@/components/dsa/CourseProgressInvite";
-import ExpandableIntro from "@/components/dsa/ExpandableIntro";
 import RichText from "@/components/dsa/RichText";
-import DryRunEngine from "@/components/dsa/simulator/DryRunEngine";
-import { getSimulation } from "@/components/dsa/simulator/simulations";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Fundamental:
@@ -137,7 +134,6 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
   const hasIntro =
     (section.overview?.length ?? 0) > 0 ||
     (section.requirements?.length ?? 0) > 0;
-  const simulation = getSimulation(section.slug);
   const related = relatedCourses(section.slug, await getSections());
 
   return (
@@ -196,14 +192,6 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
           </ul>
         </header>
 
-        {/* After the course intro, sized to the reading column. */}
-        {simulation && (
-          <section id="dry-run-engine" className="mt-space-lg">
-            {/* Keyed so switching courses never carries a step index over. */}
-            <DryRunEngine key={section.slug} simulation={simulation} />
-          </section>
-        )}
-
         {section.outcomes && section.outcomes.length > 0 && (
           <section className="mt-space-lg rounded-xl border border-outline-variant/40 bg-surface-container-low p-space-lg">
             <h2 className="font-headline-md text-headline-md text-on-surface">
@@ -224,7 +212,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
 
         {hasIntro && (
           <div className="mt-space-xl">
-            <ExpandableIntro>
+            <section>
               {section.overview && section.overview.length > 0 && (
                 <>
                   <h2 className="font-headline-md text-headline-md text-on-surface">
@@ -260,7 +248,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
                   </ul>
                 </>
               )}
-            </ExpandableIntro>
+            </section>
           </div>
         )}
 
