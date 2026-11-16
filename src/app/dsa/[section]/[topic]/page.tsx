@@ -1,8 +1,14 @@
 import { cache } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getSections, getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
+import { isFreeCourse } from "@/lib/dsa/access";
+import { lessonPreview } from "@/lib/dsa/preview";
+import { getSignedInUser } from "@/lib/auth/session";
+import { isVerifiedSearchCrawler } from "@/lib/crawler";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { relatedCourses } from "@/lib/dsa/related";
 import { isThinLesson, lessonDescription, lessonTitle } from "@/lib/dsa/seo";
 import { courseOgImage, lessonJsonLd, pageMetadata } from "@/lib/seo";
@@ -11,6 +17,7 @@ import DryRunPlayer from "@/components/DryRunPlayer";
 import JsonLd from "@/components/seo/JsonLd";
 import LessonBody from "@/components/dsa/LessonBody";
 import LessonFooter from "@/components/dsa/LessonFooter";
+import LessonGate from "@/components/dsa/LessonGate";
 import LessonReactions from "@/components/dsa/LessonReactions";
 import RelatedCourses from "@/components/dsa/RelatedCourses";
 
@@ -53,8 +60,18 @@ export default async function TopicPage(
   const { section, topic } = result;
   const path = `/dsa/${section.slug}/${topic.slug}`;
 
-  // Every lesson is open to everyone; an account only adds progress tracking.
   const content = await loadLesson(sectionSlug, topicSlug);
+  // Free courses are open to everyone. Every other lesson shows its opening,
+  // and the rest needs a free account. While sign-in isn't set up, nothing is held back.
+  const free = isFreeCourse(section.slug);
+  const locked = !free && isSupabaseConfigured() && (await getSignedInUser()) === null;
+  const preview = locked && content ? lessonPreview(content.blocks) : null;
+  // Verified Google and Bing crawlers read the whole lesson, with the part a
+  // visitor signs up for inside `.lesson-locked` — the gated part named in the
+  // lesson's structured data (Google's flexible sampling for registration
+  // walls), so search indexes the full lesson without it being cloaking.
+  const crawler = preview !== null && preview.rest.blocks > 0 && (await isVerifiedSearchCrawler(await headers()));
+  const signedIn = !locked || crawler;
 
   const topicIndex = section.topics.findIndex((t) => t.slug === topic.slug);
   const prevTopic = section.topics[topicIndex - 1];
@@ -87,8 +104,15 @@ export default async function TopicPage(
           <hr className="mt-space-base mb-space-2xl border-outline-variant/50" />
 
           {content ? (
-            <LessonBody blocks={content.blocks} />
-          ) : topic.explanation ? (
+            <>
+              <LessonBody blocks={preview ? preview.shown : content.blocks} />
+              {crawler && preview && (
+                <div className="lesson-locked">
+                  <LessonBody blocks={content.blocks.slice(preview.shown.length)} />
+                </div>
+              )}
+            </>
+          ) : locked ? null : topic.explanation ? (
             <p className="font-body-lg text-body-lg text-on-surface-variant">
               {topic.explanation}
             </p>
@@ -98,7 +122,9 @@ export default async function TopicPage(
             </p>
           )}
 
-          {topic.trace && (
+          {!signedIn && <LessonGate path={path} rest={preview?.rest.blocks ? preview.rest : null} />}
+
+          {topic.trace && signedIn && (
             <section className="mt-space-2xl">
               <h2 className="font-headline-md text-headline-md mb-space-md text-on-surface">
                 Dry Run
@@ -107,7 +133,7 @@ export default async function TopicPage(
             </section>
           )}
 
-          {topic.challengeId && (
+          {topic.challengeId && signedIn && (
             <section className="mt-space-2xl rounded-xl border border-dashed border-outline-variant p-space-lg">
               <h2 className="font-headline-md text-headline-md text-on-surface">
                 Try it yourself
@@ -147,6 +173,7 @@ export default async function TopicPage(
                 image: courseOgImage(section.slug, section.title),
                 courseName: section.title,
                 modifiedTime: content.updatedAt,
+                free,
               })}
             />
           )}

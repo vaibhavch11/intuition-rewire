@@ -18,6 +18,9 @@ function sharedSeconds(request, url) {
   if (request.headers.has("rsc") || url.searchParams.has("_rsc")) return 0;
   // Signed-in readers (Supabase's sb-* cookies) get pages of their own.
   if (/(?:^|;\s*)sb-/.test(request.headers.get("cookie") ?? "")) return 0;
+  // Verified search crawlers are shown whole lessons (src/lib/crawler.ts), so
+  // their requests must never fill the cache that signed-out visitors read from.
+  if (/Googlebot|Google-InspectionTool|GoogleOther|Storebot-Google|bingbot/i.test(request.headers.get("user-agent") ?? "")) return 0;
   if (url.pathname === "/sitemap.xml" || url.pathname === "/robots.txt") return SITEMAP_SECONDS;
   if (PAGES.has(url.pathname) || url.pathname.startsWith("/dsa/")) return PAGE_SECONDS;
   return 0;

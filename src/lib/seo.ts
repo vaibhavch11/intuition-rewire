@@ -203,7 +203,12 @@ export function courseListJsonLd(courses: { name: string; path: string }[]) {
   };
 }
 
-/** A lesson. Every lesson is free to read in full, no account needed. */
+/**
+ * A lesson. Free courses are open to all. Every other lesson's full text needs
+ * a free account, so it is marked as not freely accessible, with the sign-in
+ * prompt (`.lesson-locked`) as the gated part — Google's markup for
+ * registration walls.
+ */
 export function lessonJsonLd(lesson: {
   title: string;
   description: string;
@@ -211,6 +216,7 @@ export function lessonJsonLd(lesson: {
   image: OgImage;
   courseName: string;
   modifiedTime?: string;
+  free: boolean;
 }) {
   return {
     "@context": "https://schema.org",
@@ -225,7 +231,12 @@ export function lessonJsonLd(lesson: {
     ...(lesson.modifiedTime ? { dateModified: lesson.modifiedTime } : {}),
     author: ORGANIZATION,
     publisher: ORGANIZATION,
-    isAccessibleForFree: true,
+    ...(lesson.free
+      ? { isAccessibleForFree: true }
+      : {
+          isAccessibleForFree: false,
+          hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".lesson-locked" },
+        }),
   };
 }
 

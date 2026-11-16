@@ -21,6 +21,9 @@ import type { Difficulty, Topic } from "@/lib/dsa/types";
 import ChapterProgress from "@/components/dsa/ChapterProgress";
 import CourseProgressInvite from "@/components/dsa/CourseProgressInvite";
 import RichText from "@/components/dsa/RichText";
+import FreeRibbon from "@/components/dsa/FreeRibbon";
+import LessonLockMark from "@/components/dsa/LessonLockMark";
+import { isFreeCourse } from "@/lib/dsa/access";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Fundamental:
@@ -52,11 +55,13 @@ function StatChip({
 function SyllabusRow({
   topic,
   sectionSlug,
+  free,
   isFirst,
   isLast,
 }: {
   topic: Topic;
   sectionSlug: string;
+  free: boolean;
   isFirst: boolean;
   isLast: boolean;
 }) {
@@ -83,8 +88,11 @@ function SyllabusRow({
         href={`/dsa/${sectionSlug}/${topic.slug}`}
         className="group flex items-center justify-between gap-space-md py-space-sm"
       >
-        <span className="font-body-md text-body-md text-primary group-hover:underline">
-          {topic.title}
+        <span className="flex min-w-0 items-center gap-space-sm">
+          <span className="font-body-md text-body-md text-primary group-hover:underline">
+            {topic.title}
+          </span>
+          {!free && <LessonLockMark />}
         </span>
 
         <span className="flex shrink-0 items-center gap-space-md">
@@ -135,6 +143,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
     (section.overview?.length ?? 0) > 0 ||
     (section.requirements?.length ?? 0) > 0;
   const related = relatedCourses(section.slug, await getSections());
+  const free = isFreeCourse(section.slug);
 
   return (
     <main>
@@ -147,7 +156,8 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
           ]}
         />
 
-        <header className="mt-space-md rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
+        <header className="relative mt-space-md overflow-hidden rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg">
+          {free && <FreeRibbon />}
           <h1 className="font-headline-lg text-headline-lg text-on-surface">
             {section.title}
           </h1>
@@ -256,7 +266,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
           <h2 className="font-headline-md text-headline-md text-on-surface">
             Course Contents
           </h2>
-          <CourseProgressInvite />
+          <CourseProgressInvite free={free} />
 
           {chapters.length === 0 && (
             <p className="font-body-md text-body-md mt-space-base text-on-surface-variant">
@@ -286,6 +296,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
                       key={topic.slug}
                       topic={topic}
                       sectionSlug={section.slug}
+                      free={free}
                       isFirst={j === 0}
                       isLast={j === chapter.topics.length - 1}
                     />

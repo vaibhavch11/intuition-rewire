@@ -6,6 +6,8 @@ import Link from "@/components/Link";
 import type { CourseSummary } from "@/lib/dsa/types";
 import SectionHeader from "@/components/home/SectionHeader";
 import TopicIcon from "@/components/home/TopicIcons";
+import FreeRibbon from "@/components/dsa/FreeRibbon";
+import { isFreeCourse } from "@/lib/dsa/access";
 
 type Category = "ds" | "algo" | "sys";
 
@@ -37,7 +39,7 @@ const SYSTEM_MEMORY_CARDS: { title: string; note: string; icon: string }[] = [
 
 /** Same card for every tab: icon tile, title, one line of detail. */
 const CARD =
-  "group flex flex-col items-center justify-center rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-space-md text-center transition-all duration-200 motion-safe:animate-fade-up";
+  "group relative flex flex-col items-center justify-center rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-space-md text-center transition-all duration-200 motion-safe:animate-fade-up";
 const LINK_CARD = `${CARD} hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_14px_30px_-18px_rgba(53,37,205,0.45)]`;
 
 function IconTile({ slug }: { slug: string }) {
@@ -69,7 +71,8 @@ function DsCard({
   style?: CSSProperties;
 }) {
   return (
-    <Link href={`/dsa/${slug}`} style={style} className={LINK_CARD}>
+    <Link href={`/dsa/${slug}`} style={style} className={`${LINK_CARD} overflow-hidden`}>
+      {isFreeCourse(slug) && <FreeRibbon size="sm" />}
       <IconTile slug={slug} />
       <CardText title={title} detail={`${lessons} lesson${lessons === 1 ? "" : "s"}`} />
     </Link>

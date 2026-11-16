@@ -7,6 +7,7 @@ import { Route, Search } from "lucide-react";
 import HashLink from "@/components/HashLink";
 import SearchPalette, { OPEN_SEARCH_EVENT } from "@/components/SearchPalette";
 import UserMenu from "@/components/auth/UserMenu";
+import { useUser } from "@/lib/auth/useUser";
 import LogoMark, { Wordmark } from "@/components/LogoMark";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -74,6 +75,9 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const current = activeHref(pathname, useSectionsInView(pathname));
+  // The site's sections are for members: signed-out visitors see the logo,
+  // search and the sign-in buttons, and the links arrive with an account.
+  const signedIn = Boolean(useUser());
 
   useEffect(() => {
     if (!open) return;
@@ -99,7 +103,8 @@ export default function Header() {
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-space-md">
-          <nav className="hidden lg:flex shrink-0 items-center gap-space-xs">
+          {signedIn && (
+          <nav className="hidden lg:flex shrink-0 items-center gap-space-xs motion-safe:animate-fade-in">
             {NAV_LINKS.map((link) => {
               const active = link.href === current;
               return (
@@ -118,12 +123,14 @@ export default function Header() {
               );
             })}
           </nav>
+          )}
 
           <SearchPalette />
 
           <div className="flex shrink-0 items-center gap-space-sm pl-space-xs">
             <ThemeToggle className="hidden sm:inline-flex" />
             {/* Same destination as the "Roadmap" link, so only shown when there's room. */}
+            {signedIn && (
             <HashLink
               href={LEARNING_PATH}
               className={`hidden xl:inline-flex items-center gap-space-xs h-9 whitespace-nowrap rounded-lg px-space-md font-label-md text-label-md font-semibold text-primary transition-colors ${
@@ -135,6 +142,7 @@ export default function Header() {
               <Route size={16} aria-hidden />
               Learning Path
             </HashLink>
+            )}
             <UserMenu />
           </div>
         </div>
@@ -197,7 +205,7 @@ export default function Header() {
                 open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
               }`}
             />
-            {[...NAV_LINKS, { href: LEARNING_PATH, label: "Learning Path" }].map(
+            {signedIn && [...NAV_LINKS, { href: LEARNING_PATH, label: "Learning Path" }].map(
               (link, i) => {
                 const isCta = i === NAV_LINKS.length;
                 const active = !isCta && link.href === current;

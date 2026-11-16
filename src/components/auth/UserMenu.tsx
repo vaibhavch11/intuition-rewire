@@ -5,9 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { LogOut } from "lucide-react";
-import { forgetReader, identifyReader } from "@/lib/analytics";
+import { useUser } from "@/lib/auth/useUser";
 import { createClient } from "@/lib/supabase/browser";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 function displayName(user: User): string {
   const name = user.user_metadata?.full_name ?? user.user_metadata?.name;
@@ -22,25 +21,10 @@ function displayName(user: User): string {
 export default function UserMenu() {
   const router = useRouter();
   const pathname = usePathname();
-  const configured = isSupabaseConfigured();
   // undefined until Supabase has read the stored session.
-  const [user, setUser] = useState<User | null | undefined>(
-    configured ? undefined : null
-  );
+  const user = useUser();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!configured) return;
-    const { data } = createClient().auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      // Only an actual sign-out resets analytics; a visitor who was never
-      // signed in keeps the same anonymous ID between visits.
-      if (session?.user) identifyReader(session.user.id);
-      else if (event === "SIGNED_OUT") forgetReader();
-    });
-    return () => data.subscription.unsubscribe();
-  }, [configured]);
 
   useEffect(() => {
     if (!open) return;

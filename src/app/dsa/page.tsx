@@ -6,6 +6,8 @@ import { courseStats, isComingSoon } from "@/lib/dsa/types";
 import type { Section } from "@/lib/dsa/types";
 import LargeScreenLattice from "@/components/dsa/LargeScreenLattice";
 import JsonLd from "@/components/seo/JsonLd";
+import FreeRibbon from "@/components/dsa/FreeRibbon";
+import { isFreeCourse } from "@/lib/dsa/access";
 
 function CourseCard({ section }: { section: Section }) {
   const stats = courseStats(section);
@@ -13,8 +15,9 @@ function CourseCard({ section }: { section: Section }) {
   return (
     <Link
       href={`/dsa/${section.slug}`}
-      className="reveal group relative flex flex-col rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+      className="reveal group relative flex flex-col overflow-hidden rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
     >
+      {isFreeCourse(section.slug) && <FreeRibbon />}
       <h3 className="font-headline-md text-headline-md text-on-surface group-hover:text-primary">
         {section.title}
       </h3>

@@ -28,7 +28,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
       title="Welcome back"
       subtitle={
         isLessonPath(next)
-          ? "Sign in to track your progress. Every lesson stays open either way."
+          ? "Sign in to read the whole lesson."
           : "Sign in to continue learning."
       }
       footer={

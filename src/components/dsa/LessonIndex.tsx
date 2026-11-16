@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import TrackProgressInvite from "@/components/dsa/TrackProgressInvite";
+import LessonLockMark from "@/components/dsa/LessonLockMark";
+import { isFreeCourse } from "@/lib/dsa/access";
 import { useProgress } from "@/lib/progress";
 
 /** A small pulsing dot on the lesson being opened, until it arrives. */
@@ -44,6 +46,7 @@ export default function LessonIndex({
 }) {
   const [hidden, setHidden] = useState(false);
   const { status, done } = useProgress(sectionSlug);
+  const free = isFreeCourse(sectionSlug);
   const navRef = useRef<HTMLElement>(null);
 
   // Read from the URL rather than a prop, so switching lessons updates the
@@ -132,7 +135,7 @@ export default function LessonIndex({
                 </div>
               </>
             )}
-            {status === "signed-out" && <TrackProgressInvite text="to track your progress through this course." />}
+            {status === "signed-out" && <TrackProgressInvite text={free ? "to track your progress through this course." : "to read every lesson in this course."} />}
           </div>
         </div>
 
@@ -182,6 +185,7 @@ export default function LessonIndex({
                         }`}
                       >
                         {item.title}
+                        {!free && <LessonLockMark className="ml-space-xs align-[-1px]" />}
                         <PendingDot />
                       </Link>
                     </li>
