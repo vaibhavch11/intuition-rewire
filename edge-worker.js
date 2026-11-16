@@ -31,9 +31,58 @@ function forBrowser(response, status) {
   return out;
 }
 
+/**
+ * Videos (wrangler.jsonc routes /videos/* here first): static assets ignore a
+ * Range header and always send the whole file, and Safari and iPhones won't
+ * stream or autoplay a video that way. So ranges are answered here, with 206s.
+ */
+async function serveVideo(request, env) {
+  const asset = await env.ASSETS.fetch(new Request(request.url, { method: "GET" }));
+  if (!asset.ok) return asset;
+
+  const headers = new Headers(asset.headers);
+  headers.set("accept-ranges", "bytes");
+  headers.set("cache-control", "public, max-age=604800");
+  const range = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") ?? "");
+  if (request.method === "HEAD") return new Response(null, { status: 200, headers });
+  if (!range || (range[1] === "" && range[2] === "")) {
+    return new Response(asset.body, { status: 200, headers });
+  }
+
+  // The asset may arrive without a length, so read it to know its size.
+  const known = Number(asset.headers.get("content-length"));
+  const bytes = known ? null : await asset.arrayBuffer();
+  const size = known || bytes.byteLength;
+
+  let start;
+  let end;
+  if (range[1] === "") {
+    start = Math.max(0, size - Number(range[2])); // "bytes=-500": the last 500 bytes
+    end = size - 1;
+  } else {
+    start = Number(range[1]);
+    end = range[2] === "" ? size - 1 : Math.min(Number(range[2]), size - 1);
+  }
+  if (start > end || start >= size) {
+    headers.set("content-range", `bytes */${size}`);
+    headers.delete("content-length");
+    return new Response(null, { status: 416, headers });
+  }
+
+  headers.set("content-range", `bytes ${start}-${end}/${size}`);
+  headers.set("content-length", String(end - start + 1));
+  // The whole file from the start (a browser's usual first request) streams as is.
+  if (!bytes && start === 0 && end === size - 1) return new Response(asset.body, { status: 206, headers });
+  const all = bytes ?? (await asset.arrayBuffer());
+  return new Response(all.slice(start, end + 1), { status: 206, headers });
+}
+
 const worker = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname.startsWith("/videos/") && (request.method === "GET" || request.method === "HEAD")) {
+      return serveVideo(request, env);
+    }
     const seconds = sharedSeconds(request, url);
     if (!seconds) return openNext.fetch(request, env, ctx);
 

@@ -10,7 +10,10 @@
     "binding": "ASSETS",
     // Serve .html files at their exact path (no redirect to /name), as
     // Google Search Console's verification file requires.
-    "html_handling": "none"
+    "html_handling": "none",
+    // Videos go through edge-worker.js, which answers byte-range requests:
+    // Safari and iPhones need them to stream and autoplay a video.
+    "run_worker_first": ["/videos/*"]
   },
   // The site's own domain (SITE_URL in src/lib/seo.ts); www and workers.dev
   // redirect to it in src/proxy.ts.

@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 
 export const TOUR_VIDEO = {
   src: "/videos/intuition-rewire-tour-v3.mp4",
-  poster: "/videos/intuition-rewire-tour-v3.jpg",
+  poster: "/videos/tour-poster.jpg",
   label:
     "IntuitionRewire product tour: the homepage in light and dark mode, a lesson walkthrough, the Container With Most Water challenge, a BST insert dry run and the 3D memory board",
 };

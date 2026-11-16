@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -37,12 +37,28 @@ const CODE = `function maxArea(height) {
   return best;
 }`;
 
-const PRESETS: { label: string; heights: number[] }[] = [
-  { label: "Classic", heights: [1, 8, 6, 2, 5, 4, 8, 3, 7] },
-  { label: "Twin peaks", heights: [2, 9, 1, 3, 2, 1, 9, 2] },
-  { label: "Valley", heights: [9, 3, 2, 1, 2, 4, 6, 8] },
-  { label: "Staircase", heights: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+/** `phone` is a shorter version of the same shape: fewer, wider walls that are easy to tap. */
+const PRESETS: { label: string; heights: number[]; phone: number[] }[] = [
+  { label: "Classic", heights: [1, 8, 6, 2, 5, 4, 8, 3, 7], phone: [1, 8, 6, 2, 7, 3] },
+  { label: "Twin peaks", heights: [2, 9, 1, 3, 2, 1, 9, 2], phone: [2, 9, 1, 3, 9, 2] },
+  { label: "Valley", heights: [9, 3, 2, 1, 2, 4, 6, 8], phone: [9, 3, 1, 2, 6, 8] },
+  { label: "Staircase", heights: [1, 2, 3, 4, 5, 6, 7, 8, 9], phone: [1, 2, 3, 4, 5, 6] },
 ];
+
+/** Phone-width screens get the shorter arrays and no side panel. */
+const PHONE_QUERY = "(max-width: 639px)";
+
+function useIsPhone(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia(PHONE_QUERY);
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(PHONE_QUERY).matches,
+    () => false
+  );
+}
 
 const SPEEDS = [
   { label: "Slow", ms: 1400 },
@@ -51,6 +67,7 @@ const SPEEDS = [
 ];
 
 const MAX_WALLS = 14;
+const MAX_WALLS_PHONE = 8;
 const MAX_HEIGHT = 20;
 
 type Phase = "start" | "measure" | "move" | "done";
@@ -117,10 +134,10 @@ function trace(h: number[]): Frame[] {
   return frames;
 }
 
-function parseHeights(text: string): { heights: number[] } | { error: string } {
+function parseHeights(text: string, maxWalls: number): { heights: number[] } | { error: string } {
   const parts = text.split(/[\s,]+/).filter(Boolean);
   if (parts.length < 2) return { error: "Enter at least two wall heights." };
-  if (parts.length > MAX_WALLS) return { error: `Use at most ${MAX_WALLS} walls so they stay readable.` };
+  if (parts.length > maxWalls) return { error: `Use at most ${maxWalls} walls so they stay readable.` };
   const heights = parts.map(Number);
   if (heights.some((n) => !Number.isInteger(n) || n < 0 || n > MAX_HEIGHT)) {
     return { error: `Heights must be whole numbers from 0 to ${MAX_HEIGHT}.` };
@@ -128,8 +145,8 @@ function parseHeights(text: string): { heights: number[] } | { error: string } {
   return { heights };
 }
 
-function randomHeights(): number[] {
-  const n = 8 + Math.floor(Math.random() * 4);
+function randomHeights(phone: boolean): number[] {
+  const n = phone ? 5 + Math.floor(Math.random() * 2) : 8 + Math.floor(Math.random() * 4);
   return Array.from({ length: n }, () => 1 + Math.floor(Math.random() * 10));
 }
 
@@ -150,8 +167,16 @@ function Stat({ label, value, hint, tone }: { label: string; value: string; hint
   );
 }
 
+/** Remounts when the screen crosses phone width, so the walls always suit the screen. */
 export default function WaterContainerSimulator() {
-  const [heights, setHeights] = useState<number[]>(PRESETS[0].heights);
+  const phone = useIsPhone();
+  return <Simulator key={phone ? "phone" : "wide"} phone={phone} />;
+}
+
+function Simulator({ phone }: { phone: boolean }) {
+  const presetHeights = (p: (typeof PRESETS)[number]) => (phone ? p.phone : p.heights);
+  const maxWalls = phone ? MAX_WALLS_PHONE : MAX_WALLS;
+  const [heights, setHeights] = useState<number[]>(() => presetHeights(PRESETS[0]));
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -167,7 +192,7 @@ export default function WaterContainerSimulator() {
   const maxH = Math.max(1, ...heights);
   const totalPairs = (n * (n - 1)) / 2;
   const done = frame.phase === "done";
-  const presetIndex = PRESETS.findIndex((p) => p.heights.join() === heights.join());
+  const presetIndex = PRESETS.findIndex((p) => presetHeights(p).join() === heights.join());
 
   // Autoplay: one move per tick, stopping on the answer.
   useEffect(() => {
@@ -219,7 +244,7 @@ export default function WaterContainerSimulator() {
 
   // Geometry, as percentages of the chart width / height.
   const slot = 100 / n;
-  const barW = Math.min(slot * 0.46, 6);
+  const barW = Math.min(slot * 0.46, phone ? 9 : 6);
   const center = (i: number) => slot * (i + 0.5);
   const heightPct = (v: number) => (v / maxH) * 100;
 
@@ -264,7 +289,7 @@ export default function WaterContainerSimulator() {
               <button
                 key={p.label}
                 type="button"
-                onClick={() => load(p.heights)}
+                onClick={() => load(presetHeights(p))}
                 className={`rounded-full px-space-md py-1 font-label-md text-label-md transition-colors ${
                   i === presetIndex
                     ? "bg-primary-container text-on-primary"
@@ -276,7 +301,7 @@ export default function WaterContainerSimulator() {
             ))}
             <button
               type="button"
-              onClick={() => load(randomHeights())}
+              onClick={() => load(randomHeights(phone))}
               className="inline-flex items-center gap-space-xs rounded-full bg-surface-container-lowest px-space-md py-1 font-label-md text-label-md text-on-surface-variant ring-1 ring-inset ring-outline-variant transition-colors hover:text-on-surface"
             >
               <Shuffle size={14} /> Shuffle
@@ -300,7 +325,7 @@ export default function WaterContainerSimulator() {
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              const parsed = parseHeights(draft);
+              const parsed = parseHeights(draft, maxWalls);
               if ("error" in parsed) setError(parsed.error);
               else {
                 load(parsed.heights);
@@ -326,7 +351,7 @@ export default function WaterContainerSimulator() {
               </button>
             </label>
             <p className={`mt-1 font-body-sm text-body-sm ${error ? "text-error" : "text-on-surface-variant"}`} role={error ? "alert" : undefined}>
-              {error ?? `2 to ${MAX_WALLS} whole numbers between 0 and ${MAX_HEIGHT}, separated by commas.`}
+              {error ?? `2 to ${maxWalls} whole numbers between 0 and ${MAX_HEIGHT}, separated by commas.`}
             </p>
           </form>
         )}
@@ -482,8 +507,8 @@ export default function WaterContainerSimulator() {
             </div>
           </div>
 
-          {/* What is happening */}
-          <div className="flex flex-col gap-space-md border-t border-outline-variant/60 p-space-md sm:p-space-lg lg:border-l lg:border-t-0">
+          {/* What is happening. Left out on phones, where the chart's own labels carry it. */}
+          <div className="hidden flex-col gap-space-md border-t border-outline-variant/60 p-space-md sm:flex sm:p-space-lg lg:border-l lg:border-t-0">
             <div>
               <div className="flex items-center justify-between gap-space-sm">
                 <span className={`font-label-md text-label-md font-semibold ${done ? "text-secondary" : "text-primary"}`}>
@@ -527,8 +552,8 @@ export default function WaterContainerSimulator() {
           </div>
         </div>
 
-        {/* The code, following along */}
-        <details className="group border-t border-outline-variant/60" open>
+        {/* The code, following along. Starts closed on phones, where it would push the controls off screen. */}
+        <details className="group border-t border-outline-variant/60" open={!phone}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-space-sm px-space-md py-space-sm font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:text-on-surface sm:px-space-lg [&::-webkit-details-marker]:hidden">
             <span>
               The code <span className="font-normal">· two pointers, O(n) time, O(1) space</span>
