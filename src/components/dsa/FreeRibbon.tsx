@@ -1,9 +1,16 @@
+"use client";
+
+import { useUser } from "@/lib/auth/useUser";
+
 /**
  * A green "PREVIEW" band across a card's top-right corner, for courses anyone
  * can read without an account. The card needs `relative` and `overflow-hidden`.
+ * Only signed-out visitors need telling, so it goes once a reader is signed in.
+ * While the session is still loading it shows, as most visitors are signed out.
  */
 export default function FreeRibbon({ size = "md" }: { size?: "sm" | "md" }) {
   const small = size === "sm";
+  if (useUser()) return null;
   return (
     <>
       <span

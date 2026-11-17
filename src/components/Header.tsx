@@ -13,14 +13,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/#learning-path", label: "Roadmap" },
-  { href: "/#water-challenge", label: "Dry-Run Engine" },
   { href: "/pricing", label: "Pricing" },
 ];
 
 const LEARNING_PATH = "/#learning-path";
 
 /** Page sections that light up their own nav link while you're reading them. */
-const SPIED_SECTIONS = ["learning-path", "water-challenge"];
+const SPIED_SECTIONS = ["learning-path"];
 
 /**
  * Which spied sections cross a thin band near the top of the screen — where
@@ -62,8 +61,6 @@ function useSectionsInView(pathname: string): Set<string> {
 
 function activeHref(pathname: string, inView: Set<string>): string | null {
   if (pathname === "/") {
-    // The Dry-Run Engine link is the homepage's water container challenge.
-    if (inView.has("water-challenge")) return "/#water-challenge";
     return inView.has("learning-path") ? "/#learning-path" : "/";
   }
   if (pathname === "/dsa" || pathname.startsWith("/dsa/")) return "/dsa";
