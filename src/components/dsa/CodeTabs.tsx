@@ -5,7 +5,7 @@ import { Check, Copy } from "lucide-react";
 import { useStoredString, writeStored } from "@/lib/browserStore";
 import CodeLines from "./CodeLines";
 
-const LANGUAGE_KEY = "ir:code-language";
+export const LANGUAGE_KEY = "ir:code-language";
 
 const LABELS: Record<string, string> = {
   javascript: "JavaScript",
@@ -20,7 +20,7 @@ const LABELS: Record<string, string> = {
 };
 
 /** The dot beside each language tab, in each language's familiar colour. */
-const DOTS: Record<string, string> = {
+export const DOTS: Record<string, string> = {
   javascript: "#f7df1e",
   js: "#f7df1e",
   typescript: "#3178c6",
@@ -66,7 +66,7 @@ export default function CodeTabs({ blocks }: { blocks: { language: string; code:
   }
 
   return (
-    <div className="code-editor render-lazy [--lazy-size:300px] mb-space-base overflow-hidden rounded-xl shadow-[0_1px_2px_rgba(19,27,46,0.08),0_16px_36px_-24px_rgba(19,27,46,0.55)] ring-1 ring-black/5">
+    <div className="code-editor mb-space-base overflow-hidden rounded-xl shadow-[0_1px_2px_rgba(19,27,46,0.08),0_16px_36px_-24px_rgba(19,27,46,0.55)] ring-1 ring-black/5">
       <div className="flex items-center justify-between gap-space-sm border-b border-white/10 bg-black/20 pr-space-sm">
         <div role="tablist" aria-label="Code language" onKeyDown={onKeyDown} className="flex min-w-0 overflow-x-auto">
           {blocks.map((block, i) => {

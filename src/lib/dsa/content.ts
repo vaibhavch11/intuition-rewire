@@ -121,6 +121,25 @@ function parseBlock(input: unknown, index: number): LessonBlock {
         caption: optionalCaption(input.caption),
       };
     }
+    case "complexity": {
+      if (!Array.isArray(input.rows) || input.rows.length === 0) {
+        throw new Error(`${at("rows")} must be a non-empty array`);
+      }
+      return {
+        type: "complexity",
+        rows: input.rows.map((row, i) => {
+          if (!isRecord(row)) throw new Error(`${at(`rows[${i}]`)} must be an object`);
+          const field = (name: string) => requireString(row[name], at(`rows[${i}].${name}`));
+          return {
+            approach: field("approach"),
+            time: field("time"),
+            timeWhy: field("timeWhy"),
+            space: field("space"),
+            spaceWhy: field("spaceWhy"),
+          };
+        }),
+      };
+    }
     default:
       throw new Error(`Block ${index} has unknown type "${String(input.type)}"`);
   }

@@ -19,7 +19,18 @@ const BLOCK_LABELS: Record<LessonBlockType, string> = {
   drawing: "Drawing",
   figure: "Image",
   simulator: "Simulator",
+  complexity: "Complexity",
 };
+
+const COMPLEXITY_FIELDS = [
+  { key: "approach", label: "Approach", placeholder: "e.g. Two pointers" },
+  { key: "time", label: "Time", placeholder: "e.g. O(n)" },
+  { key: "timeWhy", label: "Why that time", placeholder: "e.g. Each pointer only moves inward, so n steps in all." },
+  { key: "space", label: "Space", placeholder: "e.g. O(1)" },
+  { key: "spaceWhy", label: "Why that space", placeholder: "e.g. Just two indexes and a best-so-far." },
+] as const;
+
+const emptyComplexityRow = () => ({ approach: "", time: "", timeWhy: "", space: "", spaceWhy: "" });
 
 function emptyBlock(type: LessonBlockType): LessonBlock {
   switch (type) {
@@ -44,6 +55,8 @@ function emptyBlock(type: LessonBlockType): LessonBlock {
       };
     case "simulator":
       return { type: "simulator", program: PRACTICE_PROGRAMS[0].id };
+    case "complexity":
+      return { type: "complexity", rows: [emptyComplexityRow()] };
   }
 }
 
@@ -342,6 +355,46 @@ export default function LessonEditor({
                 onError={setError}
                 inputClass={inputClass}
               />
+            )}
+
+            {block.type === "complexity" && (
+              <div className="space-y-space-md">
+                {block.rows.map((row, rowIndex) => (
+                  <div key={rowIndex} className="space-y-space-xs rounded-lg border border-outline-variant/60 p-space-sm">
+                    {COMPLEXITY_FIELDS.map((field) => (
+                      <input
+                        key={field.key}
+                        value={row[field.key]}
+                        aria-label={`${field.label}, approach ${rowIndex + 1}`}
+                        placeholder={`${field.label}: ${field.placeholder}`}
+                        onChange={(e) =>
+                          replaceBlock(index, {
+                            ...block,
+                            rows: block.rows.map((r, i) => (i === rowIndex ? { ...r, [field.key]: e.target.value } : r)),
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    ))}
+                    {block.rows.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => replaceBlock(index, { ...block, rows: block.rows.filter((_, i) => i !== rowIndex) })}
+                        className="font-label-md text-label-md text-on-surface-variant hover:text-error"
+                      >
+                        Remove this approach
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => replaceBlock(index, { ...block, rows: [...block.rows, emptyComplexityRow()] })}
+                  className="font-label-md text-label-md text-primary hover:underline"
+                >
+                  + Add approach
+                </button>
+              </div>
             )}
 
             {block.type === "simulator" && (

@@ -418,7 +418,10 @@
    stand-in height until the block has rendered once; after that the browser
    remembers its real height ("auto"), so the guess only needs to be close.
    Note: like `transform`, it makes the block the containing box for any
-   position: fixed child, so keep full-screen overlays outside it. */
+   position: fixed child, so keep full-screen overlays outside it.
+   Only for blocks that never change once shown (pictures): on a block whose
+   content is swapped while on screen (code tabs, the simulator) Chromium can
+   hang and crash the tab after a few switches. */
 .render-lazy {
   content-visibility: auto;
   contain-intrinsic-size: auto var(--lazy-size, 400px);

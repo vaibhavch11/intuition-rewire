@@ -60,7 +60,18 @@ export type LessonBlock =
       scene: DrawingScene;
     }
   /** A step-through dry run readers can feed their own input; see practicePrograms. */
-  | { type: "simulator"; program: string; caption?: string };
+  | { type: "simulator"; program: string; caption?: string }
+  /** Each approach's time and space, with one line on why. */
+  | { type: "complexity"; rows: ComplexityRow[] };
+
+/** One approach in a complexity comparison. The `why` fields support **bold** and `code` inline. */
+export interface ComplexityRow {
+  approach: string;
+  time: string;
+  timeWhy: string;
+  space: string;
+  spaceWhy: string;
+}
 
 export interface DrawingScene {
   elements: unknown[];

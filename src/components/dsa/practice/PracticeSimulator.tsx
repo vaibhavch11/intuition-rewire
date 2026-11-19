@@ -2,7 +2,9 @@
 
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import {
+  Check,
   ChevronDown,
+  Copy,
   Pause,
   Play,
   RotateCcw,
@@ -11,6 +13,9 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import CodeLines from "@/components/dsa/CodeLines";
+import { DOTS, LANGUAGE_KEY, languageLabel } from "@/components/dsa/CodeTabs";
+import { useStoredString, writeStored } from "@/lib/browserStore";
+import { trustedLineMap } from "@/lib/dsa/lineMap";
 import RichText from "@/components/dsa/RichText";
 import { CELL_TONES, PointerTags } from "@/components/dsa/simulator/visuals";
 import { isPracticeProgram, PRACTICE_PROGRAMS } from "@/lib/dsa/practicePrograms";
@@ -28,6 +33,8 @@ import {
   type MapView,
   type Program,
 } from "./types";
+
+const NO_SOLUTIONS: { language: string; code: string }[] = [];
 
 /** Autoplay's time per step. Normal is long enough to read the note and watch the picture settle. */
 const SPEEDS = [
@@ -457,9 +464,12 @@ const controlButton =
 export default function PracticeSimulator({
   program: id,
   caption,
+  solutions = NO_SOLUTIONS,
 }: {
   program: string;
   caption?: string;
+  /** The lesson's solution in other languages, shown as tabs beside the JavaScript the simulator runs. */
+  solutions?: { language: string; code: string }[];
 }) {
   const [program, setProgram] = useState<Program | null>(null);
   const [failed, setFailed] = useState(false);
@@ -471,6 +481,9 @@ export default function PracticeSimulator({
   const [example, setExample] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [stageHeight, setStageHeight] = useState<number | null>(null);
+  const [codeOpen, setCodeOpen] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const storedLanguage = useStoredString(LANGUAGE_KEY);
 
   useEffect(() => {
     if (!isPracticeProgram(id)) return;
@@ -508,9 +521,27 @@ export default function PracticeSimulator({
     return () => clearTimeout(timer);
   }, [playing, step, last, speed]);
 
+  // The JavaScript the simulator runs, then the same solution in each other
+  // language, each with its lines matched to the JavaScript's.
+  const versions = useMemo(() => {
+    if (!program) return [];
+    const others = solutions.filter((s) => s.language.toLowerCase() !== "javascript" && s.language !== "text");
+    return [
+      { language: "javascript", code: program.code, lines: null as number[] | null, exact: true },
+      ...others.map((s) => {
+        const lines = trustedLineMap(program.code, s.code);
+        return { language: s.language, code: s.code, lines, exact: lines !== null };
+      }),
+    ];
+  }, [program, solutions]);
+  const version = versions.find((v) => v.language === storedLanguage) ?? versions[0];
+
   // Keep the executing line in view inside the code panel (never scrolls the page).
   const codeBox = useRef<HTMLDivElement>(null);
-  const activeLine = frames[step]?.line;
+  const jsLine = frames[step]?.line;
+  const activeLine =
+    !version || !jsLine ? undefined : version.language === "javascript" ? jsLine : version.lines?.[jsLine] || undefined;
+  const versionLanguage = version?.language;
   useEffect(() => {
     const box = codeBox.current;
     const row = box?.querySelector<HTMLElement>('[data-active="true"]');
@@ -523,7 +554,7 @@ export default function PracticeSimulator({
       top: box.scrollTop + (inner.top - outer.top) - outer.height / 2 + inner.height / 2,
       behavior: reduce ? "auto" : "smooth",
     });
-  }, [activeLine]);
+  }, [activeLine, versionLanguage, codeOpen]);
 
   if (!isPracticeProgram(id)) return null;
   const title = program?.title ?? PRACTICE_PROGRAMS.find((p) => p.id === id)?.title ?? "";
@@ -549,6 +580,17 @@ export default function PracticeSimulator({
     setStep(0);
     setPlaying(false);
     setExample(exampleIndex);
+  }
+
+  async function copyCode() {
+    if (!version) return;
+    try {
+      await navigator.clipboard.writeText(version.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Clipboard blocked; the code is still selectable by hand.
+    }
   }
 
   function loadExample(index: number) {
@@ -579,7 +621,7 @@ export default function PracticeSimulator({
     <section
       aria-label={`Dry-run simulator: ${title}`}
       onKeyDown={onKeyDown}
-      className="@container render-lazy [--lazy-size:800px] my-space-2xl overflow-clip rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
+      className="@container my-space-2xl overflow-clip rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-sm"
     >
       {/* On a wide card everything fits one screen: the picture gives way first. */}
       <div className="flex flex-col @3xl:max-h-[calc(100dvh-var(--spacing-header-height)-1.5rem)]">
@@ -726,18 +768,121 @@ export default function PracticeSimulator({
             </div>
           </div>
 
-          {/* The code, which can be folded away. */}
-          <details className="group shrink-0 border-t border-outline-variant/40" open>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-space-sm px-space-md py-space-xs font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:text-on-surface sm:px-space-lg [&::-webkit-details-marker]:hidden">
-              <span>
-                The code <span className="font-normal">· JavaScript · line {frame.line}</span>
+          {/* The code in every language the lesson has, which can be folded away. */}
+          <div className="shrink-0 border-t border-outline-variant/40">
+            <div className="flex items-center gap-space-sm pl-space-md pr-space-sm sm:pl-space-lg">
+              <span className="hidden shrink-0 font-label-md text-label-md font-semibold text-on-surface-variant sm:inline">
+                The code
               </span>
-              <ChevronDown size={16} className="transition-transform duration-200 group-open:rotate-180" />
-            </summary>
-            <div ref={codeBox} className="code-editor max-h-48 overflow-y-auto">
-              <CodeLines code={program.code} language="javascript" activeLine={frame.line} size="sm" />
+              {versions.length > 1 ? (
+                <div role="tablist" aria-label="Code language" className="flex min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]">
+                  {versions.map((v) => {
+                    const selected = v === version;
+                    return (
+                      <button
+                        key={v.language}
+                        type="button"
+                        role="tab"
+                        aria-selected={selected}
+                        onClick={() => {
+                          writeStored(LANGUAGE_KEY, v.language);
+                          setCodeOpen(true);
+                        }}
+                        className={`relative flex h-10 shrink-0 items-center gap-[6px] whitespace-nowrap px-space-sm font-label-md text-[13px] transition-colors ${
+                          selected ? "text-on-surface" : "text-on-surface-variant hover:text-on-surface"
+                        }`}
+                      >
+                        <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: DOTS[v.language.toLowerCase()] ?? "#a5a0ff" }} />
+                        {/* Every tab is as wide as its bold label, so selecting one never nudges the others. */}
+                        <span className="grid">
+                          <span aria-hidden className="invisible col-start-1 row-start-1 font-semibold">
+                            {languageLabel(v.language)}
+                          </span>
+                          <span className={`col-start-1 row-start-1 ${selected ? "font-semibold" : ""}`}>{languageLabel(v.language)}</span>
+                        </span>
+                        {selected && <span aria-hidden className="absolute inset-x-space-xs bottom-0 h-0.5 rounded-full bg-primary-container" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <span className="min-w-0 flex-1 py-space-sm font-label-md text-label-md font-semibold text-on-surface-variant">
+                  <span className="sm:hidden">The code · </span>
+                  <span className="font-normal">JavaScript</span>
+                </span>
+              )}
+              {/* A fixed-width status, so "line 8", "line 12" or the note never move the buttons beside it. */}
+              <span
+                title={
+                  version && !version.exact
+                    ? `The ${languageLabel(version.language)} version is written a little differently, so the JavaScript tab shows the run line by line.`
+                    : undefined
+                }
+                className="hidden w-[132px] shrink-0 truncate text-right font-label-md text-[12px] tabular-nums text-on-surface-variant md:inline"
+              >
+                {version && !version.exact ? "follow JavaScript for lines" : activeLine ? `line ${activeLine}` : ""}
+              </span>
+              <button
+                type="button"
+                onClick={copyCode}
+                aria-label={copied ? "Code copied" : "Copy code"}
+                className={`inline-flex h-8 shrink-0 items-center gap-[6px] rounded-md px-space-sm font-label-md text-[12px] transition-colors ${
+                  copied ? "text-emerald-600" : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                }`}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCodeOpen((open) => !open)}
+                aria-expanded={codeOpen}
+                aria-label={codeOpen ? "Hide the code" : "Show the code"}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+              >
+                <ChevronDown size={16} className={`transition-transform duration-200 ${codeOpen ? "rotate-180" : ""}`} />
+              </button>
             </div>
-          </details>
+            {codeOpen && version && (
+              <div className="relative">
+              <div
+                ref={codeBox}
+                role="tabpanel"
+                aria-label={`${languageLabel(version.language)} code`}
+                className="code-editor max-h-56 overflow-auto"
+              >
+                {/* Every language sits in the same spot and only the chosen one shows, so the
+                    panel keeps one size (the largest version's) whichever tab is open. */}
+                <div className="grid min-w-max">
+                  {versions.map((v) => {
+                    const shown = v === version;
+                    return (
+                      <div
+                        key={v.language}
+                        aria-hidden={!shown || undefined}
+                        className={`col-start-1 row-start-1 ${shown ? "" : "invisible"}`}
+                      >
+                        <CodeLines
+                          code={v.code}
+                          language={v.language}
+                          activeLine={shown ? activeLine : undefined}
+                          size="sm"
+                          className="!overflow-visible"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* On phones the toolbar has no room for the note, so it floats over the code instead of adding a row. */}
+              {!version.exact && (
+                <p className="pointer-events-none absolute right-space-sm top-space-sm rounded-full bg-black/60 px-space-sm py-0.5 font-label-md text-[11px] text-white backdrop-blur-sm md:hidden">
+                  Follow JavaScript for lines
+                </p>
+              )}
+              </div>
+            )}
+          </div>
 
           <div className="sticky bottom-0 z-10 flex shrink-0 flex-wrap items-center gap-space-sm border-t border-outline-variant/40 bg-surface-container-lowest px-space-md py-space-sm sm:px-space-lg">
             <button

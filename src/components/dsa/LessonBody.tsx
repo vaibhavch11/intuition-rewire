@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { LessonBlock } from "@/lib/dsa/types";
 import PracticeSimulator from "./practice/PracticeSimulator";
 import CodeTabs from "./CodeTabs";
+import ComplexityCard from "./ComplexityCard";
 import LessonFigure from "./LessonFigure";
 import RichText from "./RichText";
 
@@ -84,7 +85,27 @@ function renderBlock(block: Exclude<LessonBlock, CodeBlock>, i: number, firstFig
 
     case "simulator":
       return <PracticeSimulator key={i} program={block.program} caption={block.caption} />;
+
+    case "complexity":
+      return <ComplexityCard key={i} rows={block.rows} />;
   }
+}
+
+/**
+ * Back-to-back code blocks in different languages, starting at `start`: one
+ * solution written several ways. Plain-text examples never join one.
+ */
+function codeRun(blocks: LessonBlock[], start: number): CodeBlock[] {
+  const run: CodeBlock[] = [];
+  for (let k = start; k < blocks.length; k++) {
+    const next = blocks[k];
+    if (next.type !== "code") break;
+    if (run.length > 0 && (next.language === "text" || run[0].language === "text")) break;
+    if (run.some((b) => b.language === next.language)) break;
+    run.push(next);
+    if (next.language === "text") break;
+  }
+  return run;
 }
 
 export default function LessonBody({ blocks }: { blocks: LessonBlock[] }) {
@@ -95,28 +116,29 @@ export default function LessonBody({ blocks }: { blocks: LessonBlock[] }) {
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
+
+    // A simulator followed straight away by its solution in several languages
+    // shows them as tabs in its own code panel, with the running line marked
+    // in each, so the solution isn't shown a second time below it.
+    if (block.type === "simulator") {
+      const run = codeRun(blocks, i + 1);
+      const solved = run.length > 1 && run.some((b) => b.language === "javascript");
+      out.push(
+        <PracticeSimulator key={i} program={block.program} caption={block.caption} solutions={solved ? run : undefined} />
+      );
+      if (solved) i += run.length;
+      continue;
+    }
+
     if (block.type !== "code") {
       out.push(renderBlock(block, i, firstFigure));
       continue;
     }
 
-    // Back-to-back code blocks in different languages are one solution
-    // written several ways, so they share a tabbed box. Plain-text examples
-    // never join one.
-    const run: CodeBlock[] = [block];
-    while (block.language !== "text" && i + 1 < blocks.length) {
-      const next = blocks[i + 1];
-      if (
-        next.type !== "code" ||
-        next.language === "text" ||
-        run.some((b) => b.language === next.language)
-      ) {
-        break;
-      }
-      run.push(next);
-      i++;
-    }
+    // One solution written several ways shares a tabbed box.
+    const run = codeRun(blocks, i);
     out.push(run.length > 1 ? <CodeTabs key={i} blocks={run} /> : renderCode(block, i));
+    i += run.length - 1;
   }
 
   return <div>{out}</div>;
