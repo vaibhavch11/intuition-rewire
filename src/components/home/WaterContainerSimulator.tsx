@@ -578,8 +578,8 @@ function Simulator({ phone }: { phone: boolean }) {
           </div>
         </div>
 
-        {/* The code, following along. Starts closed on phones, where it would push the controls off screen. */}
-        <details className="group border-t border-outline-variant/60" open={!phone}>
+        {/* The code, following along. Starts closed on every screen, so the walls stay the focus; one tap opens it. */}
+        <details className="group border-t border-outline-variant/60">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-space-sm px-space-md py-space-sm font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:text-on-surface sm:px-space-lg [&::-webkit-details-marker]:hidden">
             <span>
               The code <span className="font-normal">· two pointers, O(n) time, O(1) space</span>

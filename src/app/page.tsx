@@ -103,7 +103,7 @@ export default async function Home() {
                 </ul>
               </div>
 
-              <div className="mx-auto w-full max-w-[500px] motion-safe:animate-fade-up [animation-delay:200ms] lg:mr-0">
+              <div className="mx-auto w-full max-w-[460px] motion-safe:animate-fade-up [animation-delay:200ms] lg:mr-0">
                 <LinkedListHero />
               </div>
             </div>

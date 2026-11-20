@@ -452,109 +452,225 @@ function LessonWindow({ active, playing }: { active: number; playing: boolean })
 
 /* ---------------- The section ---------------- */
 
-/** Matches the `pin` variant in globals.css: wide and tall enough to pin the section at full size. */
-const PIN_QUERY = "(min-width: 1024px) and (min-height: 760px)";
+/** Each view is laid out at this height; a shorter box scales it down to fit. */
+const VIEW_H = 470;
 
 /**
- * How a lesson works, told while you scroll, always at the same size as the
- * rest of the page. The line down the left is a progress bar: it fills as you
- * scroll and lights each step's number as you reach it.
+ * Shows a view at its full design height and the box's own width, scaled
+ * down (never up) when the box is shorter, so nothing is cut off on small
+ * phones.
+ */
+function FitView({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState({ w: 0, h: VIEW_H });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setBox({ w: entry.contentRect.width, h: entry.contentRect.height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const scale = Math.min(1, box.h / VIEW_H);
+  return (
+    <div ref={ref} className="relative h-full w-full overflow-hidden">
+      <div
+        className="absolute left-0 top-0 origin-top-left"
+        style={{ width: box.w / scale || "100%", height: VIEW_H, transform: `scale(${scale})` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Short names for the step tabs on phones. */
+const SHORT_STEPS = ["The idea", "The dry run", "The cost"];
+
+/**
+ * How a lesson works, told while you scroll. On every screen the section
+ * pins under the header for three screens of scrolling, and each third makes
+ * one step active and shows that part of a real lesson (the content, the dry
+ * run, then time and space) in a window that never changes size.
  *
- * - Large screens: the section pins under the header for three screens of
- *   scrolling; each third makes one step active and the lesson window beside
- *   the steps shows that part of a real lesson. The window never changes size.
- * - Wide but short screens (nothing would fit pinned): each step is a row,
- *   its card on the left and its own lesson window on the right.
- * - Phones: each step's card with its view underneath.
+ * - Desktop: the three steps on a numbered rail beside the lesson window; the
+ *   rail fills as you scroll. If the screen is short, the section shrinks a
+ *   little to fit rather than changing layout.
+ * - Phones and tablets: step tabs with a progress bar, the active step's text,
+ *   and one view below; scrolling swaps them in place, one at a time.
  */
 export default function LearningFramework() {
   const [active, setActive] = useState(0);
   const runwayRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLSpanElement>(null);
   const headRef = useRef<HTMLSpanElement>(null);
+  const barRef = useRef<HTMLSpanElement>(null);
   const markerRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const pinned = useMediaQuery(PIN_QUERY);
   const wide = useMediaQuery("(min-width: 1024px)");
   const reduced = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef);
 
   useEffect(() => {
+    // Desktop on a short screen: shrink the pinned section, as one piece, until it fits.
+    const fit = () => {
+      const grid = gridRef.current;
+      if (!grid) return;
+      grid.style.transform = "";
+      if (!window.matchMedia("(min-width: 1024px)").matches) return;
+      const header = document.querySelector("header")?.getBoundingClientRect().height ?? 56;
+      const room = window.innerHeight - header - 32;
+      const scale = Math.min(1, room / grid.offsetHeight);
+      if (scale < 1) grid.style.transform = `scale(${scale})`;
+    };
+
     const update = () => {
       const runway = runwayRef.current;
-      const rail = railRef.current;
-      if (!runway || !rail) return;
+      if (!runway) return;
 
-      // Where each number's centre sits on the rail, in the rail's own pixels.
+      // Progress through the runway, 0 to 3: the whole part picks the step.
+      const box = runway.getBoundingClientRect();
+      const travel = box.height - window.innerHeight;
+      const p = travel > 0 ? Math.min(Math.max(-box.top / travel, 0), 0.9999) * STEPS.length : 0;
+      const step = Math.floor(p);
+      setActive(step);
+
+      // Phones: the progress bar under the step tabs.
+      if (barRef.current) barRef.current.style.transform = `scaleX(${p / STEPS.length})`;
+
+      // Desktop: the rail fills from one number towards the next. Offsets
+      // ignore transforms, so this holds while the section is scaled to fit.
       const stops = markerRefs.current.map((m) => {
         const li = m?.parentElement;
         return m && li ? li.offsetTop + m.offsetTop + m.offsetHeight / 2 : 0;
       });
-      const first = stops[0];
       const last = stops[stops.length - 1];
+      if (!railRef.current || !last) return;
       if (trackRef.current) trackRef.current.style.height = `${last}px`;
-
-      // Written straight to the DOM: this runs on every scroll frame.
-      const paint = (y: number) => {
-        if (fillRef.current) fillRef.current.style.height = `${y}px`;
-        if (headRef.current) headRef.current.style.transform = `translateY(${y}px)`;
-      };
-
-      if (window.matchMedia(PIN_QUERY).matches) {
-        // Pinned: progress through the runway, 0 to 3. The whole part picks the
-        // step; the fraction moves the fill from that number towards the next.
-        const box = runway.getBoundingClientRect();
-        const travel = box.height - window.innerHeight;
-        const p = travel > 0 ? Math.min(Math.max(-box.top / travel, 0), 0.9999) * STEPS.length : 0;
-        const step = Math.floor(p);
-        const next = stops[step + 1] ?? last;
-        paint(stops[step] + (next - stops[step]) * (p - step));
-        setActive(step);
-        return;
-      }
-
-      // Not pinned: the fill follows the middle of the screen down the rail,
-      // and the active step is the last number it has passed.
-      const middle = window.innerHeight * 0.55 - rail.getBoundingClientRect().top;
-      const y = Math.min(Math.max(middle, first), last);
-      paint(y);
-      let step = 0;
-      stops.forEach((stop, i) => {
-        if (y >= stop - 1) step = i;
-      });
-      setActive(step);
+      const next = stops[step + 1] ?? last;
+      const y = stops[step] + (next - stops[step]) * (p - step);
+      if (fillRef.current) fillRef.current.style.height = `${y}px`;
+      if (headRef.current) headRef.current.style.transform = `translateY(${y}px)`;
     };
 
-    update();
-    // Web fonts can move the numbers once they arrive.
-    document.fonts?.ready.then(update).catch(() => {});
+    const resize = () => {
+      fit();
+      update();
+    };
+    resize();
+    // Web fonts can change heights once they arrive.
+    document.fonts?.ready.then(resize).catch(() => {});
     window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", resize);
     return () => {
       window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("resize", resize);
     };
-  }, [pinned, wide]);
+  }, [wide]);
 
-  /** Pinned: clicking a step scrolls to the start of its part of the runway. */
+  /** Clicking a step scrolls to the start of its part of the runway. */
   const goTo = (i: number) => {
     const runway = runwayRef.current;
-    if (!runway || !pinned) return;
+    if (!runway) return;
     const travel = runway.offsetHeight - window.innerHeight;
     const top = runway.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({ top: top + travel * ((i + 0.1) / STEPS.length), behavior: reduced ? "auto" : "smooth" });
   };
 
   const animate = inView && !reduced;
+  const heading = (
+    <>
+      A path that <span className="text-primary-container">builds on itself</span>
+    </>
+  );
 
   return (
     <section ref={sectionRef} id="how-it-works" className="w-full">
-      <div ref={runwayRef} className="pin:h-[300vh]">
-        <div className="max-w-7xl mx-auto w-full px-gutter-mobile py-space-2xl lg:px-gutter-desktop pin:sticky pin:top-[var(--spacing-header-height)] pin:flex pin:h-[calc(100vh-var(--spacing-header-height))] pin:items-center pin:py-0">
-          <div className="grid w-full grid-cols-[minmax(0,1fr)] gap-space-2xl pin:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] pin:items-center pin:gap-[64px]">
-            <div ref={railRef} className="relative min-w-0 pl-[42px] lg:pl-[52px]">
+      <div ref={runwayRef} className="h-[300vh]">
+        {/* ---------- Phones and tablets ---------- */}
+        <div className="sticky top-[var(--spacing-header-height)] flex h-[calc(100svh-var(--spacing-header-height))] flex-col px-gutter-mobile pb-space-base pt-space-lg lg:hidden">
+          <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+            <h2 className="text-[26px] font-bold leading-tight tracking-tight text-on-surface sm:text-[32px]">{heading}</h2>
+
+            {/* Step tabs and the progress bar under them */}
+            <div className="mt-space-md">
+              <div role="tablist" aria-label="Steps" className="grid grid-cols-3 gap-1.5">
+                {STEPS.map((step, i) => (
+                  <button
+                    key={step.title}
+                    type="button"
+                    role="tab"
+                    aria-selected={active === i}
+                    onClick={() => goTo(i)}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg px-1 py-1.5 text-[12.5px] font-semibold transition-colors duration-300 sm:text-[13.5px] ${
+                      active === i ? "bg-primary-fixed text-primary" : "text-on-surface-variant"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] transition-colors duration-300 ${
+                        i <= active ? "bg-primary-container text-on-primary" : "border border-outline-variant"
+                      }`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className="truncate">{SHORT_STEPS[i]}</span>
+                  </button>
+                ))}
+              </div>
+              <span className="mt-1.5 block h-[3px] overflow-hidden rounded-full bg-outline-variant/50">
+                <span ref={barRef} className="block h-full origin-left scale-x-0 rounded-full bg-primary-container" />
+              </span>
+            </div>
+
+            {/* The active step's text: all three share one cell, so swapping never moves the view below */}
+            <div className="mt-space-md grid">
+              {STEPS.map((step, i) => (
+                <div
+                  key={step.title}
+                  aria-hidden={active !== i}
+                  className={`col-start-1 row-start-1 transition-all duration-500 ease-out motion-reduce:transition-none ${
+                    active === i ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0"
+                  }`}
+                >
+                  <p className="text-[17px] font-bold tracking-tight text-on-surface">{step.title}</p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-on-surface-variant">{step.body}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* One view at a time; the next replaces the last as you scroll */}
+            <div className="mt-space-md min-h-0 flex-1 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2.5 shadow-[0_20px_50px_-30px_rgba(53,37,205,0.45)]">
+              {!wide && (
+                <FitView>
+                  <div className="grid h-full grid-cols-[minmax(0,1fr)]">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        aria-hidden
+                        className={`col-start-1 row-start-1 min-h-0 min-w-0 transition-all duration-500 ease-out motion-reduce:transition-none ${
+                          active === i ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+                        }`}
+                      >
+                        {view(i, animate && active === i)}
+                      </div>
+                    ))}
+                  </div>
+                </FitView>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ---------- Desktop ---------- */}
+        <div className="mx-auto hidden h-[calc(100vh-var(--spacing-header-height))] w-full max-w-7xl items-center px-gutter-desktop lg:sticky lg:top-[var(--spacing-header-height)] lg:flex">
+          <div ref={gridRef} className="grid w-full origin-center grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-center gap-[64px]">
+            <div ref={railRef} className="relative min-w-0 pl-[52px]">
               {/* The rail: a faint track, the filled part that grows as you scroll, and a glowing head on its tip. */}
               <span ref={trackRef} aria-hidden className="absolute left-[15px] top-0 w-[2px] -translate-x-1/2 rounded-full bg-outline-variant/60" />
               <span
@@ -568,29 +684,24 @@ export default function LearningFramework() {
                 className="absolute -top-[5px] left-[10px] z-0 h-[10px] w-[10px] rounded-full bg-primary-container shadow-[0_0_0_4px_rgb(99_91_255/0.18),0_0_14px_rgb(99_91_255/0.6)] will-change-transform"
               />
 
-              <h2 className="font-headline-xl text-headline-xl-mobile tracking-tight text-on-surface lg:text-[38px] lg:leading-[46px]">
-                A path that <span className="text-primary-container">builds on itself</span>
-              </h2>
+              <h2 className="font-headline-xl text-[38px] font-bold leading-[46px] tracking-tight text-on-surface">{heading}</h2>
               <p className="mt-space-md max-w-xl font-body-lg text-body-lg text-on-surface-variant">
                 Every lesson moves in the same order: see the idea, watch it run, then understand what it costs.
               </p>
 
-              <ol className="mt-space-xl flex flex-col gap-space-2xl pin:gap-space-lg [@media(max-height:820px)]:pin:mt-space-lg [@media(max-height:820px)]:pin:gap-space-base">
+              <ol className="mt-space-xl flex flex-col gap-space-lg [@media(max-height:820px)]:mt-space-lg [@media(max-height:820px)]:gap-space-base">
                 {STEPS.map((step, i) => {
                   const Icon = step.icon;
                   const reached = i <= active;
                   const current = i === active;
                   return (
-                    <li
-                      key={step.title}
-                      className="relative lg:grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-[64px] pin:block"
-                    >
+                    <li key={step.title} className="relative">
                       <span
                         ref={(node) => {
                           markerRefs.current[i] = node;
                         }}
                         aria-hidden
-                        className={`absolute -left-[42px] top-[22px] z-10 flex h-[31px] w-[31px] items-center justify-center rounded-full border-2 font-label-md text-[13px] font-bold transition-all duration-300 lg:-left-[52px] ${
+                        className={`absolute -left-[52px] top-[22px] z-10 flex h-[31px] w-[31px] items-center justify-center rounded-full border-2 font-label-md text-[13px] font-bold transition-all duration-300 ${
                           reached ? "border-primary bg-primary-container text-on-primary" : "border-outline-variant bg-surface text-on-surface-variant"
                         } ${current ? "scale-110 shadow-[0_0_0_5px_rgb(99_91_255/0.15)]" : ""}`}
                       >
@@ -600,36 +711,25 @@ export default function LearningFramework() {
                         type="button"
                         onClick={() => goTo(i)}
                         aria-current={current ? "step" : undefined}
-                        className={`block w-full self-start rounded-2xl border bg-surface-container-lowest p-space-base text-left transition-all duration-300 sm:p-space-lg pin:cursor-pointer [@media(max-height:820px)]:pin:py-space-base ${
+                        className={`block w-full cursor-pointer rounded-2xl border bg-surface-container-lowest p-space-lg text-left transition-all duration-300 [@media(max-height:820px)]:py-space-base ${
                           current
                             ? "border-primary/40 shadow-[0_14px_30px_-18px_rgba(53,37,205,0.45)]"
-                            : "border-outline-variant/60 pin:hover:border-primary/30"
+                            : "border-outline-variant/60 hover:border-primary/30"
                         }`}
                       >
                         <span className="flex items-center gap-space-base">
                           <Icon />
-                          <span className="font-headline-md text-[18px] font-bold tracking-tight text-on-surface sm:text-[20px]">{step.title}</span>
+                          <span className="font-headline-md text-[20px] font-bold tracking-tight text-on-surface">{step.title}</span>
                         </span>
                         <span className="mt-space-sm block font-body-md text-[15px] leading-relaxed text-on-surface-variant">{step.body}</span>
                       </button>
-
-                      {/* Not pinned: each step carries its own view. */}
-                      {!pinned &&
-                        (wide ? (
-                          <LessonWindow active={i} playing={animate && current} />
-                        ) : (
-                          <div aria-hidden className="mt-space-md h-[470px] min-w-0 overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
-                            {view(i, animate && current)}
-                          </div>
-                        ))}
                     </li>
                   );
                 })}
               </ol>
             </div>
 
-            {/* Pinned: one lesson window beside the steps; its size never changes, only what's inside. */}
-            {pinned && <LessonWindow active={active} playing={animate} />}
+            {wide && <LessonWindow active={active} playing={animate} />}
           </div>
         </div>
       </div>
