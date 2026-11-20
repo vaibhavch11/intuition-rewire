@@ -19,18 +19,40 @@ export function useIsDark() {
   );
 }
 
-/** Switches the theme and remembers the choice; without a saved choice the site is light. */
+/**
+ * Switches the theme and remembers the choice; without a saved choice the site is light.
+ *
+ * Where the browser supports view transitions, the whole page cross-fades from
+ * the old theme to the new one (timing in globals.css), so everything —
+ * gradients, shadows, drawings — changes together. Elsewhere the colours fade
+ * one by one, and with reduced motion the switch is instant.
+ */
 function applyTheme(dark: boolean) {
   const root = document.documentElement;
-  root.classList.add("theme-switching");
-  root.classList.toggle("dark", dark);
-  root.style.colorScheme = dark ? "dark" : "light";
+  const commit = () => {
+    root.classList.toggle("dark", dark);
+    root.style.colorScheme = dark ? "dark" : "light";
+  };
   try {
     localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
   } catch {
     // Storage blocked: the choice lasts for this page only.
   }
-  window.setTimeout(() => root.classList.remove("theme-switching"), 300);
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    commit();
+    return;
+  }
+
+  if (!document.startViewTransition) {
+    root.classList.add("theme-switching");
+    commit();
+    window.setTimeout(() => root.classList.remove("theme-switching"), 300);
+    return;
+  }
+
+  // If the browser skips the fade (a hidden tab, say), the theme still switches.
+  document.startViewTransition(commit).ready.catch(() => {});
 }
 
 /** Sun/moon button for the header, or a labelled row for the phone menu. */

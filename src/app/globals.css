@@ -513,11 +513,19 @@ kbd {
   filter: invert(0.92) hue-rotate(180deg);
 }
 
-/* Theme switches cross-fade instead of snapping. Only while switching, so
-   ordinary hovers keep their own timing. */
+/* Theme switch: the whole page cross-fades from the old theme to the new one
+   (ThemeToggle starts a view transition; this sets its pace). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Browsers without view transitions cross-fade the colours instead. Only
+   while switching, so ordinary hovers keep their own timing. */
 .theme-switching,
 .theme-switching * {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease !important;
 }
 
 /* ---- Homepage: hero texture and a clearly separated band below it ---- */
