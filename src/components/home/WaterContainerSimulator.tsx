@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "@/components/Link";
-import { useEffect, useMemo, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -194,6 +194,32 @@ function Simulator({ phone }: { phone: boolean }) {
   const done = frame.phase === "done";
   const presetIndex = PRESETS.findIndex((p) => presetHeights(p).join() === heights.join());
 
+  // Auto-run once: the first time the challenge reaches the middle of the
+  // screen, press Play for the reader (after a short beat, so they see the
+  // walls first). Never for reduced motion, and never twice in a visit.
+  const sectionRef = useRef<HTMLElement>(null);
+  const autoRan = useRef(false);
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || autoRan.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || autoRan.current) return;
+        autoRan.current = true;
+        observer.disconnect();
+        timer = window.setTimeout(() => setPlaying(true), 700);
+      },
+      { rootMargin: "-30% 0px -30% 0px" }
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, []);
+
   // Autoplay: one move per tick, stopping on the answer.
   useEffect(() => {
     if (!playing) return;
@@ -265,7 +291,7 @@ function Simulator({ phone }: { phone: boolean }) {
   }
 
   return (
-    <section id="water-challenge" className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop py-space-2xl">
+    <section ref={sectionRef} id="water-challenge" className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop py-space-2xl">
       <SectionHeader
         eyebrow="Interactive challenge"
         icon={Droplets}
