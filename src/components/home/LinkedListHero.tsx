@@ -6,32 +6,80 @@ import Link from "@/components/Link";
 import { useInView, usePrefersReducedMotion } from "@/components/home/clientHooks";
 
 /*
- * A singly linked list in RAM, for the hero. Memory is a 6 × 3 grid of slots
+ * A singly linked list in RAM, for the hero. Memory is a 5 × 2 grid of slots
  * 0x40 bytes apart; the list's nodes sit in scattered slots and only know the
  * address of the next one. The loop: the nodes are created one by one, then
  * `curr` walks the list hop by hop until it reaches null.
  */
 
-const COLS = 6;
+const COLS = 5;
 const CELL = 100;
+const ROWS = 2;
 const addressOf = (slot: number) => `0x${(0x100 + slot * 0x40).toString(16).toUpperCase()}`;
 
 /** The list in order: each node's value and the memory slot it lives in. */
 const NODES = [
-  { value: 12, slot: 1 },
-  { value: 7, slot: 14 },
-  { value: 30, slot: 10 },
-  { value: 9, slot: 5 },
+  { value: 12, slot: 0 },
+  { value: 7, slot: 7 },
+  { value: 30, slot: 3 },
+  { value: 9, slot: 9 },
 ];
 
 const CODE = [
-  { text: "// each node = value + address of next", comment: true },
+  { text: "// each node = value + address of next" },
   { text: "class Node { int val; Node next; }" },
   { text: "Node curr = head;" },
   { text: "while (curr != null) {" },
   { text: "    curr = curr.next;   // one hop" },
   { text: "}" },
 ];
+
+/*
+ * VS Code's own colours for Java (Light+ in light mode, Dark+ in dark mode),
+ * except comments, which are grey.
+ * Brackets, operators and spaces keep the normal text colour.
+ */
+const SYNTAX = {
+  comment: "text-[#8B8B8B] dark:text-[#8A8F98]", // grey, so comments step back from the code
+  control: "text-[#AF00DB] dark:text-[#C586C0]", // while, if, return…
+  keyword: "text-[#0000FF] dark:text-[#569CD6]", // class, int, null, new…
+  type: "text-[#267F99] dark:text-[#4EC9B0]", // Node
+  variable: "text-[#001080] dark:text-[#9CDCFE]", // curr, head, next…
+  number: "text-[#098658] dark:text-[#B5CEA8]",
+} as const;
+
+const CONTROL = new Set(["while", "if", "else", "for", "return", "break", "continue"]);
+const KEYWORDS = new Set(["class", "int", "null", "new", "void", "boolean", "true", "false", "public", "private", "static"]);
+
+/** Splits one line of Java into coloured pieces, the way VS Code would colour them. */
+function highlight(line: string) {
+  const comment = line.indexOf("//");
+  const code = comment === -1 ? line : line.slice(0, comment);
+  const parts = code.split(/(\b[A-Za-z_]\w*\b|\b\d+\b)/).map((piece, i) => {
+    if (!piece) return null;
+    let tone: string | undefined;
+    if (/^\d+$/.test(piece)) tone = SYNTAX.number;
+    else if (CONTROL.has(piece)) tone = SYNTAX.control;
+    else if (KEYWORDS.has(piece)) tone = SYNTAX.keyword;
+    else if (/^[A-Z]/.test(piece)) tone = SYNTAX.type;
+    else if (/^[A-Za-z_]/.test(piece)) tone = SYNTAX.variable;
+    return tone ? (
+      <span key={i} className={tone}>
+        {piece}
+      </span>
+    ) : (
+      piece
+    );
+  });
+  if (comment !== -1) {
+    parts.push(
+      <span key="comment" className={`${SYNTAX.comment} italic`}>
+        {line.slice(comment)}
+      </span>
+    );
+  }
+  return parts;
+}
 
 type Frame = {
   ms: number; // how long this frame stays on screen
@@ -40,24 +88,20 @@ type Frame = {
   curr: number; // index of curr's node; -1 before the walk, NODES.length at null
   line: number; // code line running
   title: string;
-  left: string;
-  right: string;
 };
 
 /** The whole loop, one frame after another, each held long enough to read. */
 const FRAMES: Frame[] = [
-  { ms: 900, size: 0, hops: 0, curr: -1, line: 0, title: "Nodes live anywhere in RAM", left: "memory: 18 free slots", right: "any free slot will do" },
-  ...NODES.map((n, i): Frame => ({
+  { ms: 900, size: 0, hops: 0, curr: -1, line: 0, title: "Nodes live anywhere in RAM" },
+  ...NODES.map((_, i): Frame => ({
     ms: 900,
     size: i + 1,
     hops: 0,
     curr: -1,
     line: 1,
     title: "Nodes live anywhere in RAM",
-    left: `new Node(${n.value}) at ${addressOf(n.slot)}`,
-    right: "any free slot will do",
   })),
-  { ms: 1600, size: 4, hops: 0, curr: 0, line: 2, title: "Start at head", left: `curr = head = ${addressOf(NODES[0].slot)}`, right: "the only address we hold" },
+  { ms: 1600, size: 4, hops: 0, curr: 0, line: 2, title: "Start at head" },
   ...[1, 2, 3].map((h): Frame => ({
     ms: 1500,
     size: 4,
@@ -65,10 +109,8 @@ const FRAMES: Frame[] = [
     curr: h,
     line: 4,
     title: "Follow next, one hop at a time",
-    left: `curr = ${addressOf(NODES[h].slot)}`,
-    right: `hop ${h}: read next, jump there`,
   })),
-  { ms: 2800, size: 4, hops: 4, curr: NODES.length, line: 3, title: "No index. Just next addresses.", left: "curr = null", right: "end of list after 4 hops" },
+  { ms: 2800, size: 4, hops: 4, curr: NODES.length, line: 3, title: "No index. Just next addresses." },
 ];
 
 /** The frame shown, still, to anyone who prefers reduced motion. */
@@ -120,14 +162,20 @@ export default function LinkedListHero() {
   return (
     <div
       ref={ref}
-      className="w-full rounded-3xl border border-outline-variant/60 bg-surface-container-lowest/90 p-space-lg shadow-[0_30px_70px_-40px_rgba(53,37,205,0.45)] backdrop-blur-sm sm:p-space-xl"
+      className="w-full rounded-3xl border border-outline-variant/60 bg-surface-container-lowest/90 p-space-base shadow-[0_30px_70px_-40px_rgba(53,37,205,0.45)] backdrop-blur-sm sm:p-space-lg"
     >
       {/* Header: what this is, and two live counters */}
       <div className="flex items-center justify-between gap-space-md">
-        <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary-fixed/70 px-3 py-1 font-code-sm text-[10px] font-semibold uppercase tracking-[0.1em] text-primary sm:text-[11px] sm:tracking-[0.16em]">
+        {/* The pill doubles as the way into the course. */}
+        <Link
+          href="/dsa/singly-linked-list"
+          title="Open the Linked List course"
+          className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary-fixed/70 px-3 py-1 font-code-sm text-[10px] font-semibold uppercase tracking-[0.1em] text-primary transition-colors hover:bg-primary-fixed sm:text-[11px] sm:tracking-[0.16em]"
+        >
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           Singly linked list
-        </span>
+          <ArrowRight size={12} aria-hidden className="-ml-0.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
         <span className="flex shrink-0 gap-1.5 font-code-sm text-[11px] sm:text-[12px]">
           <span className="whitespace-nowrap rounded-md border border-outline-variant/70 px-2 py-0.5 text-on-surface-variant">
             size{" "}
@@ -144,7 +192,7 @@ export default function LinkedListHero() {
         </span>
       </div>
 
-      <p aria-live="polite" className="mt-space-md min-h-[32px] text-[22px] font-bold tracking-tight text-on-surface sm:text-[24px]">
+      <p aria-live="polite" className="mt-space-sm min-h-[28px] text-[19px] font-bold tracking-tight text-on-surface sm:text-[20px]">
         <span key={f.title} className="ll-fade inline-block">
           {f.title}
         </span>
@@ -153,14 +201,14 @@ export default function LinkedListHero() {
       {/* Memory: 18 slots, the list's nodes, the head and curr tags, and the arrows already followed */}
       <div className="mt-space-sm">
         <p className="mb-1 text-right font-code-sm text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/70">RAM</p>
-        <svg viewBox={`0 0 ${COLS * CELL} ${3 * CELL}`} className="block w-full" role="img" aria-label="Memory slots with the list's nodes in scattered addresses">
+        <svg viewBox={`0 0 ${COLS * CELL} ${ROWS * CELL}`} className="block w-full" role="img" aria-label="Memory slots with the list's nodes in scattered addresses">
           <defs>
             <marker id="ll-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0L10 5L0 10z" fill="var(--color-primary)" />
             </marker>
           </defs>
 
-          {Array.from({ length: COLS * 3 }, (_, slot) => (
+          {Array.from({ length: COLS * ROWS }, (_, slot) => (
             <g key={slot}>
               <rect
                 x={cellX(slot) + 4}
@@ -279,7 +327,7 @@ export default function LinkedListHero() {
           </span>
           <span className="font-code-sm text-[11px] text-on-surface-variant">SinglyLinkedList.java</span>
         </div>
-        <pre className="m-0 py-1.5 font-code-sm text-[11.5px] leading-[20px]">
+        <pre className="m-0 py-1 font-code-sm text-[11px] leading-[18px]">
           {CODE.map((l, i) => (
             <div
               key={i}
@@ -288,25 +336,19 @@ export default function LinkedListHero() {
               }`}
             >
               <span className="w-8 shrink-0 select-none pr-space-sm text-right text-on-surface-variant/50">{i + 1}</span>
-              <code className={`whitespace-pre ${l.comment ? "text-on-surface-variant/70" : "text-on-surface"}`}>{l.text}</code>
+              <code className="whitespace-pre text-on-surface">{highlight(l.text)}</code>
             </div>
           ))}
         </pre>
       </div>
 
-      {/* Status bar */}
-      <div className="mt-space-sm flex items-center justify-between gap-space-md rounded-lg bg-[#131b2e] px-space-md py-2 font-code-sm text-[11.5px] text-white/85 dark:bg-black/40">
-        <span key={f.left} className="ll-fade truncate">
-          {f.left}
-        </span>
-        <span key={f.right} className="ll-fade hidden shrink-0 text-white/60 sm:inline">
-          {f.right}
-        </span>
-      </div>
-
-      <div className="mt-space-base flex justify-end">
-        <Link href="/dsa/singly-linked-list" className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline">
-          Open the Linked List course <ArrowRight size={14} aria-hidden />
+      <div className="mt-space-sm flex justify-end">
+        <Link
+          href="/dsa/singly-linked-list"
+          className="group inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:underline"
+        >
+          Open the Linked List course
+          <ArrowRight size={14} aria-hidden className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     </div>

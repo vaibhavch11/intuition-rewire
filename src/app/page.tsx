@@ -47,7 +47,7 @@ export default async function Home() {
           <div className="hero-grid absolute inset-0 -z-10 pointer-events-none" aria-hidden="true" />
 
           <section className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop pt-[48px] sm:pt-[72px] lg:pt-[88px] pb-[40px] sm:pb-[56px] lg:pb-[72px]">
-            <div className="grid items-center gap-[48px] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-[64px]">
+            <div className="grid items-center gap-[48px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-[64px]">
               <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
                 <Link
                   href="/dsa/arrays"
@@ -103,7 +103,7 @@ export default async function Home() {
                 </ul>
               </div>
 
-              <div className="motion-safe:animate-fade-up [animation-delay:200ms]">
+              <div className="mx-auto w-full max-w-[500px] motion-safe:animate-fade-up [animation-delay:200ms] lg:mr-0">
                 <LinkedListHero />
               </div>
             </div>
