@@ -32,6 +32,18 @@ export const DOTS: Record<string, string> = {
 
 export const languageLabel = (language: string) => LABELS[language.toLowerCase()] ?? language;
 
+/** A language's tab label: "JS" on phones so every tab fits, the full name from sm up. */
+export function LanguageName({ language }: { language: string }) {
+  const full = languageLabel(language);
+  const short = full === "JavaScript" ? "JS" : full;
+  return (
+    <>
+      <span className="sm:hidden">{short}</span>
+      <span className="hidden sm:inline">{full}</span>
+    </>
+  );
+}
+
 /**
  * The same solution in one or more languages, shown as a code editor. The
  * reader's pick is remembered, so every lesson opens on the language they
@@ -82,7 +94,7 @@ export default function CodeTabs({ blocks }: { blocks: { language: string; code:
                 aria-selected={selected}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => choose(i)}
-                className={`relative flex h-10 shrink-0 items-center gap-space-xs whitespace-nowrap px-space-md font-label-md text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--editor-active-edge)] ${
+                className={`relative flex h-10 shrink-0 items-center gap-space-xs whitespace-nowrap px-3 font-label-md text-[13px] sm:px-space-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--editor-active-edge)] ${
                   selected
                     ? "bg-[var(--editor-bg)] font-semibold text-[var(--editor-text)]"
                     : "text-[var(--editor-muted)] hover:bg-white/5 hover:text-[var(--editor-text)]"
@@ -93,7 +105,7 @@ export default function CodeTabs({ blocks }: { blocks: { language: string; code:
                   className="h-2 w-2 rounded-full"
                   style={{ background: DOTS[block.language.toLowerCase()] ?? "#a5a0ff" }}
                 />
-                {languageLabel(block.language)}
+                <LanguageName language={block.language} />
                 {selected && <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-[var(--editor-active-edge)]" />}
               </button>
             );

@@ -99,7 +99,7 @@ function ContentView() {
         />
       </div>
       <p className="mt-3 text-[13px] font-bold text-on-surface">Example</p>
-      <pre className="mt-1.5 m-0 rounded-lg bg-surface-container-low px-3 py-2 font-code-sm text-[10.5px] leading-[18px] text-on-surface-variant">
+      <pre className="mt-1.5 m-0 overflow-x-auto rounded-lg bg-surface-container-low px-3 py-2 font-code-sm text-[10.5px] leading-[18px] text-on-surface-variant">
         {"Input:  root = [3, 9, 20, null, null, 15, 7]   Output: 3\nInput:  root = [1, null, 2]                    Output: 2"}
       </pre>
     </div>
@@ -231,7 +231,7 @@ function DryRunView({ playing }: { playing: boolean }) {
         </span>
       </div>
 
-      <div className="mt-2 flex items-center gap-3 border-y border-outline-variant/50 px-3 py-1 font-label-md text-[10px] text-on-surface-variant">
+      <div className="mt-2 flex items-center gap-2 border-y border-outline-variant/50 px-3 py-1 font-label-md text-[10px] text-on-surface-variant sm:gap-3">
         <span className="font-semibold text-on-surface">The code</span>
         {LANGS.map((lang, i) => (
           <span key={lang} className={`flex items-center gap-1 ${lang === "Python" ? "font-semibold text-on-surface" : ""}`}>
@@ -239,7 +239,7 @@ function DryRunView({ playing }: { playing: boolean }) {
             {lang}
           </span>
         ))}
-        <span className="ml-auto flex items-center gap-1">
+        <span className="ml-auto hidden items-center gap-1 sm:flex">
           <Copy size={10} /> line {s.line + 1}
         </span>
       </div>
@@ -553,8 +553,8 @@ export default function LearningFramework() {
     <section ref={sectionRef} id="how-it-works" className="w-full">
       <div ref={runwayRef} className="pin:h-[300vh]">
         <div className="max-w-7xl mx-auto w-full px-gutter-mobile py-space-2xl lg:px-gutter-desktop pin:sticky pin:top-[var(--spacing-header-height)] pin:flex pin:h-[calc(100vh-var(--spacing-header-height))] pin:items-center pin:py-0">
-          <div className="grid w-full gap-space-2xl pin:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] pin:items-center pin:gap-[64px]">
-            <div ref={railRef} className="relative pl-[42px] lg:pl-[52px]">
+          <div className="grid w-full grid-cols-[minmax(0,1fr)] gap-space-2xl pin:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] pin:items-center pin:gap-[64px]">
+            <div ref={railRef} className="relative min-w-0 pl-[42px] lg:pl-[52px]">
               {/* The rail: a faint track, the filled part that grows as you scroll, and a glowing head on its tip. */}
               <span ref={trackRef} aria-hidden className="absolute left-[15px] top-0 w-[2px] -translate-x-1/2 rounded-full bg-outline-variant/60" />
               <span
@@ -618,7 +618,7 @@ export default function LearningFramework() {
                         (wide ? (
                           <LessonWindow active={i} playing={animate && current} />
                         ) : (
-                          <div aria-hidden className="mt-space-md h-[470px] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
+                          <div aria-hidden className="mt-space-md h-[470px] min-w-0 overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3">
                             {view(i, animate && current)}
                           </div>
                         ))}

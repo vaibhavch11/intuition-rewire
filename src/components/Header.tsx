@@ -74,7 +74,8 @@ export default function Header() {
   const current = activeHref(pathname, useSectionsInView(pathname));
   // The site's sections are for members: signed-out visitors see the logo,
   // search and the sign-in buttons, and the links arrive with an account.
-  const signedIn = Boolean(useUser());
+  const user = useUser();
+  const signedIn = Boolean(user);
 
   useEffect(() => {
     if (!open) return;
@@ -89,11 +90,11 @@ export default function Header() {
     // No frosted-glass blur below lg: re-blurring the page under a fixed bar on
     // every scroll frame is what makes phones stutter. A near-solid bar looks the same.
     <header className="fixed top-0 left-0 right-0 w-full z-50 bg-surface-container-lowest/[0.97] shadow-[0_1px_8px_rgba(0,0,0,0.04)] lg:bg-surface-container-lowest/90 lg:backdrop-blur-xl">
-      <div className="h-14 max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-lg">
+      <div className="h-14 max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-sm sm:gap-space-lg">
         <div className="flex items-center gap-space-lg shrink-0">
           <Link href="/" className="flex items-center gap-space-sm">
-            <LogoMark className="h-8 w-auto" />
-            <span className="whitespace-nowrap font-headline-md text-[18px] leading-[26px] text-on-surface tracking-tight font-semibold sm:text-headline-md">
+            <LogoMark className="h-7 w-auto min-[400px]:h-8" />
+            <span className="whitespace-nowrap font-headline-md text-[17px] leading-[26px] text-on-surface tracking-tight font-semibold min-[400px]:text-[18px] sm:text-headline-md">
               <Wordmark />
             </span>
           </Link>
@@ -202,6 +203,19 @@ export default function Header() {
                 open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
               }`}
             />
+            {/* Narrow phones hide the bar's "Sign in" to keep it uncrowded, so it lives here instead. */}
+            {user === null && (
+              <Link
+                href={`/login?next=${encodeURIComponent(pathname)}`}
+                onClick={() => setOpen(false)}
+                style={{ transitionDelay: open ? "120ms" : "0ms" }}
+                className={`rounded-lg px-space-sm py-space-sm font-label-md text-label-md font-semibold text-on-surface ring-1 ring-inset ring-outline-variant transition-all duration-300 ease-out motion-reduce:transition-none min-[400px]:hidden ${
+                  open ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
+                }`}
+              >
+                Sign in
+              </Link>
+            )}
             {signedIn && [...NAV_LINKS, { href: LEARNING_PATH, label: "Learning Path" }].map(
               (link, i) => {
                 const isCta = i === NAV_LINKS.length;

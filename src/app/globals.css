@@ -445,6 +445,8 @@ html {
 }
 
 body {
+  /* Nothing may widen the page sideways on phones; clip (unlike hidden) keeps sticky sections working. */
+  overflow-x: clip;
   background: var(--c-surface);
   color: var(--c-on-surface);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;

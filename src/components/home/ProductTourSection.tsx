@@ -8,7 +8,7 @@ export default function ProductTourSection() {
   return (
     <section
       id="product-tour"
-      className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop py-space-2xl"
+      className="overflow-x-clip max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop py-space-2xl"
     >
       <SectionHeader
         eyebrow="Product tour"

@@ -61,10 +61,11 @@ export default function UserMenu() {
           loading ? "invisible" : "motion-safe:animate-fade-in"
         }`}
       >
+        {/* Very narrow phones: Sign in moves into the header menu, so the bar never crowds. */}
         <Link
           href={`/login?next=${next}`}
           tabIndex={loading ? -1 : undefined}
-          className="inline-flex h-9 items-center whitespace-nowrap rounded-lg px-space-sm font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface sm:px-space-md"
+          className="hidden h-9 items-center whitespace-nowrap rounded-lg px-space-sm font-label-md text-label-md font-semibold text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface min-[400px]:inline-flex sm:px-space-md"
         >
           Sign in
         </Link>

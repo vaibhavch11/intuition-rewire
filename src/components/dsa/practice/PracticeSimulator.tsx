@@ -13,7 +13,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import CodeLines from "@/components/dsa/CodeLines";
-import { DOTS, LANGUAGE_KEY, languageLabel } from "@/components/dsa/CodeTabs";
+import { DOTS, LANGUAGE_KEY, LanguageName, languageLabel } from "@/components/dsa/CodeTabs";
 import { useStoredString, writeStored } from "@/lib/browserStore";
 import { trustedLineMap } from "@/lib/dsa/lineMap";
 import RichText from "@/components/dsa/RichText";
@@ -788,7 +788,7 @@ export default function PracticeSimulator({
                           writeStored(LANGUAGE_KEY, v.language);
                           setCodeOpen(true);
                         }}
-                        className={`relative flex h-10 shrink-0 items-center gap-[6px] whitespace-nowrap px-space-sm font-label-md text-[13px] transition-colors ${
+                        className={`relative flex h-10 shrink-0 items-center gap-[6px] whitespace-nowrap px-2 font-label-md text-[13px] sm:px-space-sm transition-colors ${
                           selected ? "text-on-surface" : "text-on-surface-variant hover:text-on-surface"
                         }`}
                       >
@@ -796,9 +796,9 @@ export default function PracticeSimulator({
                         {/* Every tab is as wide as its bold label, so selecting one never nudges the others. */}
                         <span className="grid">
                           <span aria-hidden className="invisible col-start-1 row-start-1 font-semibold">
-                            {languageLabel(v.language)}
+                            <LanguageName language={v.language} />
                           </span>
-                          <span className={`col-start-1 row-start-1 ${selected ? "font-semibold" : ""}`}>{languageLabel(v.language)}</span>
+                          <span className={`col-start-1 row-start-1 ${selected ? "font-semibold" : ""}`}><LanguageName language={v.language} /></span>
                         </span>
                         {selected && <span aria-hidden className="absolute inset-x-space-xs bottom-0 h-0.5 rounded-full bg-primary-container" />}
                       </button>
