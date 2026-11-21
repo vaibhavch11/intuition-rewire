@@ -1,70 +1,13 @@
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 import Link from "@/components/Link";
 import { getSections } from "@/lib/dsa/curriculum";
 import { courseListJsonLd, fitDescription, pageMetadata } from "@/lib/seo";
-import { courseStats, isComingSoon } from "@/lib/dsa/types";
-import type { Section } from "@/lib/dsa/types";
-import LargeScreenLattice from "@/components/dsa/LargeScreenLattice";
+import { courseStats, groupByChapter, isComingSoon, isProblem } from "@/lib/dsa/types";
 import JsonLd from "@/components/seo/JsonLd";
-import FreeRibbon from "@/components/dsa/FreeRibbon";
 import { isFreeCourse } from "@/lib/dsa/access";
-
-function CourseCard({ section }: { section: Section }) {
-  const stats = courseStats(section);
-
-  return (
-    <Link
-      href={`/dsa/${section.slug}`}
-      className="reveal group relative flex flex-col overflow-hidden rounded-xl border border-outline-variant/70 bg-surface-container-lowest p-space-lg transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
-    >
-      {isFreeCourse(section.slug) && <FreeRibbon />}
-      <h3 className="font-headline-md text-headline-md text-on-surface group-hover:text-primary">
-        {section.title}
-      </h3>
-      <p className="font-body-md text-body-md mt-space-xs flex-1 text-on-surface-variant">
-        {section.description}
-      </p>
-
-      <div className="font-body-sm text-body-sm mt-space-base flex flex-wrap items-center gap-space-md text-on-surface-variant">
-        <span>
-          <span className="font-semibold text-on-surface">{stats.lessons}</span>{" "}
-          {stats.lessons === 1 ? "lesson" : "lessons"}
-        </span>
-        {stats.problems > 0 && (
-          <span>
-            <span className="font-semibold text-on-surface">
-              {stats.problems}
-            </span>{" "}
-            {stats.problems === 1 ? "problem" : "problems"}
-          </span>
-        )}
-        {stats.patterns > 0 && (
-          <span>
-            <span className="font-semibold text-on-surface">
-              {stats.patterns}
-            </span>{" "}
-            {stats.patterns === 1 ? "pattern" : "patterns"}
-          </span>
-        )}
-      </div>
-    </Link>
-  );
-}
-
-function CourseGrid({ title, items }: { title: string; items: Section[] }) {
-  return (
-    <section>
-      <h2 className="font-headline-lg text-headline-lg text-on-surface">
-        {title}
-      </h2>
-      <div className="mt-space-base grid gap-space-base sm:grid-cols-2">
-        {items.map((section) => (
-          <CourseCard key={section.slug} section={section} />
-        ))}
-      </div>
-    </section>
-  );
-}
+import { buildPath } from "@/lib/dsa/path";
+import CurriculumExplorer, { type CurriculumCourse } from "@/components/dsa/CurriculumExplorer";
 
 export async function generateMetadata(): Promise<Metadata> {
   const sections = await getSections();
@@ -80,82 +23,84 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
+/**
+ * The Data Structures & Algorithms track: what it is, then the curriculum
+ * board (Beginner, Intermediate, Advanced, in the order to take them) with the
+ * chosen course's chapters and lessons underneath.
+ */
 export default async function DsaIndexPage() {
-  const sections = await getSections();
-  const totals = sections.reduce(
-    (acc, section) => {
-      const stats = courseStats(section);
-      return {
-        lessons: acc.lessons + stats.lessons,
-        problems: acc.problems + stats.problems,
-      };
-    },
-    { lessons: 0, problems: 0 }
-  );
+  const sections = (await getSections()).filter((s) => !isComingSoon(s));
+
+  // Only what the board needs, so the page stays light in the browser.
+  const courses: CurriculumCourse[] = sections.map((section) => {
+    const stats = courseStats(section);
+    const topics = section.topics.filter((t) => t.slug !== "coming-soon");
+    return {
+      slug: section.slug,
+      title: section.title,
+      description: section.tagline ?? section.description,
+      free: isFreeCourse(section.slug),
+      lessons: stats.lessons,
+      problems: stats.problems,
+      chapters: groupByChapter(topics).map((chapter) => ({
+        title: chapter.title,
+        topics: chapter.topics.map((t) => ({
+          slug: t.slug,
+          title: t.title,
+          problem: isProblem(t),
+          ...(t.difficulty ? { difficulty: t.difficulty } : {}),
+        })),
+      })),
+    };
+  });
+  const stages = buildPath(courses);
+  const inPath = stages.flatMap((s) => s.rows.map((r) => r.course));
+  const totals = inPath.reduce((acc, c) => ({ lessons: acc.lessons + c.lessons, problems: acc.problems + c.problems }), {
+    lessons: 0,
+    problems: 0,
+  });
 
   return (
-    <main>
-      <section className="relative overflow-hidden border-b border-outline-variant/50 bg-surface">
-        <div className="mx-auto grid max-w-6xl items-center gap-space-xl px-gutter-mobile py-space-2xl lg:grid-cols-[1.05fr_1fr] lg:px-gutter-desktop">
-          <div>
-            <h1 className="font-headline-xl text-headline-xl-mobile text-on-surface lg:text-headline-xl">
-              Data Structures &amp; Algorithms
-            </h1>
-            <p className="font-body-lg text-body-lg mt-space-md max-w-prose text-on-surface-variant">
-              Every lesson is built around a dry run — you watch the memory
-              change, step by step, instead of memorising the shape of a
-              solution.
-            </p>
-
-            <div className="font-body-md text-body-md mt-space-lg flex flex-wrap gap-space-lg text-on-surface-variant">
-              <span>
-                <span className="font-headline-md text-headline-md font-bold text-primary">
-                  {sections.length}
-                </span>{" "}
-                courses
-              </span>
-              <span>
-                <span className="font-headline-md text-headline-md font-bold text-primary">
-                  {totals.lessons}
-                </span>{" "}
-                lessons
-              </span>
-              <span>
-                <span className="font-headline-md text-headline-md font-bold text-primary">
-                  {totals.problems}
-                </span>{" "}
-                problems
-              </span>
-            </div>
-          </div>
-
-          <div
-            aria-hidden
-            className="hidden h-[300px] w-full lg:block"
-            role="presentation"
+    <main className="mx-auto w-full max-w-7xl px-gutter-mobile py-space-xl lg:px-gutter-desktop">
+      {/* What this track is */}
+      <section className="max-w-3xl">
+        <p className="font-code-sm text-[11px] uppercase tracking-[0.18em] text-primary">Data Structures &amp; Algorithms</p>
+        <h1 className="mt-space-sm text-[32px] font-bold leading-[1.1] tracking-tight text-on-surface sm:text-[44px]">
+          Learn Data Structures &amp; Algorithms from <span className="text-primary-container">first principles</span>.
+        </h1>
+        <p className="mt-space-md text-[16px] leading-relaxed text-on-surface-variant sm:text-[17px]">
+          Start with why each structure exists and what it costs, then watch the code run line by line. The courses build on
+          each other, so take them in order, from Arrays to Dynamic Programming.
+        </p>
+        <div className="mt-space-lg flex flex-wrap items-center gap-x-space-xl gap-y-space-md">
+          <dl className="flex gap-space-xl">
+            {[
+              { value: inPath.length, label: "courses" },
+              { value: totals.lessons, label: "lessons" },
+              { value: totals.problems, label: "problems" },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col-reverse">
+                <dt className="text-[13px] text-on-surface-variant">{stat.label}</dt>
+                <dd className="text-[24px] font-bold tracking-tight text-on-surface">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <Link
+            href="/dsa/arrays"
+            className="group inline-flex h-11 items-center gap-space-sm rounded-[10px] bg-primary-container px-[20px] text-[15px] font-semibold text-on-primary shadow-sm transition-colors hover:bg-primary"
           >
-            <LargeScreenLattice />
-          </div>
+            Start with Arrays
+            <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl space-y-space-2xl px-gutter-mobile py-space-2xl lg:px-gutter-desktop">
-        <CourseGrid
-          title="Data Structures"
-          items={sections.filter((s) => s.category === "data-structure")}
-        />
-        <CourseGrid
-          title="Algorithms"
-          items={sections.filter((s) => s.category === "algorithm")}
-        />
+      <div className="mt-space-2xl">
+        <CurriculumExplorer stages={stages} />
       </div>
 
       {/* The courses with lessons, as a list Google can show as course results. */}
-      <JsonLd
-        data={courseListJsonLd(
-          sections.filter((s) => !isComingSoon(s)).map((s) => ({ name: s.title, path: `/dsa/${s.slug}` }))
-        )}
-      />
+      <JsonLd data={courseListJsonLd(inPath.map((c) => ({ name: c.title, path: `/dsa/${c.slug}` })))} />
     </main>
   );
 }

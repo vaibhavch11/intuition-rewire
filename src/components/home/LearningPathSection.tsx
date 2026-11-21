@@ -1,186 +1,186 @@
-"use client";
-
-import { useState, type CSSProperties } from "react";
+import type { ReactNode } from "react";
+import { ArrowRight } from "lucide-react";
 import Link from "@/components/Link";
-
 import type { CourseSummary } from "@/lib/dsa/types";
-import SectionHeader from "@/components/home/SectionHeader";
-import TopicIcon from "@/components/home/TopicIcons";
-import FreeRibbon from "@/components/dsa/FreeRibbon";
-import { isFreeCourse } from "@/lib/dsa/access";
+import { buildPath } from "@/lib/dsa/path";
 
-type Category = "ds" | "algo" | "sys";
+type Track = {
+  id: string;
+  title: string;
+  points: string[];
+  tint: string;
+  art: ReactNode;
+  /** Where the card goes; tracks without one are still being built. */
+  href?: string;
+};
 
-const TABS: { id: Category; label: string }[] = [
-  { id: "ds", label: "Data Structures" },
-  { id: "algo", label: "Algorithms" },
-  { id: "sys", label: "System Memory" },
+const TRACKS: Track[] = [
+  {
+    id: "dsa",
+    title: "Data Structures & Algorithms",
+    points: ["Hand-drawn lessons", "Dry runs in 4 languages", "The patterns interviews ask"],
+    tint: "#ecebff",
+    href: "/dsa",
+    art: (
+      <svg viewBox="0 0 120 70" className="h-full w-full" aria-hidden>
+        <g fill="#fff" stroke="#534AB7" strokeWidth="1.5">
+          <rect x="12" y="14" width="14" height="14" rx="2" />
+          <rect x="26" y="14" width="14" height="14" rx="2" />
+          <rect x="40" y="14" width="14" height="14" rx="2" fill="#CECBF6" />
+        </g>
+        <path d="M16 46 Q32 36 48 50" fill="none" stroke="#7F77DD" strokeWidth="1.5" strokeDasharray="3 3" />
+        <g stroke="#534AB7" strokeWidth="1.3">
+          <line x1="90" y1="16" x2="76" y2="38" />
+          <line x1="90" y1="16" x2="104" y2="38" />
+          <line x1="76" y1="38" x2="68" y2="58" />
+        </g>
+        <g fill="#fff" stroke="#534AB7" strokeWidth="1.5">
+          <circle cx="90" cy="16" r="6" />
+          <circle cx="76" cy="38" r="6" fill="#CECBF6" />
+          <circle cx="104" cy="38" r="6" />
+          <circle cx="68" cy="58" r="5" />
+        </g>
+      </svg>
+    ),
+  },
+  {
+    id: "system-design",
+    title: "System Design",
+    points: ["Scaling from one server up", "Real case studies", "Senior interview prep"],
+    tint: "#e3f5ee",
+    art: (
+      <svg viewBox="0 0 120 70" className="h-full w-full" aria-hidden>
+        <g stroke="#0F6E56" strokeWidth="1.2">
+          <line x1="60" y1="20" x2="25" y2="40" />
+          <line x1="60" y1="20" x2="60" y2="40" />
+          <line x1="60" y1="20" x2="95" y2="40" />
+        </g>
+        <g fill="#fff" stroke="#0F6E56" strokeWidth="1.5">
+          <rect x="48" y="8" width="24" height="12" rx="3" />
+          <rect x="14" y="40" width="22" height="16" rx="3" />
+          <rect x="49" y="40" width="22" height="16" rx="3" />
+          <rect x="84" y="40" width="22" height="16" rx="3" />
+        </g>
+      </svg>
+    ),
+  },
+  {
+    id: "ai-engineering",
+    title: "AI Engineering",
+    points: ["LLM apps end to end", "Retrieval and agents", "Evals that matter"],
+    tint: "#fbf0dc",
+    art: (
+      <svg viewBox="0 0 120 70" className="h-full w-full" aria-hidden>
+        <g stroke="#854F0B" strokeWidth="1">
+          <line x1="25" y1="18" x2="60" y2="35" />
+          <line x1="25" y1="52" x2="60" y2="35" />
+          <line x1="60" y1="35" x2="95" y2="18" />
+          <line x1="60" y1="35" x2="95" y2="52" />
+        </g>
+        <g fill="#fff" stroke="#854F0B" strokeWidth="1.5">
+          <circle cx="25" cy="18" r="5" />
+          <circle cx="25" cy="52" r="5" />
+          <circle cx="60" cy="35" r="7" fill="#FAC775" />
+          <circle cx="95" cy="18" r="5" />
+          <circle cx="95" cy="52" r="5" />
+        </g>
+      </svg>
+    ),
+  },
+  {
+    id: "devops",
+    title: "DevOps & AI Infrastructure",
+    points: ["Containers to clusters", "GPUs and model serving", "CI/CD and monitoring"],
+    tint: "#e6f0fb",
+    art: (
+      <svg viewBox="0 0 120 70" className="h-full w-full" aria-hidden>
+        <g fill="#fff" stroke="#185FA5" strokeWidth="1.5">
+          <rect x="14" y="14" width="26" height="18" rx="3" />
+          <rect x="14" y="38" width="26" height="18" rx="3" />
+          <rect x="47" y="14" width="26" height="18" rx="3" />
+          <rect x="47" y="38" width="26" height="18" rx="3" fill="#B5D4F4" />
+          <rect x="80" y="14" width="26" height="42" rx="3" />
+        </g>
+        <g stroke="#185FA5" strokeWidth="1.2">
+          <line x1="86" y1="24" x2="100" y2="24" />
+          <line x1="86" y1="32" x2="100" y2="32" />
+          <line x1="86" y1="40" x2="100" y2="40" />
+        </g>
+      </svg>
+    ),
+  },
 ];
 
-const DS_ORDER = [
-  "arrays",
-  "strings",
-  "singly-linked-list",
-  "hash-table",
-  "stack",
-  "queue",
-  "binary-tree",
-  "binary-search-tree",
-  "heap",
-  "graph",
-  "trie",
-];
-
-const SYSTEM_MEMORY_CARDS: { title: string; note: string; icon: string }[] = [
-  { title: "Cache Locality", note: "L1/L2 spatial locality", icon: "cache-locality" },
-  { title: "Stack vs Heap", note: "allocation lifetimes", icon: "stack-vs-heap" },
-  { title: "Pointers & Addresses", note: "indirection cost", icon: "pointers" },
-];
-
-/** Same card for every tab: icon tile, title, one line of detail. */
-const CARD =
-  "group relative flex flex-col items-center justify-center rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-space-md text-center transition-all duration-200 motion-safe:animate-fade-up";
-const LINK_CARD = `${CARD} hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_14px_30px_-18px_rgba(53,37,205,0.45)]`;
-
-function IconTile({ slug }: { slug: string }) {
-  return (
-    <span className="mb-space-sm flex h-16 items-center justify-center transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-110 motion-reduce:transition-none">
-      <TopicIcon slug={slug} size={54} />
-    </span>
-  );
-}
-
-function CardText({ title, detail }: { title: string; detail: string }) {
+function CardBody({ track, live, meta }: { track: Track; live: boolean; meta: string }) {
   return (
     <>
-      <span className="font-label-md text-label-md font-semibold text-on-surface">{title}</span>
-      <span className="mt-0.5 font-body-sm text-body-sm text-on-surface-variant">{detail}</span>
+      <span
+        className={`relative block h-[72px] overflow-hidden rounded-xl sm:h-[104px] ${live ? "" : "opacity-75 saturate-[0.45]"}`}
+        style={{ background: track.tint }}
+      >
+        {track.art}
+        <span
+          className={`absolute right-1.5 top-1.5 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold sm:text-[11px] ${
+            live ? "text-[#0F6E56]" : "text-[#5f5e5a]"
+          }`}
+        >
+          {live ? "● Live" : "Coming soon"}
+        </span>
+      </span>
+      <span className="mt-2.5 block text-[14px] font-bold leading-snug tracking-tight text-on-surface sm:text-[16px]">{track.title}</span>
+      <span className="mt-1.5 hidden flex-col gap-0.5 text-[13px] leading-snug text-on-surface-variant sm:flex">
+        {track.points.map((p) => (
+          <span key={p}>+ {p}</span>
+        ))}
+      </span>
+      <span className="mt-auto flex items-center justify-between gap-2 pt-3">
+        <span className="font-code-sm text-[10.5px] uppercase tracking-[0.08em] text-on-surface-variant sm:text-[11px]">{meta}</span>
+        {live && <ArrowRight size={16} aria-hidden className="shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />}
+      </span>
     </>
   );
 }
 
-function DsCard({
-  slug,
-  title,
-  lessons,
-  style,
-}: {
-  slug: string;
-  title: string;
-  lessons: number;
-  style?: CSSProperties;
-}) {
-  return (
-    <Link href={`/dsa/${slug}`} style={style} className={`${LINK_CARD} overflow-hidden`}>
-      {isFreeCourse(slug) && <FreeRibbon size="sm" />}
-      <IconTile slug={slug} />
-      <CardText title={title} detail={`${lessons} lesson${lessons === 1 ? "" : "s"}`} />
-    </Link>
-  );
-}
-
-export default function LearningPathSection({
-  courses,
-}: {
-  courses: CourseSummary[];
-}) {
-  // `from` is the side the new tab's cards slide in from: the direction you moved.
-  const [{ tab, from }, setView] = useState<{ tab: Category; from: "left" | "right" | null }>({
-    tab: "ds",
-    from: null,
-  });
-  const tabIndex = TABS.findIndex((t) => t.id === tab);
-  const choose = (next: Category) => {
-    const nextIndex = TABS.findIndex((t) => t.id === next);
-    if (nextIndex === tabIndex) return;
-    setView({ tab: next, from: nextIndex > tabIndex ? "right" : "left" });
-  };
-  const slide =
-    from === "right" ? "motion-safe:animate-slide-in-right" : from === "left" ? "motion-safe:animate-slide-in-left" : "";
-  const stagger = (i: number) => ({ animationDelay: `${60 + i * 35}ms` });
-  const dsSections = courses.filter((s) => s.category === "data-structure");
-  const algoSections = courses.filter((s) => s.category === "algorithm");
-
-  const orderedDs = DS_ORDER.map((slug) =>
-    dsSections.find((s) => s.slug === slug)
-  ).filter((s): s is NonNullable<typeof s> => Boolean(s));
+/**
+ * "Pick your path": one card per track. Data Structures & Algorithms is live
+ * and opens its curriculum at /dsa; the others are still being built.
+ */
+export default function LearningPathSection({ courses }: { courses: CourseSummary[] }) {
+  const path = buildPath(courses);
+  const courseCount = path.reduce((n, s) => n + s.rows.length, 0);
+  const lessonCount = path.reduce((n, s) => n + s.rows.reduce((m, r) => m + r.course.lessons, 0), 0);
 
   return (
     <section className="home-band w-full py-space-2xl" id="learning-path">
-      <div className="max-w-7xl mx-auto px-gutter-mobile lg:px-gutter-desktop">
-        <div className="text-center max-w-3xl mx-auto mb-space-xl">
-          <SectionHeader
-            title={
-              <>
-                Structured <span className="text-primary-container">Learning Path</span>
-              </>
-            }
-            lead="Follow an expert-curated Data Structures and Algorithms learning path that takes you from memory fundamentals to advanced concepts through in-depth hardware explanations and structured interview progression."
-          />
+      <div className="mx-auto max-w-7xl px-gutter-mobile lg:px-gutter-desktop">
+        <p className="font-code-sm text-[11px] uppercase tracking-[0.18em] text-primary">Pick your path</p>
+        <h2 className="mt-space-sm text-[28px] font-bold leading-tight tracking-tight text-on-surface sm:text-[36px]">
+          Choose where to <span className="text-primary-container">start</span>
+        </h2>
+        <p className="mt-space-sm max-w-2xl text-[16px] leading-relaxed text-on-surface-variant">
+          One track is live today and more are on the way. Every track runs in order, from your first lesson to interview-ready.
+        </p>
 
-          {/* Equal-width tabs, so the highlight can slide by exactly one tab. */}
-          <div role="tablist" aria-label="Learning path" className="relative mx-auto mt-space-lg grid w-full max-w-md grid-cols-3 rounded-xl bg-surface-container p-1.5 shadow-sm sm:inline-grid sm:w-auto sm:max-w-none">
-            <span
-              aria-hidden
-              className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/3)] rounded-lg bg-primary-container shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-              style={{ transform: `translateX(${tabIndex * 100}%)` }}
-            />
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={tab === t.id}
-                onClick={() => choose(t.id)}
-                className={`relative z-10 rounded-lg px-space-sm py-2 font-label-md text-label-md leading-tight transition-colors duration-300 sm:whitespace-nowrap sm:px-space-lg ${
-                  tab === t.id ? "text-on-primary" : "text-on-surface-variant hover:text-on-surface"
-                }`}
+        <div className="mt-space-xl grid grid-cols-2 gap-space-sm sm:gap-space-md lg:grid-cols-4">
+          {TRACKS.map((track) =>
+            track.href ? (
+              <Link
+                key={track.id}
+                href={track.href}
+                className="group flex flex-col rounded-2xl border border-primary/40 bg-surface-container-lowest p-2.5 shadow-[0_14px_30px_-20px_rgba(53,37,205,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/70 sm:p-3"
               >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative w-full bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg lg:p-space-2xl overflow-hidden">
-          {/* Keyed by tab, so each switch replays the slide and the card stagger. */}
-          <div key={tab} className={slide}>
-          {tab === "ds" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-md">
-              {orderedDs.map((s, i) => (
-                <DsCard
-                  key={s.slug}
-                  slug={s.slug}
-                  title={s.title}
-                  lessons={s.lessons}
-                  style={stagger(i)}
-                />
-              ))}
-            </div>
+                <CardBody track={track} live meta={`${courseCount} courses · ${Math.floor(lessonCount / 10) * 10}+ lessons`} />
+              </Link>
+            ) : (
+              <div
+                key={track.id}
+                aria-label={`${track.title}, coming soon`}
+                className="flex cursor-default flex-col rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2.5 sm:p-3"
+              >
+                <CardBody track={track} live={false} meta="Coming soon" />
+              </div>
+            )
           )}
-
-          {tab === "algo" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-space-md">
-              {algoSections.map((s, i) => (
-                <Link key={s.slug} href={`/dsa/${s.slug}`} style={stagger(i)} className={LINK_CARD}>
-                  <IconTile slug={s.slug} />
-                  <CardText title={s.title} detail={`${s.lessons} topic${s.lessons === 1 ? "" : "s"}`} />
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {tab === "sys" && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
-              {SYSTEM_MEMORY_CARDS.map((c, i) => (
-                <div key={c.title} style={stagger(i)} className={`${CARD} p-space-lg`}>
-                  <IconTile slug={c.icon} />
-                  <CardText title={c.title} detail={c.note} />
-                </div>
-              ))}
-            </div>
-          )}
-          </div>
         </div>
       </div>
     </section>

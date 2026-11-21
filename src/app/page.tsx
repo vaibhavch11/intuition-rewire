@@ -9,6 +9,7 @@ import LearningFramework from "@/components/home/LearningFramework";
 import ProductTourSection from "@/components/home/ProductTourSection";
 import HashLink from "@/components/HashLink";
 import { getSections } from "@/lib/dsa/curriculum";
+import { isComingSoon } from "@/lib/dsa/types";
 import { pageMetadata, websiteJsonLd } from "@/lib/seo";
 import JsonLd from "@/components/seo/JsonLd";
 
@@ -21,7 +22,8 @@ export const metadata = pageMetadata({
 
 export default async function Home() {
   // Counts only, so the full curriculum never reaches the browser bundle.
-  const courses = (await getSections()).map((s) => ({
+  // Courses still waiting for their lessons (only a "coming soon" placeholder) are left out.
+  const courses = (await getSections()).filter((s) => !isComingSoon(s)).map((s) => ({
     slug: s.slug,
     title: s.title,
     category: s.category,
@@ -47,7 +49,7 @@ export default async function Home() {
           <div className="hero-grid absolute inset-0 -z-10 pointer-events-none" aria-hidden="true" />
 
           <section className="max-w-7xl mx-auto w-full px-gutter-mobile lg:px-gutter-desktop pt-[24px] sm:pt-[32px] lg:pt-[40px] pb-[40px] sm:pb-[56px] lg:pb-[72px]">
-            <div className="grid items-center gap-[48px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-[64px]">
+            <div className="grid items-center gap-[48px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start lg:gap-[64px]">
               <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
                 <Link
                   href="/dsa/arrays"
@@ -77,7 +79,7 @@ export default async function Home() {
                     href="/dsa/arrays"
                     className="group inline-flex h-[48px] items-center justify-center gap-space-md whitespace-nowrap rounded-full bg-primary-container pl-[22px] pr-[6px] font-label-md text-[15px] font-semibold text-on-primary shadow-[0_10px_24px_-10px_rgba(79,70,229,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[0_14px_28px_-10px_rgba(53,37,205,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
-                    Start with Arrays, free
+                    Start with Arrays
                     <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white/20 transition-transform duration-200 group-hover:translate-x-0.5">
                       <ArrowRight size={16} />
                     </span>

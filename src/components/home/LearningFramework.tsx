@@ -487,6 +487,12 @@ function FitView({ children }: { children: ReactNode }) {
   );
 }
 
+/** Desktop: the pinned area fills the screen under the header, up to 860px, and is centred when the screen is taller. */
+const PIN_H = "min(calc(100vh - var(--spacing-header-height)), 860px)";
+/** A desktop screen tall enough for the whole section with room to spare: it sits in the page instead of pinning. */
+const STILL_QUERY = "(min-width: 960px) and (min-height: 1290px)";
+const PIN_TOP = "max(var(--spacing-header-height), calc(50vh + var(--spacing-header-height) / 2 - 430px))";
+
 /** Short names for the step tabs on phones. */
 const SHORT_STEPS = ["The idea", "The dry run", "The cost"];
 
@@ -498,7 +504,9 @@ const SHORT_STEPS = ["The idea", "The dry run", "The cost"];
  *
  * - Desktop: the three steps on a numbered rail beside the lesson window; the
  *   rail fills as you scroll. If the screen is short, the section shrinks a
- *   little to fit rather than changing layout.
+ *   little to fit rather than changing layout. On very tall screens (a phone
+ *   in desktop mode) the whole section fits, so it sits in the page without
+ *   pinning and the steps advance on their own every few seconds.
  * - Phones and tablets: step tabs with a progress bar, the active step's text,
  *   and one view below; scrolling swaps them in place, one at a time.
  */
@@ -513,6 +521,8 @@ export default function LearningFramework() {
   const barRef = useRef<HTMLSpanElement>(null);
   const markerRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const wide = useMediaQuery("(min-width: 960px)");
+  // Tall enough for the whole section with room to spare: no pinning needed.
+  const still = useMediaQuery(STILL_QUERY);
   const reduced = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef);
@@ -523,16 +533,17 @@ export default function LearningFramework() {
       const grid = gridRef.current;
       if (!grid) return;
       grid.style.transform = "";
-      if (!window.matchMedia("(min-width: 960px)").matches) return;
+      if (!window.matchMedia("(min-width: 960px)").matches || window.matchMedia(STILL_QUERY).matches) return;
       const header = document.querySelector("header")?.getBoundingClientRect().height ?? 56;
-      const room = window.innerHeight - header - 32;
+      // The pinned area is at most 860px tall (see PIN_H), so that is the room to fill.
+      const room = Math.min(window.innerHeight - header, 860) - 32;
       const scale = Math.min(1, room / grid.offsetHeight);
       if (scale < 1) grid.style.transform = `scale(${scale})`;
     };
 
     const update = () => {
       const runway = runwayRef.current;
-      if (!runway) return;
+      if (!runway || window.matchMedia(STILL_QUERY).matches) return;
 
       // Progress through the runway, 0 to 3: the whole part picks the step.
       const box = runway.getBoundingClientRect();
@@ -572,10 +583,35 @@ export default function LearningFramework() {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", resize);
     };
-  }, [wide]);
+  }, [wide, still]);
+
+  // Still screens: advance one step every few seconds while the section is on screen.
+  useEffect(() => {
+    if (!still || !inView || reduced) return;
+    const id = window.setInterval(() => setActive((a) => (a + 1) % STEPS.length), 5000);
+    return () => window.clearInterval(id);
+  }, [still, inView, reduced, active]);
+
+  // Still screens: the rail glides to the active number.
+  useEffect(() => {
+    if (!still) return;
+    const stops = markerRefs.current.map((m) => {
+      const li = m?.parentElement;
+      return m && li ? li.offsetTop + m.offsetTop + m.offsetHeight / 2 : 0;
+    });
+    const last = stops[stops.length - 1];
+    if (!last) return;
+    if (trackRef.current) trackRef.current.style.height = `${last}px`;
+    if (fillRef.current) fillRef.current.style.height = `${stops[active]}px`;
+    if (headRef.current) headRef.current.style.transform = `translateY(${stops[active]}px)`;
+  }, [still, active]);
 
   /** Clicking a step scrolls to the start of its part of the runway. */
   const goTo = (i: number) => {
+    if (still) {
+      setActive(i);
+      return;
+    }
     const runway = runwayRef.current;
     if (!runway) return;
     const travel = runway.offsetHeight - window.innerHeight;
@@ -592,7 +628,10 @@ export default function LearningFramework() {
 
   return (
     <section ref={sectionRef} id="how-it-works" className="w-full">
-      <div ref={runwayRef} className="h-[300vh]">
+      {/* The runway: three screens of scrolling on phones; on desktop the pinned
+          area plus a fixed 1700px of travel, so very tall screens (a phone in
+          desktop mode) don't get thousands of pixels of empty scrolling. */}
+      <div ref={runwayRef} className={`h-[300vh] ${still ? "lg:h-auto" : "lg:h-[calc(100vh+1700px)]"}`}>
         {/* ---------- Phones and tablets ---------- */}
         <div className="sticky top-[var(--spacing-header-height)] flex h-[calc(100svh-var(--spacing-header-height))] flex-col px-gutter-mobile pb-space-base pt-space-lg lg:hidden">
           <div className="mx-auto flex h-full w-full max-w-2xl flex-col justify-center">
@@ -668,7 +707,11 @@ export default function LearningFramework() {
         </div>
 
         {/* ---------- Desktop ---------- */}
-        <div className="mx-auto hidden h-[calc(100vh-var(--spacing-header-height))] w-full max-w-7xl items-center px-gutter-desktop lg:sticky lg:top-[var(--spacing-header-height)] lg:flex">
+        {/* At most 860px tall and centred on the screen, so tall screens don't stretch it into empty space. */}
+        <div
+          className={`mx-auto hidden w-full max-w-7xl items-center px-gutter-desktop lg:flex ${still ? "py-space-2xl" : "lg:sticky"}`}
+          style={still ? undefined : { height: PIN_H, top: PIN_TOP }}
+        >
           <div ref={gridRef} className="grid w-full origin-center grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-center gap-[64px]">
             <div ref={railRef} className="relative min-w-0 pl-[52px]">
               {/* The rail: a faint track, the filled part that grows as you scroll, and a glowing head on its tip. */}
@@ -676,12 +719,16 @@ export default function LearningFramework() {
               <span
                 ref={fillRef}
                 aria-hidden
-                className="absolute left-[15px] top-0 w-[2px] -translate-x-1/2 rounded-full bg-gradient-to-b from-primary/30 via-primary to-primary-container"
+                className={`absolute left-[15px] top-0 w-[2px] -translate-x-1/2 rounded-full bg-gradient-to-b from-primary/30 via-primary to-primary-container ${
+                  still ? "transition-[height] duration-700 ease-out" : ""
+                }`}
               />
               <span
                 ref={headRef}
                 aria-hidden
-                className="absolute -top-[5px] left-[10px] z-0 h-[10px] w-[10px] rounded-full bg-primary-container shadow-[0_0_0_4px_rgb(99_91_255/0.18),0_0_14px_rgb(99_91_255/0.6)] will-change-transform"
+                className={`absolute -top-[5px] left-[10px] z-0 h-[10px] w-[10px] rounded-full bg-primary-container shadow-[0_0_0_4px_rgb(99_91_255/0.18),0_0_14px_rgb(99_91_255/0.6)] will-change-transform ${
+                  still ? "transition-transform duration-700 ease-out" : ""
+                }`}
               />
 
               <h2 className="font-headline-xl text-[38px] font-bold leading-[46px] tracking-tight text-on-surface">{heading}</h2>
