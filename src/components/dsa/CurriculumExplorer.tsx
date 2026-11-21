@@ -38,6 +38,13 @@ const DIFFICULTY_TONE: Record<Difficulty, string> = {
   Hard: "text-[#b91c1c] dark:text-[#f87171]",
 };
 
+/** A few words under each step's name. */
+const STEP_HINT: Record<PathLevel, string> = {
+  Beginner: "The basics",
+  Intermediate: "Core techniques",
+  Advanced: "Putting it together",
+};
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
@@ -59,35 +66,45 @@ export default function CurriculumExplorer({ stages }: { stages: CurriculumStage
 
   const choose = (slug: string) => {
     setSelected(slug);
-    // On phones the panel is below the whole board, so bring it into view.
-    if (window.matchMedia("(max-width: 959px)").matches) {
-      requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    }
+    // Bring the course's details into view, below the board.
+    requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
   return (
     <>
-      {/* The board */}
+      {/* The board: three steps, in order, with their courses */}
       <section aria-labelledby="curriculum-title" className="rounded-2xl border border-outline-variant/60 bg-surface-container-lowest">
         <div className="border-b border-outline-variant/50 px-space-base py-space-md sm:px-space-lg">
           <h2 id="curriculum-title" className="text-[18px] font-bold tracking-tight text-on-surface sm:text-[20px]">
-            Curriculum structure
+            Curriculum
           </h2>
-          <p className="text-[13px] text-on-surface-variant">Take the courses in order. Pick one to see what&rsquo;s inside.</p>
+          <p className="text-[13.5px] text-on-surface-variant">
+            {rows.length} courses in 3 steps. Click a course to see what&rsquo;s inside.
+          </p>
         </div>
         <div className="grid lg:grid-cols-3 lg:divide-x lg:divide-outline-variant/50">
-          {stages.map((stage) => (
-            <div key={stage.level} className="pb-space-sm">
-              <div className="px-space-base pb-space-sm pt-space-md sm:px-space-lg">
-                <p className="flex items-center gap-2 font-code-sm text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface">
-                  <span aria-hidden className={`h-2 w-2 rounded-full ${LEVEL_DOT[stage.level]}`} />
-                  {stage.level}
-                  <span className="font-normal text-on-surface-variant">
-                    {pad(stage.rows[0].n)}–{pad(stage.rows[stage.rows.length - 1].n)}
-                  </span>
-                </p>
-                <p className="mt-0.5 text-[13px] text-on-surface-variant">{stage.note}</p>
+          {stages.map((stage, si) => (
+            <div key={stage.level} className="relative border-b border-outline-variant/40 pb-space-md last:border-b-0 lg:border-b-0">
+              {/* Desktop: an arrow on the divider points to the next step. */}
+              {si < stages.length - 1 && (
+                <span
+                  aria-hidden
+                  className="absolute -right-3 top-[26px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant lg:flex"
+                >
+                  <ChevronRight size={14} />
+                </span>
+              )}
+
+              <div className="flex items-center gap-space-md px-space-base pb-space-sm pt-space-md sm:px-space-lg">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-fixed text-[14px] font-bold text-primary">
+                  {si + 1}
+                </span>
+                <span>
+                  <span className="block text-[16px] font-bold leading-tight text-on-surface">{stage.level}</span>
+                  <span className="block text-[12.5px] text-on-surface-variant">{STEP_HINT[stage.level]}</span>
+                </span>
               </div>
+
               <ol className="px-space-sm sm:px-space-md">
                 {stage.rows.map((row) => {
                   const active = row.course.slug === course.slug;
@@ -98,26 +115,17 @@ export default function CurriculumExplorer({ stages }: { stages: CurriculumStage
                         onClick={() => choose(row.course.slug)}
                         aria-pressed={active}
                         title={row.blurb}
-                        className={`group flex w-full items-center gap-space-md rounded-xl px-space-sm py-2 text-left transition-colors sm:px-space-md ${
-                          active ? "bg-primary-fixed/60 ring-1 ring-inset ring-primary/40" : "hover:bg-surface-container-low"
+                        className={`flex w-full items-center gap-space-sm rounded-lg border-l-2 py-2 pl-space-sm pr-space-sm text-left transition-colors ${
+                          active ? "border-primary bg-primary-fixed/50" : "border-transparent hover:bg-surface-container-low"
                         }`}
                       >
-                        <span className={`w-6 shrink-0 font-code-sm text-[13px] font-semibold tabular-nums ${active ? "text-primary" : "text-on-surface-variant"}`}>
-                          {pad(row.n)}
+                        <span className="w-5 shrink-0 font-code-sm text-[11.5px] tabular-nums text-on-surface-variant/70">{row.n}</span>
+                        <span className={`min-w-0 flex-1 text-[15px] font-semibold ${active ? "text-primary" : "text-on-surface"}`}>
+                          {row.course.title}
                         </span>
-                        <span className="min-w-0 flex-1">
-                          <span className={`block text-[15px] font-semibold leading-snug ${active ? "text-primary" : "text-on-surface"}`}>
-                            {row.course.title}
-                          </span>
-                          <span className="block text-[12.5px] text-on-surface-variant">
-                            {row.course.lessons + row.course.problems} lessons
-                          </span>
+                        <span className="shrink-0 text-[12.5px] tabular-nums text-on-surface-variant">
+                          {row.course.lessons + row.course.problems} lessons
                         </span>
-                        <ChevronRight
-                          size={16}
-                          aria-hidden
-                          className={`shrink-0 transition-transform ${active ? "translate-x-0.5 text-primary" : "text-on-surface-variant group-hover:translate-x-0.5"}`}
-                        />
                       </button>
                     </li>
                   );
