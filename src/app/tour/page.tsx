@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Link from "@/components/Link";
-import TourVideo, { TOUR_VIDEO } from "@/components/TourVideo";
+import TourVideo from "@/components/TourVideo";
+import { TOUR_VIDEO } from "@/lib/tourVideo";
 import JsonLd from "@/components/seo/JsonLd";
 import { pageMetadata, videoJsonLd } from "@/lib/seo";
 
-const TITLE = "IntuitionRewire Product Tour: 23-Second Video";
+const TITLE = "IntuitionRewire Product Tour: 18-Second Video";
 const DESCRIPTION =
-  "A 23-second tour of IntuitionRewire: a visual DSA lesson, the Container With Most Water challenge, a BST insert dry run and the 3D memory board, recorded from the site.";
+  "An 18-second tour of IntuitionRewire: a visual DSA lesson, the learning path, a BST insert dry run and the 3D memory board, recorded from the site.";
 
 export const metadata: Metadata = pageMetadata({
   title: TITLE,
@@ -31,7 +32,7 @@ export default function TourPage() {
         ]}
       />
       <h1 className="font-headline-xl text-headline-xl-mobile mt-space-sm text-on-surface lg:text-headline-xl">
-        IntuitionRewire in 23 seconds
+        IntuitionRewire in 18 seconds
       </h1>
 
       <div className="mt-space-lg overflow-hidden rounded-3xl bg-surface-container-lowest shadow-[0_1px_2px_rgba(19,27,46,0.04),0_28px_56px_-32px_rgba(19,27,46,0.35)] ring-1 ring-outline-variant/70">
@@ -40,7 +41,7 @@ export default function TourPage() {
 
       <p className="mt-space-lg font-body-lg text-body-lg text-on-surface-variant">
         Everything in this tour is recorded straight from the site: the homepage in light and dark mode, a lesson with
-        its hand-drawn diagrams, the Container With Most Water challenge, a binary search tree insert played step by step
+        its hand-drawn diagrams, the learning path, a binary search tree insert played step by step
         in the dry-run simulator, and the 3D memory board.
       </p>
 
@@ -66,8 +67,8 @@ export default function TourPage() {
           path: "/tour",
           contentUrl: TOUR_VIDEO.src,
           thumbnailUrl: TOUR_VIDEO.poster,
-          uploadDate: "2026-10-02T18:02:25+05:30",
-          seconds: 23,
+          uploadDate: "2026-11-21T15:37:00+05:30",
+          seconds: 18,
         })}
       />
     </main>

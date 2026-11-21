@@ -2,16 +2,10 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
-
-export const TOUR_VIDEO = {
-  src: "/videos/intuition-rewire-tour-v3.mp4",
-  poster: "/videos/tour-poster.jpg",
-  label:
-    "IntuitionRewire product tour: the homepage in light and dark mode, a lesson walkthrough, the Container With Most Water challenge, a BST insert dry run and the 3D memory board",
-};
+import { TOUR_VIDEO } from "@/lib/tourVideo";
 
 /**
- * The 23-second product tour. On its watch page (/tour) the video is in the
+ * The 18-second product tour. On its watch page (/tour) the video is in the
  * page from the start. Elsewhere (`deferred`) only the poster is, and the
  * video loads when it's played: Google indexes a video only on a page where
  * it's the main content, so the homepage shouldn't carry a second copy.
@@ -25,7 +19,7 @@ export default function TourVideo({ deferred = false }: { deferred?: boolean }) 
         type="button"
         onClick={() => setPlaying(true)}
         className="group relative block aspect-video w-full cursor-pointer bg-surface-container-low"
-        aria-label="Play the 23-second product tour"
+        aria-label="Play the 18-second product tour"
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- a plain poster frame, same file the video uses */}
         <img src={TOUR_VIDEO.poster} alt={TOUR_VIDEO.label} className="h-full w-full object-cover" loading="lazy" />

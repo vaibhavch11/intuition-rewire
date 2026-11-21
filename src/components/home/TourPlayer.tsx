@@ -1,20 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Droplets, GitBranch, Lock, Pause, Play, Route, type LucideIcon } from "lucide-react";
-import { TOUR_VIDEO } from "@/components/TourVideo";
+import { BookOpen, GitBranch, Lock, Pause, Play, Route, type LucideIcon } from "lucide-react";
+import { TOUR_VIDEO } from "@/lib/tourVideo";
 
 /** Where each part of the product footage starts, in seconds. */
 const CHAPTERS: { label: string; start: number; icon: LucideIcon }[] = [
   { label: "Lessons", start: 5.1, icon: BookOpen },
   { label: "Learning Path", start: 8.6, icon: Route },
-  { label: "Water Challenge", start: 10.6, icon: Droplets },
-  { label: "BST dry run", start: 16.1, icon: GitBranch },
+  { label: "BST dry run", start: 10.6, icon: GitBranch },
 ];
 
 /** The loop covers the product footage only: the lessons through the BST dry run. */
 const LOOP_START = CHAPTERS[0].start;
-const LOOP_END = 17.9;
+const LOOP_END = 12.4;
 
 const chapterEnd = (i: number) => (i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].start : LOOP_END);
 

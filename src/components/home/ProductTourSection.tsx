@@ -18,7 +18,7 @@ export default function ProductTourSection() {
             Watch it <span className="text-primary-container">run</span>
           </>
         }
-        lead="Walk through a lesson, take the water challenge and watch a BST insert step by step — all recorded straight from the platform."
+        lead="Walk through a lesson and the learning path, then watch a BST insert step by step, all recorded straight from the platform."
       />
 
       <TourPlayer />
