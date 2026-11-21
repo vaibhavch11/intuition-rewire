@@ -280,6 +280,9 @@
    Use through `motion-safe:animate-*` so visitors who ask their system for
    reduced motion get the final state straight away. */
 @theme {
+  /* Desktop layouts start at 960px (Tailwind's default is 1024px), so a phone in
+     "Desktop site" mode, which reports a 980px screen, gets the desktop layout. */
+  --breakpoint-lg: 60rem;
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.35s ease-out both;
   --animate-pop-in: pop-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;

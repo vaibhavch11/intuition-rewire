@@ -7,5 +7,5 @@ import { useMediaQuery } from "@/components/home/clientHooks";
 const MemoryLattice = dynamic(() => import("./MemoryLattice"), { ssr: false });
 
 export default function LargeScreenLattice() {
-  return useMediaQuery("(min-width: 1024px)") ? <MemoryLattice /> : null;
+  return useMediaQuery("(min-width: 960px)") ? <MemoryLattice /> : null;
 }

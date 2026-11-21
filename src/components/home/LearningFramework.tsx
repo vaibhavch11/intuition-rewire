@@ -512,7 +512,7 @@ export default function LearningFramework() {
   const headRef = useRef<HTMLSpanElement>(null);
   const barRef = useRef<HTMLSpanElement>(null);
   const markerRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const wide = useMediaQuery("(min-width: 1024px)");
+  const wide = useMediaQuery("(min-width: 960px)");
   const reduced = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef);
@@ -523,7 +523,7 @@ export default function LearningFramework() {
       const grid = gridRef.current;
       if (!grid) return;
       grid.style.transform = "";
-      if (!window.matchMedia("(min-width: 1024px)").matches) return;
+      if (!window.matchMedia("(min-width: 960px)").matches) return;
       const header = document.querySelector("header")?.getBoundingClientRect().height ?? 56;
       const room = window.innerHeight - header - 32;
       const scale = Math.min(1, room / grid.offsetHeight);
@@ -595,7 +595,7 @@ export default function LearningFramework() {
       <div ref={runwayRef} className="h-[300vh]">
         {/* ---------- Phones and tablets ---------- */}
         <div className="sticky top-[var(--spacing-header-height)] flex h-[calc(100svh-var(--spacing-header-height))] flex-col px-gutter-mobile pb-space-base pt-space-lg lg:hidden">
-          <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+          <div className="mx-auto flex h-full w-full max-w-2xl flex-col justify-center">
             <h2 className="text-[26px] font-bold leading-tight tracking-tight text-on-surface sm:text-[32px]">{heading}</h2>
 
             {/* Step tabs and the progress bar under them */}
@@ -645,7 +645,7 @@ export default function LearningFramework() {
             </div>
 
             {/* One view at a time; the next replaces the last as you scroll */}
-            <div className="mt-space-md min-h-0 flex-1 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2.5 shadow-[0_20px_50px_-30px_rgba(53,37,205,0.45)]">
+            <div className="mt-space-md min-h-0 max-h-[492px] flex-1 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-2.5 shadow-[0_20px_50px_-30px_rgba(53,37,205,0.45)]">
               {!wide && (
                 <FitView>
                   <div className="grid h-full grid-cols-[minmax(0,1fr)]">

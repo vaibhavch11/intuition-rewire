@@ -60,7 +60,7 @@ export default async function Home() {
                   <ChevronRight size={14} className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Link>
 
-                <h1 className="mt-space-lg text-[40px] font-bold leading-[1.06] tracking-[-0.035em] text-on-surface sm:text-[56px] lg:text-[62px] motion-safe:animate-fade-up [animation-delay:60ms]">
+                <h1 className="mt-space-lg text-[40px] font-bold leading-[1.06] tracking-[-0.035em] text-on-surface sm:text-[56px] lg:text-[50px] xl:text-[62px] motion-safe:animate-fade-up [animation-delay:60ms]">
                   Stop <span className="strike-draw text-on-surface-variant/60">memorizing</span> code.{" "}
                   <span className="text-primary-container sm:block">
                     Build <span className="whitespace-nowrap">pattern-based</span> intuition.
@@ -72,10 +72,10 @@ export default async function Home() {
                   through interactive visual patterns.
                 </p>
 
-                <div className="mt-space-xl flex w-full flex-col items-stretch gap-space-sm sm:w-auto sm:flex-row sm:items-center sm:gap-space-md motion-safe:animate-fade-up [animation-delay:180ms]">
+                <div className="mt-space-xl flex w-full flex-col items-stretch gap-space-sm sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-space-md lg:justify-start motion-safe:animate-fade-up [animation-delay:180ms]">
                   <Link
                     href="/dsa/arrays"
-                    className="group inline-flex h-[48px] items-center justify-center gap-space-md rounded-full bg-primary-container pl-[22px] pr-[6px] font-label-md text-[15px] font-semibold text-on-primary shadow-[0_10px_24px_-10px_rgba(79,70,229,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[0_14px_28px_-10px_rgba(53,37,205,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    className="group inline-flex h-[48px] items-center justify-center gap-space-md whitespace-nowrap rounded-full bg-primary-container pl-[22px] pr-[6px] font-label-md text-[15px] font-semibold text-on-primary shadow-[0_10px_24px_-10px_rgba(79,70,229,0.8)] transition-all duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[0_14px_28px_-10px_rgba(53,37,205,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     Start with Arrays, free
                     <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white/20 transition-transform duration-200 group-hover:translate-x-0.5">
@@ -84,7 +84,7 @@ export default async function Home() {
                   </Link>
                   <HashLink
                     href="#water-challenge"
-                    className="group inline-flex h-[48px] items-center justify-center gap-space-sm rounded-full bg-surface-container-lowest pl-[8px] pr-[20px] font-label-md text-[15px] font-semibold text-on-surface shadow-[0_1px_2px_rgba(19,27,46,0.05)] ring-1 ring-inset ring-outline-variant transition-all duration-200 hover:-translate-y-px hover:bg-surface-container-low hover:ring-outline/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    className="group inline-flex h-[48px] items-center justify-center gap-space-sm whitespace-nowrap rounded-full bg-surface-container-lowest pl-[8px] pr-[20px] font-label-md text-[15px] font-semibold text-on-surface shadow-[0_1px_2px_rgba(19,27,46,0.05)] ring-1 ring-inset ring-outline-variant transition-all duration-200 hover:-translate-y-px hover:bg-surface-container-low hover:ring-outline/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     <span className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-primary-fixed text-primary transition-colors duration-200 group-hover:bg-primary-container group-hover:text-on-primary">
                       <Play size={12} fill="currentColor" className="translate-x-px" />
