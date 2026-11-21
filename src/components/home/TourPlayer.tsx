@@ -1,26 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, GitBranch, Lock, Pause, Play, Route, type LucideIcon } from "lucide-react";
+import { Lock, Pause, Play } from "lucide-react";
 import { TOUR_VIDEO } from "@/lib/tourVideo";
 
-/** Where each part of the product footage starts, in seconds. */
-const CHAPTERS: { label: string; start: number; icon: LucideIcon }[] = [
-  { label: "Lessons", start: 5.1, icon: BookOpen },
-  { label: "Learning Path", start: 8.6, icon: Route },
-  { label: "BST dry run", start: 10.6, icon: GitBranch },
-];
-
-/** The loop covers the product footage only: the lessons through the BST dry run. */
-const LOOP_START = CHAPTERS[0].start;
+/** The loop covers the product footage only: the lessons, the learning path and the BST dry run. */
+const LOOP_START = 5.1;
 const LOOP_END = 12.4;
-
-const chapterEnd = (i: number) => (i + 1 < CHAPTERS.length ? CHAPTERS[i + 1].start : LOOP_END);
-
-function chapterAt(t: number): number {
-  for (let i = CHAPTERS.length - 1; i >= 0; i--) if (t >= CHAPTERS[i].start) return i;
-  return 0;
-}
 
 /** Reduced motion and data saver both mean: don't start a video on your own. */
 function mayAutoplay(): boolean {
@@ -37,15 +23,12 @@ function mayAutoplay(): boolean {
 export default function TourPlayer() {
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const stripRef = useRef<HTMLDivElement>(null);
-  const fillsRef = useRef<(HTMLSpanElement | null)[]>([]);
   const visibleRef = useRef(false);
   const autoplayRef = useRef(true);
   const userPausedRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
-  const [active, setActive] = useState(0);
 
   /** Attaches the video file the first time it's needed. */
   const attach = useCallback(() => {
@@ -60,19 +43,12 @@ export default function TourPlayer() {
     return video;
   }, []);
 
-  /** Keeps playback inside the loop and moves the chapter fills; runs every frame while playing. */
+  /** Keeps playback inside the loop; runs every frame while playing. */
   const paint = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-    let t = video.currentTime;
-    if (t >= LOOP_END || t < LOOP_START - 0.5) video.currentTime = t = LOOP_START;
-    CHAPTERS.forEach((chapter, i) => {
-      const fill = fillsRef.current[i];
-      if (!fill) return;
-      const share = (t - chapter.start) / (chapterEnd(i) - chapter.start);
-      fill.style.transform = `scaleX(${Math.max(0, Math.min(1, share))})`;
-    });
-    setActive(chapterAt(t));
+    const t = video.currentTime;
+    if (t >= LOOP_END || t < LOOP_START - 0.5) video.currentTime = LOOP_START;
   }, []);
 
   const play = useCallback(() => {
@@ -116,7 +92,7 @@ export default function TourPlayer() {
     };
   }, [attach, play]);
 
-  // Smooth chapter fills; the browser's timeupdate fires only ~4 times a second.
+  // Check the loop every frame: the browser's timeupdate fires only ~4 times a second.
   useEffect(() => {
     if (!playing) return;
     let frame = requestAnimationFrame(function tick() {
@@ -125,14 +101,6 @@ export default function TourPlayer() {
     });
     return () => cancelAnimationFrame(frame);
   }, [playing, paint]);
-
-  // On phones the chapter strip scrolls sideways: keep the playing one in view (the strip only, never the page).
-  useEffect(() => {
-    const strip = stripRef.current;
-    const item = strip?.querySelectorAll("li")[active];
-    if (!strip || !item || strip.scrollWidth <= strip.clientWidth) return;
-    strip.scrollTo({ left: Math.max(0, item.offsetLeft - (strip.clientWidth - item.offsetWidth) / 2), behavior: "smooth" });
-  }, [active]);
 
   const togglePlay = () => {
     const video = attach();
@@ -144,19 +112,6 @@ export default function TourPlayer() {
     } else {
       userPausedRef.current = true;
       video.pause();
-    }
-  };
-
-  const jumpTo = (i: number) => {
-    const video = attach();
-    if (!video) return;
-    video.currentTime = CHAPTERS[i].start;
-    setActive(i);
-    paint();
-    if (video.paused) {
-      userPausedRef.current = false;
-      autoplayRef.current = true;
-      play();
     }
   };
 
@@ -227,54 +182,6 @@ export default function TourPlayer() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Chapters: each one jumps the tour there, and fills while it plays. */}
-      <div
-        ref={stripRef}
-        className="relative -mx-gutter-mobile mt-space-lg overflow-x-auto px-gutter-mobile [scrollbar-width:none] sm:mx-0 sm:px-0"
-      >
-        <ol className="flex min-w-max gap-space-sm sm:grid sm:min-w-0 sm:grid-cols-4">
-          {CHAPTERS.map((chapter, i) => {
-            const Icon = chapter.icon;
-            const isActive = i === active;
-            return (
-              <li key={chapter.label}>
-                <button
-                  type="button"
-                  onClick={() => jumpTo(i)}
-                  aria-current={isActive ? "step" : undefined}
-                  className={`group relative flex w-full items-center gap-[10px] overflow-hidden rounded-[12px] px-[12px] py-[10px] text-left ring-1 ring-inset transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    isActive
-                      ? "bg-primary-fixed/45 ring-primary/35"
-                      : "bg-surface-container-lowest ring-outline-variant/70 hover:bg-surface-container-low"
-                  }`}
-                >
-                  <span
-                    className={`flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] transition-colors duration-200 ${
-                      isActive ? "bg-primary-container text-on-primary" : "bg-surface-container text-on-surface-variant group-hover:text-primary"
-                    }`}
-                  >
-                    <Icon size={15} aria-hidden="true" />
-                  </span>
-                  <span className={`whitespace-nowrap font-label-md text-[13px] font-semibold ${isActive ? "text-primary" : "text-on-surface"}`}>
-                    {chapter.label}
-                  </span>
-                  <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[2px]">
-                    <span
-                      ref={(el) => {
-                        fillsRef.current[i] = el;
-                      }}
-                      className={`block h-full origin-left scale-x-0 bg-primary-container transition-opacity duration-200 ${
-                        isActive ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
       </div>
     </div>
   );
