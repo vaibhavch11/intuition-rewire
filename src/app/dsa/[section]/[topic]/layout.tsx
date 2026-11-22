@@ -10,9 +10,11 @@ import LessonIndex from "@/components/dsa/LessonIndex";
 export default async function LessonLayout(
   props: LayoutProps<"/dsa/[section]/[topic]">
 ) {
-  const { section: sectionSlug } = await props.params;
+  const { section: sectionSlug, topic: topicSlug } = await props.params;
   const section = await getSection(sectionSlug);
-  if (!section) notFound();
+  // Checked here, above the page's loading skeleton, so an unknown lesson gets a
+  // real 404 status before anything streams (in the page it would already be a 200).
+  if (!section || !section.topics.some((t) => t.slug === topicSlug)) notFound();
 
   const chapters = groupByChapter(section.topics).map((chapter) => ({
     title: chapter.title,

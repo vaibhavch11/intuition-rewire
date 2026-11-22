@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import TrackProgressInvite from "@/components/dsa/TrackProgressInvite";
 import LessonLockMark from "@/components/dsa/LessonLockMark";
-import { isFreeCourse } from "@/lib/dsa/access";
+import { isFreeCourse, isFreeLesson } from "@/lib/dsa/access";
 import { useProgress } from "@/lib/progress";
 
 /** A small pulsing dot on the lesson being opened, until it arrives. */
@@ -185,7 +185,7 @@ export default function LessonIndex({
                         }`}
                       >
                         {item.title}
-                        {!free && <LessonLockMark className="ml-space-xs align-[-1px]" />}
+                        {!isFreeLesson(sectionSlug, item.slug) && <LessonLockMark className="ml-space-xs align-[-1px]" />}
                         <PendingDot />
                       </Link>
                     </li>

@@ -16,7 +16,7 @@ export type CurriculumCourse = {
   free: boolean;
   lessons: number;
   problems: number;
-  chapters: { title: string; topics: { slug: string; title: string; problem: boolean; difficulty?: Difficulty }[] }[];
+  chapters: { title: string; topics: { slug: string; title: string; problem: boolean; open: boolean; difficulty?: Difficulty }[] }[];
 };
 
 export type CurriculumStage = {
@@ -194,7 +194,7 @@ export default function CurriculumExplorer({ stages }: { stages: CurriculumStage
                         {topic.difficulty && topic.difficulty !== "Fundamental" && (
                           <span className={`shrink-0 text-[12px] font-semibold ${DIFFICULTY_TONE[topic.difficulty]}`}>{topic.difficulty}</span>
                         )}
-                        {courseLocked && <Lock size={13} aria-label="Sign in to read" className="shrink-0 text-on-surface-variant/70" />}
+                        {courseLocked && !topic.open && <Lock size={13} aria-label="Sign in to read" className="shrink-0 text-on-surface-variant/70" />}
                       </Link>
                     </li>
                   ))}

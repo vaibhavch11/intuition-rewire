@@ -23,7 +23,7 @@ import CourseProgressInvite from "@/components/dsa/CourseProgressInvite";
 import RichText from "@/components/dsa/RichText";
 import FreeRibbon from "@/components/dsa/FreeRibbon";
 import LessonLockMark from "@/components/dsa/LessonLockMark";
-import { isFreeCourse } from "@/lib/dsa/access";
+import { isFreeCourse, isFreeLesson } from "@/lib/dsa/access";
 
 const DIFFICULTY_STYLES: Record<Difficulty, string> = {
   Fundamental:
@@ -296,7 +296,7 @@ export default async function SectionPage(props: PageProps<"/dsa/[section]">) {
                       key={topic.slug}
                       topic={topic}
                       sectionSlug={section.slug}
-                      free={free}
+                      free={isFreeLesson(section.slug, topic.slug)}
                       isFirst={j === 0}
                       isLast={j === chapter.topics.length - 1}
                     />

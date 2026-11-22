@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getSections, getTopic } from "@/lib/dsa/curriculum";
 import { getLessonContent } from "@/lib/dsa/content";
-import { isFreeCourse } from "@/lib/dsa/access";
+import { isFreeLesson } from "@/lib/dsa/access";
 import { lessonPreview } from "@/lib/dsa/preview";
 import { getSignedInUser } from "@/lib/auth/session";
 import { isVerifiedSearchCrawler } from "@/lib/crawler";
@@ -34,7 +34,9 @@ const loadLesson = cache(getLessonContent);
 export async function generateMetadata(props: PageProps<"/dsa/[section]/[topic]">): Promise<Metadata> {
   const { section: sectionSlug, topic: topicSlug } = await props.params;
   const result = await getTopic(sectionSlug, topicSlug);
-  if (!result) return {};
+  // Not found here, before anything is sent, so crawlers get a real 404 rather
+  // than a "200 OK" page that only says not found (a soft 404).
+  if (!result) notFound();
   const { section, topic } = result;
   const content = await loadLesson(sectionSlug, topicSlug);
   const sharedTitle = (await getSections()).some(
@@ -61,9 +63,9 @@ export default async function TopicPage(
   const path = `/dsa/${section.slug}/${topic.slug}`;
 
   const content = await loadLesson(sectionSlug, topicSlug);
-  // Free courses are open to everyone. Every other lesson shows its opening,
+  // Free courses and open lessons are for everyone. Every other lesson shows its opening,
   // and the rest needs a free account. While sign-in isn't set up, nothing is held back.
-  const free = isFreeCourse(section.slug);
+  const free = isFreeLesson(section.slug, topic.slug);
   const locked = !free && isSupabaseConfigured() && (await getSignedInUser()) === null;
   const preview = locked && content ? lessonPreview(content.blocks) : null;
   // Verified Google and Bing crawlers read the whole lesson, with the part a

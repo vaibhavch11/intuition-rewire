@@ -24,7 +24,7 @@ export function courseDescription(section: Section): string {
 }
 
 /**
- * Problems read as solutions ("Two Sum: Visual Solution"); lessons name their
+ * Problems read as visual dry runs ("Two Sum: Visual Dry Run in Python, Java & C++"); lessons name their
  * course when the title doesn't. A title that another course also uses (the same
  * problem taught twice) gets its course name, so no two pages share a title.
  */
@@ -34,13 +34,16 @@ export function lessonTitle(section: Section, topic: Topic, sharedTitle = false)
     return fitTitle(`${t} – ${section.title}${BRAND}`, `${t} – ${section.title}`, `${t} (${section.title})`);
   }
   if (topic.kind === "problem") {
-    // Searchers look for a solution in their language, so name the languages when they fit.
+    // Lead with what no big solution site offers ("visual dry run", "step by
+    // step"), which is what searches like "two sum dry run" ask for, and name
+    // the languages when they fit.
     return fitTitle(
-      `${t}: Solution in Python, Java & C++${BRAND}`,
-      `${t}: Solution in Python, Java & C++`,
-      `${t}: Python, Java & C++ Solution`,
-      `${t}: Visual Solution${BRAND}`,
-      `${t}: Visual Solution`,
+      `${t}: Visual Dry Run in Python, Java & C++${BRAND}`,
+      `${t}: Visual Dry Run in Python, Java & C++`,
+      `${t}: Step-by-Step Visual Dry Run${BRAND}`,
+      `${t}: Step-by-Step Visual Dry Run`,
+      `${t}: Visual Dry Run${BRAND}`,
+      `${t}: Visual Dry Run`,
       `${t}${BRAND}`,
       t
     );

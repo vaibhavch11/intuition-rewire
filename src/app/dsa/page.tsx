@@ -5,12 +5,13 @@ import { getSections } from "@/lib/dsa/curriculum";
 import { courseListJsonLd, fitDescription, pageMetadata } from "@/lib/seo";
 import { courseStats, groupByChapter, isComingSoon, isProblem } from "@/lib/dsa/types";
 import JsonLd from "@/components/seo/JsonLd";
-import { isFreeCourse } from "@/lib/dsa/access";
+import { isFreeCourse, isFreeLesson } from "@/lib/dsa/access";
 import { buildPath } from "@/lib/dsa/path";
 import CurriculumExplorer, { type CurriculumCourse } from "@/components/dsa/CurriculumExplorer";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const sections = await getSections();
+  // Same courses the page lists: ones still waiting for lessons don't count.
+  const sections = (await getSections()).filter((s) => !isComingSoon(s));
   const lessons = sections.reduce((n, s) => n + courseStats(s).lessons, 0);
   const problems = sections.reduce((n, s) => n + courseStats(s).problems, 0);
   return pageMetadata({
@@ -48,6 +49,7 @@ export default async function DsaIndexPage() {
           slug: t.slug,
           title: t.title,
           problem: isProblem(t),
+          open: isFreeLesson(section.slug, t.slug),
           ...(t.difficulty ? { difficulty: t.difficulty } : {}),
         })),
       })),
